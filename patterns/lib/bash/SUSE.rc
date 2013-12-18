@@ -1,0 +1,243 @@
+#!/bin/bash
+##############################################################################
+#  Copyright (C) 2013 SUSE LINUX Products GmbH
+##############################################################################
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; version 2 of the License.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+#  Authors/Contributors:
+#     Jason Record (jrecord@suse.com)
+#
+#  Creation Date:      2013 Jun 13
+#  Last Modified Date: 2013 Jun 13
+#
+##############################################################################
+# Library:       SUSE.rc
+# Version:       0.0.1
+# Requires:      Core.rc
+# Description:   Provides global variables for SLE kernel versions and base 
+#                information functions.
+#
+# Function Provided:
+#  getHostInfo
+#  getSCInfo
+#  getRpmInfo PACKAGE
+#  packageInstalled PACKAGE
+#
+# Functions Proposed:
+#  getDriverInfo 
+#  compareKernel compareDriver compareSupportconfig compareRpm packageVerify
+#  
+#
+##############################################################################
+
+##############################################################################
+# GLOBAL VARIABLES
+##############################################################################
+
+declare -r SLE9GA='2.6.5-7.97'
+declare -r SLE9SP1='2.6.5-7.139'
+declare -r SLE9SP2='2.6.5-7.191'
+declare -r SLE9SP3='2.6.5-7.244'
+declare -r SLE9SP4='2.6.5-7.308'
+declare -r SLE9SP5='2.6.5-8' #Update when/if actual version ships
+declare -r SLE10GA='2.6.16.21-0.8'
+declare -r SLE10SP1='2.6.16.46-0.12'
+declare -r SLE10SP2='2.6.16.60-0.21'
+declare -r SLE10SP3='2.6.16.60-0.54.5'
+declare -r SLE10SP4='2.6.16.60-0.85.1'
+declare -r SLE10SP5='2.6.17' #Update to actual version when/if ready
+declare -r SLE11GA='2.6.27.19-5'
+declare -r SLE11SP1='2.6.32.12-0.7'
+declare -r SLE11SP2='3.0.13-0.27'
+declare -r SLE11SP3='3.0.999' #Update to actual version when/if ready
+declare -r SLE12GA='3.999' #Update to actual version when applicable
+
+SC_INFO_VERSION=''
+SC_INFO_SCRIPTDATE=''
+SC_INFO_CMDLINE=''
+SC_INFO_CONFIG=''
+SC_INFO_ENVALUE=''
+SC_INFO_KERNVALUE=''
+SC_INFO_RUNDATE=''
+
+RPM_INFO_NAME=''
+RPM_INFO_VERSION=''
+RPM_INFO_VENDOR=''
+RPM_INFO_DATE=''
+RPM_INFO_INSTALLED=0
+RPM_INFO_COUNT=0
+
+HOST_INFO_NAME=''
+HOST_INFO_ARCH=''
+HOST_INFO_KERN=''
+HOST_INFO_DISTRO=''
+HOST_INFO_SP=0
+HOST_INFO_OES=0
+HOST_INFO_OES_DISTRO=''
+HOST_INFO_OES_VER=''
+HOST_INFO_OES_MAJOR=''
+HOST_INFO_OES_SP=0
+HOST_INFO_NOWS=0
+HOST_INFO_NOWS_VER=''
+
+##############################################################################
+# GLOBAL FUNCTIONS
+##############################################################################
+# Summary
+# ----------------------------------------------------------------------------
+#  getHostInfo
+#  getSCInfo
+#  getRpmInfo PACKAGE
+#  packageInstalled PACKAGE
+
+
+getHostInfo() {
+	printDebug '> getHostInfo'
+	HOST_INFO_NAME=''
+	HOST_INFO_ARCH=''
+	HOST_INFO_KERN=''
+	HOST_INFO_DISTRO=''
+	HOST_INFO_SP=0
+	HOST_INFO_OES=0
+	HOST_INFO_OES_DISTRO=''
+	HOST_INFO_OES_VER=''
+	HOST_INFO_OES_MAJOR=''
+	HOST_INFO_OES_SP=0
+	HOST_INFO_NOWS=0
+	HOST_INFO_NOWS_VER=''
+
+	getSection 'basic-environment.txt' 'uname -a'
+	HOST_INFO_NAME=$(echo $CONTENT | awk '{print $2}')
+	HOST_INFO_KERN=$(echo $CONTENT | awk '{print $3}')
+	getSection 'basic-environment.txt' '/etc/SuSE-release'
+	HOST_INFO_SP=$(echo "$CONTENT" | grep PATCHLEVEL | awk '{print $NF}')
+	HOST_INFO_ARCH=$(echo "$CONTENT" | head -1 | cut -d\( -f2 | cut -d\) -f1)
+	HOST_INFO_DISTRO=$(echo "$CONTENT" | head -1 | cut -d\( -f1)
+	getSection 'basic-environment.txt' '/etc/novell-release'
+	local RC=$?
+	if (( $RC > 0 ))
+	then
+		HOST_INFO_OES=1
+		HOST_INFO_OES_DISTRO=$(echo "$CONTENT" | grep 'Open Enterprise' | cut -d\( -f1)
+		HOST_INFO_OES_VER=$(echo "$CONTENT" | grep VERSION | awk '{print $3}')
+		HOST_INFO_OES_MAJOR=${HOST_INFO_OES_VER/\.*/}
+		HOST_INFO_OES_SP=$(echo "$CONTENT" | grep PATCHLEVEL | awk '{print $3}')
+	fi
+	getRpmInfo 'NOWS-copyMedia'
+	if (( $RPM_INFO_INSTALLED ))
+	then
+		HOST_INFO_NOWS=1
+		HOST_INFO_NOWS_VER="${RPM_INFO_VERSION/-*/}"
+	fi
+
+	printDebug '  getHostInfo NAME' "${HOST_INFO_NAME}"
+	printDebug '  getHostInfo ARCH' "${HOST_INFO_ARCH}"
+	printDebug '  getHostInfo KERN' "${HOST_INFO_KERN}"
+	printDebug '  getHostInfo DISTRO' "${HOST_INFO_DISTRO}"
+	printDebug '  getHostInfo SP' "${HOST_INFO_SP}"
+	printDebug '  getHostInfo OES' "${HOST_INFO_OES}"
+	printDebug '  getHostInfo OES_DISTRO' "${HOST_INFO_OES_DISTRO}"
+	printDebug '  getHostInfo OES_VER' "${HOST_INFO_OES_VER}"
+	printDebug '  getHostInfo OES_MAJOR' "${HOST_INFO_OES_MAJOR}"
+	printDebug '  getHostInfo OES_SP' "${HOST_INFO_OES_SP}"
+	printDebug '  getHostInfo NOWS' "${HOST_INFO_NOWS}"
+	printDebug '  getHostInfo NOWS_VER' "${HOST_INFO_NOWS_VER}"
+	printDebug '< getHostInfo'
+}
+
+getSCInfo() {
+	printDebug '> getSCInfo'
+	SC_INFO_VERSION=''
+	SC_INFO_SCRIPTDATE=''
+	SC_INFO_CMDLINE=''
+	SC_INFO_CONFIG=''
+	SC_INFO_ENVALUE=''
+	SC_INFO_KERNVALUE=''
+	SC_INFO_RUNDATE=''
+
+	local ENV_FILE='basic-environment.txt'
+	local ARCH_FILE="${ARCH_PATH}/${ENV_FILE}"
+	if [[ ! -s $ARCH_FILE ]]
+	then
+		updateStatus $STATUS_ERROR "ERROR: File not found - $ARCH_FILE"
+	fi
+	getSection 'supportconfig.txt' 'supportutils'
+	SC_INFO_VERSION=$(cat $ARCH_FILE | grep 'Script Version:' | awk '{print $NF}')
+	SC_INFO_DATE=$(cat $ARCH_FILE | grep 'Script Date:' | awk '{print $3,$4,$5}')
+	SC_INFO_ENVALUE=$(echo "$CONTENT" | grep 'Environment Value:' | awk '{print $3}')
+	SC_INFO_KERNVALUE=$(echo "$CONTENT" | grep 'Environment Value:' | awk '{print $4}' | sed -e 's/(//g;s/)//g')
+	getSection $ENV_FILE 'date'
+	SC_INFO_RUNDATE="$CONTENT"
+
+	printDebug '  getSCInfo VERSION' "$SC_INFO_VERSION"
+	printDebug '  getSCInfo DATE' "$SC_INFO_SCRIPTDATE"
+	printDebug '  getSCInfo ENVALUE' "$SC_INFO_ENVALUE"
+	printDebug '  getSCInfo KERNVALUE' "$SC_INFO_KERNVALUE"
+	printDebug '  getSCInfo RUNDATE' "$SC_INFO_RUNDATE"
+	printDebug '< getSCInfo'
+}
+
+getRpmInfo() {
+	RPM_INFO_NAME=$1
+	RPM_INFO_VERSION=''
+	RPM_INFO_VENDOR=''
+	RPM_INFO_DATE=''
+	RPM_INFO_INSTALLED=0
+	RPM_INFO_COUNT=0
+
+	printDebug '> getRpmInfo' "$RPM_INFO_NAME"
+	local TMP=''
+	getSection 'rpm.txt' '{NAME}' 1
+	LINE=$(echo "$CONTENT" | egrep "^${RPM_INFO_NAME}[[:space:]]")
+	RPM_INFO_COUNT=$(echo "$LINE" | wc -l)
+	if (( RPM_INFO_COUNT > 1 ))
+	then
+		updateStatus $STATUS_ERROR "Multiple versions of $RPM_INFO_NAME found"
+	fi
+	if [[ -n "$LINE" ]]
+	then
+		printDebug '  getRpmInfo FOUND' "$LINE"
+		RPM_INFO_VERSION=$(echo "$LINE" | awk '{print $NF}')
+		TMP=$(echo $LINE | sed -e "s/$RPM_INFO_NAME//g;s/$RPM_INFO_VERSION//g")
+		RPM_INFO_VENDOR=$(echo $TMP | sed -e 's/^[[:space:]]*//g;s/[[:space:]]*$//g')
+		RPM_INFO_INSTALLED=1
+	fi
+	if (( RPM_INFO_INSTALLED > 0 ))
+	then
+		getSection 'rpm.txt' '\-\-last'
+		RPM_INFO_NAME_FULL="${RPM_INFO_NAME}-${RPM_INFO_VERSION}"
+		LINE=$(echo "$CONTENT" | egrep "^${RPM_INFO_NAME_FULL}[[:space:]]")
+		if [[ -n "$LINE" ]]
+		then
+			printDebug '  getRpmInfo FOUND' "$LINE"
+			TMP=$(echo $LINE | sed -e "s/$RPM_INFO_NAME_FULL//g")
+			RPM_INFO_DATE=$(echo $TMP | sed -e 's/^[[:space:]]*//g;s/[[:space:]]*$//g')
+		fi
+		printDebug '  getRpmInfo NAME' "$RPM_INFO_NAME"
+		printDebug '  getRpmInfo VERSION' "$RPM_INFO_VERSION"
+		printDebug '  getRpmInfo VENDOR' "$RPM_INFO_VENDOR"
+		printDebug '  getRpmInfo DATE' "$RPM_INFO_DATE"
+	fi
+	printDebug '< getRpmInfo INSTALLED' "$RPM_INFO_INSTALLED"
+}
+
+packageInstalled() {
+	RPM_INFO_NAME=$1
+	printDebug '> packageInstalled' "$RPM_INFO_NAME"
+	getRpmInfo "$RPM_INFO_NAME"
+	printDebug '< packageInstalled' "$RPM_INFO_INSTALLED"
+	return $RPM_INFO_INSTALLED
+}
+

@@ -1,0 +1,194 @@
+#!/bin/bash
+export SPRSRC="/opt/svnwork/server-diagnostic-patterns/trunk/packages/patterns"
+export BASHLIB="${SPRSRC}/lib/bash/"
+export PERL5LIB="${SPRSRC}/lib/perl/"
+export PYTHONPATH="${SPRSRC}/lib/python/"
+
+title() {
+	echo "##########################################################################"
+	echo "# VPAT - SCA Pattern Validator v0.0.3"
+	echo "##########################################################################"
+}
+
+CMDLINE=$*
+CNT_PATTERNS=0
+FATAL_ERRORS=0
+RET_FAT=0
+
+CNT_ERR_OUTPUT=0
+CNT_ERR_RANGE_OVERALL=0
+CNT_ERR_PLINK=0
+CNT_ERR_MLINKS=0
+CNT_ERR_URL=0
+
+
+usage() {
+	echo "Usage:"
+	echo "  $(basename $0) pattern [pattern options]"
+	echo
+	echo "Set ARCHDIR in your environment to overide the default archive"
+	echo "directory. The ARCHDIR directory should contain all of the"
+	echo "extracted supportconfig tar balls you wish to test against."
+	echo
+	echo "Doc: https://code.google.com/p/server-diagnostic-patterns/svn/trunk/perl/docs/SDP-pat.html?view=co"
+	echo "Credentials: Innerweb"
+	echo
+}
+
+clear
+title
+printf "Archive Directory:  "
+if [[ -d ${ARCHDIR:="/mnt/spr/nts_vpat_archive"} ]]; then
+	echo "$ARCHDIR"
+	echo
+else
+	echo "$ARCHDIR"
+	printf "ERROR: Missing or invalid directory\n\n"
+	usage
+	exit 2
+fi
+if [[ ! -s "${ARCHDIR}/basic-environment.txt" ]]; then
+	printf "ERROR: Invalid supportconfig archive directory\n\n"
+	usage
+	exit 2
+fi
+
+PATTERNS="$@"
+if [[ -z "$PATTERNS" ]]; then
+	echo "Retriving patterns"
+	cd $SPRSRC
+	PATTERNS=$(find . -type f | egrep -v "/lib/|\.svn/")
+fi
+ERR_FILE=$(mktemp /tmp/vpat-err-XXXXXXXXXX)
+for PAT in $PATTERNS
+do
+	BASE_PAT=$(basename $PAT)
+	TIME_START=$(date +%s)
+	PATOUT=$($PAT -p $ARCHDIR 2>$ERR_FILE)
+	PATRC=$?
+	TIME_END=$(date +%s)
+	TIME_TOTAL=$(( TIME_END - TIME_START ))
+	echo "$BASE_PAT ${TIME_TOTAL}s"
+	if (( $PATRC > 0 )); then
+		((RET_FAT++))
+		printf "%-30s %s\n" "  Runtime Error:" "$PATRC"
+		cat $ERR_FILE
+		echo
+	else
+		#PATTARRAY Elements
+		#META_CLASS(0), META_CATEGORY(1), META_COMPONENT(2), PATTERN_ID(3), PRIMARY_LINK(4), OVERALL(5), OVERALL_INFO(6), META_LINK_<TAG>(7+)[, META_LINK_<TAG>...]
+		# 1. order+case output, 2. 0<=overall<=5, 3. primary link found, 4. at least 1 meta link, 5. valid meta link urls, 6. valid code execution
+		ERR_FATAL=0		
+		ERR_OUTPUT=0
+		ERR_RANGE_OVERALL=0
+		ERR_PLINK=1
+		ERR_MLINKS=0
+		ERR_URLS=0
+		ERR_MURL=()
+		IFSB=$IFS
+		IFS='|'
+		PATARRAY=($PATOUT) # parse into an array
+		PATARRAY_BASE=7
+		IFS=$IFSB
+		MCL=${PATARRAY[0]}
+		MCT=${PATARRAY[1]}
+		MCP=${PATARRAY[2]}
+		PTD=${PATARRAY[3]}
+		PLK=${PATARRAY[4]}
+		OVL=${PATARRAY[5]}
+		OVI=${PATARRAY[6]}
+
+		OVERALL=${OVL##OVERALL=}
+		(( OVERALL < 0 || OVERALL > 5 )) && ((ERR_RANGE_OVERALL++))
+
+		[[ "${MCL##META_CLASS=}" == "$MCL" ]] && ((ERR_OUTPUT++))
+		((ERR_OUTPUT == 0 )) && [[ "${MCT##META_CATEGORY=}" == "$MCT" ]] && ((ERR_OUTPUT++))
+		((ERR_OUTPUT == 0 )) && [[ "${MCP##META_COMPONENT=}" == "$MCP" ]] && ((ERR_OUTPUT++))
+		((ERR_OUTPUT == 0 )) && [[ "${PTD##PATTERN_ID=}" == "$PTD" ]] && ((ERR_OUTPUT++))
+		((ERR_OUTPUT == 0 )) && [[ "${PLK##PRIMARY_LINK=}" == "$PLK" ]] && ((ERR_OUTPUT++))
+		((ERR_OUTPUT == 0 )) && [[ "${OVL##OVERALL=}" == "$OVL" ]] && ((ERR_OUTPUT++))
+		((ERR_OUTPUT == 0 )) && [[ "${OVI##OVERALL_INFO=}" == "$OVI" ]] && ((ERR_OUTPUT++))
+
+		if (( ${#PATARRAY[@]} > $PATARRAY_BASE )); then
+			PLINK="${PLK##PRIMARY_LINK=}"
+			IDX_ERR_MURL=0
+			TMP_WEB=$(mktemp /tmp/vpat-XXXXXXXXXXX)
+			chmod 600 $TMP_WEB
+			for (( i=PATARRAY_BASE; i<${#PATARRAY[@]}; i++ ))
+			do
+				MLT=${PATARRAY[$i]}
+				IFS='='
+				META_LINK=($MLT)
+				unset META_LINK[0]
+				MLU="${META_LINK[*]}"
+				IFS=$IFSB
+				if echo $MLT | grep "^${PLINK}=" &>/dev/null; then
+					ERR_PLINK=0
+				fi
+				>$TMP_WEB
+				curl --silent --location --output $TMP_WEB --max-time 2 $MLU 2>/dev/null
+				CURL_ERR=$?
+				if (( $CURL_ERR )); then
+					ERR_MURL[$IDX_ERR_MURL]="Curl Error $CURL_ERR: $MLU"
+					((IDX_ERR_MURL++))
+					ERR_URLS=1					
+				elif grep -i '>The Article Cannot Be Found<' $TMP_WEB &>/dev/null; then
+					ERR_MURL[$IDX_ERR_MURL]="Article Not Found: $MLU"
+					((IDX_ERR_MURL++))
+					ERR_URLS=1
+				elif grep -i '<td id="error_msg" class="throw_error">Bug' $TMP_WEB &>/dev/null; then
+					ERR_MURL[$IDX_ERR_MURL]="Invalid bug: $MLU"
+					((IDX_ERR_MURL++))
+					ERR_URLS=1
+				fi
+			done
+			rm -f $TMP_WEB
+		else
+			((ERR_MLINKS++))
+		fi
+
+		ERR_FATAL=$((RET_FAT+ERR_OUTPUT+ERR_RANGE_OVERALL+ERR_PLINK+ERR_MLINKS+ERR_URLS))
+		FATAL_ERRORS=$((FATAL_ERRORS+ERR_FATAL))
+		CNT_ERR_OUTPUT=$(( CNT_ERR_OUTPUT + ERR_OUTPUT ))
+		CNT_ERR_RANGE_OVERALL=$(( CNT_ERR_RANGE_OVERALL + ERR_RANGE_OVERALL ))
+		CNT_ERR_PLINK=$(( CNT_ERR_PLINK + ERR_PLINK ))
+		CNT_ERR_MLINKS=$(( CNT_ERR_MLINKS + ERR_MLINKS ))
+		CNT_ERR_URLS=$(( CNT_ERR_URLS + ERR_URLS ))
+		if (( ERR_FATAL )); then
+			(( ERR_PLINK )) && printf "%-30s %s\n" "  Invalid Primary Link:" "$PLK"
+			(( ERR_OUTPUT )) && printf "%-30s %s\n" "  Invalid Output String:" "$PATOUT"
+			if (( ERR_URLS )); then
+				echo "  Invalid Solution Link(s)"
+				for (( I=0, J=1; I<${#ERR_MURL[@]}; I++, J++ ))
+				do
+					echo "  $J. ${ERR_MURL[$I]}"
+				done
+			fi
+			echo
+		fi
+	fi
+	((CNT_PATTERNS++))
+done
+rm -f $ERR_FILE
+
+echo
+echo "##[ Summary ]#############################################################"
+echo
+echo "Archive Directory:  $ARCHDIR"
+echo "Pattern(s) Tested:  $CNT_PATTERNS"
+if (( FATAL_ERRORS )); then
+	echo " -Errors:           Execution: $RET_FAT, Output: $CNT_ERR_OUTPUT, Status: $CNT_ERR_RANGE_OVERALL, Primary Links: $CNT_ERR_PLINK"
+	echo " -Errors:           Solution Links: $CNT_ERR_MLINKS, Invalid URLs: $CNT_ERR_URLS"
+	echo
+	echo "##########################################################################"
+	echo
+	echo "WARNING:"
+	echo "You have fatal errors, refer to the pat documentation."
+	echo "URL: https://code.google.com/p/server-diagnostic-patterns/svn/trunk/perl/docs/SDP-pat.html?view=co#errors"
+else
+	echo " -Errors:           None"
+fi
+echo
+echo "##########################################################################"
+echo
+exit 0

@@ -1,0 +1,159 @@
+#!/bin/bash
+SPRSRC="/opt/svnwork/server-diagnostic-patterns/trunk/packages/patterns"
+BASHLIB="${SPRSRC}/lib/bash"
+PERL5LIB="${PERL5LIB}:${SPRSRC}/lib/perl/"
+PYTHONPATH="${PYTHONPATH}:${SPRSRC}/lib/python/"
+export SPRSRC BASHLIB PERL5LIB PYTHONPATH
+
+title() {
+	echo "##########################################################################"
+	echo "# PAT - SCA Pattern Tester v0.0.5"
+	echo "##########################################################################"
+}
+
+CMDLINE=$*
+ARCHIVES=0
+ERR_MODE=0
+RET_FAT=0
+
+RET_TMP=0
+RET_PAR=0
+RET_GRN=0
+RET_REC=0
+RET_PRO=0
+RET_YEL=0
+RET_RED=0
+RET_ERR=0
+RET_PRL=0
+
+
+usage() {
+	echo "Usage:"
+	echo "  $(basename $0) pattern [pattern options]"
+	echo
+	echo "Set ARCHDIR in your environment to overide the default archive"
+	echo "directory. The ARCHDIR directory should contain all of the"
+	echo "extracted supportconfig tar balls you wish to test against."
+	echo
+	echo "Doc: https://code.google.com/p/server-diagnostic-patterns/svn/trunk/perl/docs/SDP-pat.html?view=co"
+	echo "Credentials: Innerweb"
+	echo
+}
+
+count_rc() {
+	PRC=$1
+	case $PRC in
+	5) ((RET_ERR++)) ;;
+	4) ((RET_RED++)) ;;
+	3) ((RET_YEL++)) ;;
+	2) ((RET_PRO++)) ;;
+	1) ((RET_REC++)) ;;
+	0) ((RET_GRN++)) ;;
+	-1) ((RET_PAR++)) ;;
+	-2) ((RET_TMP++)) ;;
+	esac
+}
+
+clear
+title
+printf "Archive Directory:  "
+if [ -d ${ARCHDIR:="/mnt/spr/"} ]; then
+	echo "$ARCHDIR"
+	echo
+else
+	echo "$ARCHDIR"
+	printf "ERROR: Missing or invalid directory\n\n"
+	usage
+	exit 2
+fi
+
+if echo $CMDLINE | grep ' -d' &>/dev/null; then
+	DEBUG=1
+else
+	DEBUG=0
+fi
+if [ "$1" == "" ]; then
+	usage
+	exit 1
+elif [ "$1" == "-h" ]; then
+	usage
+	exit 0
+elif [ ! -s $1 ]; then
+	printf "ERROR: Cannot open pattern: $1\n\n"
+	usage
+	exit 3
+fi
+PATFULL=$(readlink -f $1)
+shift
+if head -1 $PATFULL | grep '^ ' &>/dev/null; then
+	echo "Pattern: $PATFULL"
+	printf "ERROR: Invalid hash pling\n\n"
+	exit 4
+fi
+
+[[ ! -x $PATFULL ]] && { ((ERR_MODE++)); ((RET_FAT++)); }
+if [ -s $ARCHDIR/basic-environment.txt ]; then
+	echo "Running: $PATFULL $@ -p $ARCHDIR"
+	PATOUT=$($PATFULL $@ -p ${ARCHDIR}/)
+	RC=$?
+	test $RC -gt 0 && { ((RET_PRL++)); ((RET_FAT++)); }
+	echo "$PATOUT"
+	OVERALL=$(echo $PATOUT | cut -d\| -f6 | cut -d= -f2)
+	if [ -z "$OVERALL" ]; then
+		if (( DEBUG )); then
+			OVERALL="Debug"
+		else
+			OVERALL="Failed"
+		fi
+	else
+		count_rc $OVERALL
+	fi
+	echo "Returns: $RC, Overall: $OVERALL"
+	((ARCHIVES++))
+else
+	for i in $(find -L ${ARCHDIR}/ -maxdepth 1 -type d | grep "nts_")
+	do
+		echo "Running: $PATFULL $@ -p $i"
+		PATOUT=$(perl $PATFULL $@ -p $i)
+		RC=$?
+		test $RC -gt 0 && { ((RET_PRL++)); ((RET_FAT++)); }
+		echo "$PATOUT"
+		OVERALL=$(echo $PATOUT | grep 'OVERALL=' | cut -d\| -f6 | cut -d= -f2)
+		if [ -z "$OVERALL" ]; then
+			if (( DEBUG )); then
+				OVERALL="Debug"
+			else
+				OVERALL="Failed"
+			fi
+		else
+			count_rc $OVERALL
+		fi
+		echo "Returns: $RC, Overall: $OVERALL"
+		((ARCHIVES++))
+		echo "--------------------------------------------------------------------------"
+		echo
+	done
+fi
+echo
+echo "##[ Summary ]#############################################################"
+echo
+echo "Archive Directory:  $ARCHDIR"
+echo "Archive(s) Tested:  $ARCHIVES"
+echo "SDP:                $PATFULL"
+echo " -Results:          Fatal: $RET_FAT, Err: $RET_ERR, Cri: $RET_RED, Wrn: $RET_YEL, Pro: $RET_PRO, Rec: $RET_REC, Good: $RET_GRN"
+echo
+echo "##########################################################################"
+echo
+if (( RET_FAT )); then
+	echo "WARNING:"
+	echo "You have fatal errors, refer to the pat documentation."
+	echo "URL: https://code.google.com/p/server-diagnostic-patterns/svn/trunk/perl/docs/SDP-pat.html?view=co#errors"
+	echo
+	if (( ERR_MODE )); then
+		echo "- Missing execute permission"
+	fi
+	echo "##########################################################################"
+	echo
+fi
+exit 0
+

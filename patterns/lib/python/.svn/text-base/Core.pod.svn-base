@@ -1,0 +1,326 @@
+=head1 NAME
+
+Core.py
+
+=head1 SYNOPSIS
+
+import Core
+
+=head1 DESCRIPTION
+
+The core Supportconfig Analysis Pattern library for Python
+
+=head1 CONSTANTS
+
+TEMP
+PART
+SUCC
+REC
+WARN
+CRIT
+ERROR
+
+STATUS_TEMPORARY
+STATUS_PARTIAL
+STATUS_SUCCESS
+STATUS_RECOMMEND
+STATUS_PROMOTION
+STATUS_WARNING
+STATUS_CRITICAL
+STATUS_ERROR
+
+=head1 GLOBAL VARIABLES
+
+META_CLASS
+META_CATEGORY
+META_COMPONENT
+PATTERN_ID
+PRIMARY_LINK
+OVERALL
+OVERALL_INFO
+OTHER_LINKS
+
+=head1 FUNCTIONS
+
+=head2 init(CLASS, CATEGORY, COMPONENT, ID, LINK, OVER_ALL, INFO, LINKS)
+
+=over 2
+
+=item Description
+
+Sets the global variables to the initilized values in the pattern. The values will be modified by library functions as the pattern runs.
+
+=item Requires
+
+Initial values for global variables
+
+=item Returns
+
+Nothing
+
+=item Example
+
+	META_CLASS = "SLE"
+	META_CATEGORY = "Boot"
+	META_COMPONENT = "Driver"
+	PATTERN_ID = os.path.basename(__file__)
+	PRIMARY_LINK = "META_LINK_TID"
+	OVERALL = Core.TEMP
+	OVERALL_INFO = "NOT SET"
+	OTHER_LINKS = "META_LINK_TID=https://www.suse.com/support/kb/doc.php?id=7014091|META_LINK_BUG=https://bugzilla.novell.com/show_bug.cgi?id=847858"
+
+	Core.init(META_CLASS, META_CATEGORY, META_COMPONENT, PATTERN_ID, PRIMARY_LINK, OVERALL, OVERALL_INFO, OTHER_LINKS)
+
+=back
+
+=cut
+
+=begin html
+
+<hr>
+
+=end html
+
+=head2 processOptions( )
+
+=over 2
+
+=item Description
+
+Processes pattern startup options. The only startup option currently supported is -p </path/to/extracted/supportconfig/archive>.
+
+=item Requires
+
+Nothing
+
+=item Returns
+
+Sets startup option values
+
+=item Example
+
+Since Core.processOptions is called in the Core.init function, you just need to call Core.init.
+
+	META_CLASS = "SLE"
+	META_CATEGORY = "Boot"
+	META_COMPONENT = "Driver"
+	PATTERN_ID = os.path.basename(__file__)
+	PRIMARY_LINK = "META_LINK_TID"
+	OVERALL = Core.TEMP
+	OVERALL_INFO = "NOT SET"
+	OTHER_LINKS = "META_LINK_TID=https://www.suse.com/support/kb/doc.php?id=7014091|META_LINK_BUG=https://bugzilla.novell.com/show_bug.cgi?id=847858"
+
+	Core.init(META_CLASS, META_CATEGORY, META_COMPONENT, PATTERN_ID, PRIMARY_LINK, OVERALL, OVERALL_INFO, OTHER_LINKS)
+
+=back
+
+=cut
+
+=begin html
+
+<hr>
+
+=end html
+
+=head2 printPatternResults( )
+
+=over 2
+
+=item Description
+
+The SCA Appliance expects each pattern to return a standard string to stdout. 
+This function ensures the correct string is returned. It should be in the form below.
+
+META_CLASS=<string>|META_CATEGORY=<string>|META_COMPONENT=<string>|PATTERN_ID=<pattern_filename>|PRIMARY_LINK=META_LINK_<TAG>|OVERALL=[0-5]|OVERALL_INFO=<message string>|META_LINK_<TAG>=<URL>[|META_LINK_<TAG>=<URL>]
+
+=item Requires
+
+Nothing
+
+=item Returns
+
+Pattern results to stdout.
+
+=item Example
+
+	printPatternResults()
+
+=back
+
+=cut
+
+=begin html
+
+<hr>
+
+=end html
+
+=head2 updateStatus(overAll, overAllInfo)
+
+=over 2
+
+=item Description
+
+Creates the message string customers see in the SCA Report if the pattern returns a positive result. It also sets the severity level of that message to: critical, warning, recommended, success or not included at all. If overAll is greater than the current global OVERALL value, OVERALL will be overwritten with overAll and OVERALL_INFO will be set to overAllInfo.
+
+=item Requires
+
+Status level of the message, see CONSTANTS above.
+
+A message string for the SCA Report
+
+=item Returns
+
+Nothing. However, if overAll is set to Core.ERROR, updateStatus will cause the pattern to terminate.
+
+=item Example
+
+	Core.updateStatus(Core.CRIT, "A critical error has been detected")
+
+=back
+
+=cut
+
+=begin html
+
+<hr>
+
+=end html
+
+=head2 setStatus(overAll, overAllInfo)
+
+=over 2
+
+=item Description
+
+Similiar to updateStatus where OVERALL is set to overAll and OVERALL_INFO is set to overAllInfo without any consideration to the current OVERALL status.
+
+=item Requires
+
+Status level of the message, see CONSTANTS above.
+
+A message string for the SCA Report
+
+=item Returns
+
+Nothing
+
+=item Example
+
+	Core.setStatus(Core.CRIT, "A critical error has been detected")
+
+=back
+
+=cut
+
+=begin html
+
+<hr>
+
+=end html
+
+=head2 compareVersions(version1, version2)
+
+=over 2
+
+=item Description
+
+Compares two version strings
+
+=item Requires
+
+Two version strings
+
+=item Returns
+
+Returns -1 if version1 is less than version2
+
+Returns 0 if version1 equals version2
+
+Returns 1 if version1 is greater than version2
+
+=item Example
+
+	DRIVER = 'sg'
+	DRIVER_INFO = SUSE.getDriverInfo(DRIVER)
+	BAD_VERSION = '3.5.34'
+	if( Core.compareVersions(DRIVER_INFO['version'], BAD_VERSION) <= 0 ):
+		Core.updateStatus(Core.CRIT, "Detected SCSI Driver issue, update system to fix it")
+	else:
+		Core.updateStatus(Core.ERROR, "SCSI Driver issue not found")
+
+=back
+
+=cut
+
+=begin html
+
+<hr>
+
+=end html
+
+=head2 getSection(FILE_OPEN, SECTION, CONTENT)
+
+=over 2
+
+=item Description
+
+Clips out a section of a supportconfig file and assigns each line to the CONTENT list. For example, the basic-health-check.txt file contains the following:
+
+	#==[ Command ]======================================#
+	# /usr/bin/uptime
+	10:12am  up 1 day 19:11,  18 users,  load average: 4.90, 5.03, 5.30
+
+The first line is the section header. The second commented line is the SECTION name. All lines after the SECTION name are the command output or file contents.
+
+=item Requires
+
+The supportconfig file name to open
+
+The section title in the supportconfig file to get
+
+An empty list in which to put the section lines
+
+=item Returns
+
+Populates the CONTENT list with the section lines
+
+=item Example
+
+	fileOpen = "basic-health-check.txt"
+	section = "/usr/bin/uptime"
+	content = {}
+	fifteenMinAvg = -1
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if "load average" in content[line]:
+				fifteenMinAvg = content[line].split()[-1]
+
+=back
+
+=cut
+
+=head1 CONTRIBUTORS
+
+	David Hamner (dhamner@novell.com)
+	Jason Record (jrecord@suse.com)
+
+=head1 COPYRIGHT
+
+Copyright (C) 2013 SUSE LLC
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=cut
+

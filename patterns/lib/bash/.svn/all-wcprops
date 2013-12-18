@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash
+END
+Filr.rc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/Filr.rc
+END
+SUSE_HAE.rc
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/SUSE_HAE.rc
+END
+SUSE.rc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/SUSE.rc
+END
+SUSE_Services.rc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/SUSE_Services.rc
+END
+SUSE_Virt.rc
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/SUSE_Virt.rc
+END
+OES.rc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/OES.rc
+END
+SUSE_Security.rc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/SUSE_Security.rc
+END
+pat_template.bash
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/pat_template.bash
+END
+SUSE_Network.rc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/SUSE_Network.rc
+END
+Core.rc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/631/trunk/packages/patterns/lib/bash/Core.rc
+END

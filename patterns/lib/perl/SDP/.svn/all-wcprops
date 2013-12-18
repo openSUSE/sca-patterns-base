@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/815/trunk/packages/patterns/lib/perl/SDP
+END
+OESLinux.pm
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/631/trunk/packages/patterns/lib/perl/SDP/OESLinux.pm
+END
+Core.pm
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/692/trunk/packages/patterns/lib/perl/SDP/Core.pm
+END
+Filr.pm
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/631/trunk/packages/patterns/lib/perl/SDP/Filr.pm
+END
+SUSE.pm
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/812/trunk/packages/patterns/lib/perl/SDP/SUSE.pm
+END
+eDir.pm
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/815/trunk/packages/patterns/lib/perl/SDP/eDir.pm
+END
