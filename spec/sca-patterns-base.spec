@@ -64,5 +64,5 @@ make install
 
 %changelog
 * Wed Dec 18 2013 jrecord@suse.com
-- separted into individual package
+- separated as individual RPM package
 
