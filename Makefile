@@ -70,11 +70,45 @@ rpm: clean prep
 	@rm -f $(BUILDDIR)/SOURCES/$(SRCFILE)
 	@rm -f $(BUILDDIR)/SPECS/$(PKGSPEC)
 	@ls -ls $$LS_OPTIONS
+	@echo
+	@echo "GIT Status"
+	@git status --short | grep -v '^?'
+	@echo
 
-commit:
+obsetup:
+	@echo obsetup: Setup OBS Novell:NTS:SCA/$(OBSPACKAGE)
+	@rm -rf Novell:NTS:SCA
+	@osc co Novell:NTS:SCA/$(OBSPACKAGE)
+	@rm -f Novell:NTS:SCA/$(OBSPACKAGE)/*
+	@cp spec/$(OBSPACKAGE).spec Novell:NTS:SCA/$(OBSPACKAGE)
+	@cp spec/$(OBSPACKAGE).changes Novell:NTS:SCA/$(OBSPACKAGE)
+	@cp src/$(SRCFILE).gz Novell:NTS:SCA/$(OBSPACKAGE)
+	@osc status Novell:NTS:SCA/$(OBSPACKAGE)
+
+obs: rpm
+	@echo commit: Committing changes to OBS Novell:NTS:SCA/$(OBSPACKAGE)
+	@osc up Novell:NTS:SCA/$(OBSPACKAGE)
+	@osc del Novell:NTS:SCA/$(OBSPACKAGE)/*
+	@osc ci -m "Removing old files before committing: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)" Novell:NTS:SCA/$(OBSPACKAGE)
+	@rm -f Novell:NTS:SCA/$(OBSPACKAGE)/*
+	@cp spec/$(OBSPACKAGE).spec Novell:NTS:SCA/$(OBSPACKAGE)
+	@cp spec/$(OBSPACKAGE).changes Novell:NTS:SCA/$(OBSPACKAGE)
+	@cp src/$(SRCFILE).gz Novell:NTS:SCA/$(OBSPACKAGE)
+	@osc add Novell:NTS:SCA/$(OBSPACKAGE)/*
+	@osc up Novell:NTS:SCA/$(OBSPACKAGE)
+	@osc ci -m "Committing to OBS: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)" Novell:NTS:SCA/$(OBSPACKAGE)
+	@svn up
+	@svn ci -m "Committed to OBS: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)"
+	@echo
+
+commit: rpm
 	@echo commit: Committing changes to GIT
-	@git status
 	@git commit -a -m "Committing Source: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)"
+	@echo
+
+push: commit
+	@echo push: Pushing changes to GIT
+	@git push -u origin master
 	@echo
 
 help:
@@ -82,5 +116,6 @@ help:
 	@make -v
 	@echo
 	@echo Make options for package: $(OBSPACKAGE)
-	@echo make {build, install, uninstall, dist, clean, prep, rpm[default]}
+	@echo make {build, install, uninstall, dist, clean, prep, rpm[default], obsetup, obs, commit, push}
 	@echo
+
