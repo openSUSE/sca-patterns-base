@@ -1,121 +1,99 @@
 OBSPACKAGE=sca-patterns-base
-GITDIRS='patterns tools'
-PKGSPEC=$(OBSPACKAGE).spec
-PATBASE='/var/opt/sca/patterns'
-VERSION=$(shell awk '/Version:/ { print $$2 }' spec/${PKGSPEC})
-RELEASE=$(shell awk '/Release:/ { print $$2 }' spec/${PKGSPEC})
+SVNDIRS=patterns tools
+VERSION=$(shell awk '/Version:/ { print $$2 }' spec/${OBSPACKAGE}.spec)
+RELEASE=$(shell awk '/Release:/ { print $$2 }' spec/${OBSPACKAGE}.spec)
 SRCDIR=$(OBSPACKAGE)-$(VERSION)
-SRCFILE=$(SRCDIR).tar.gz
+SRCFILE=$(SRCDIR).tar
 BUILDDIR=/usr/src/packages
 
-default: rpm
+default: build
 
-build:
-	@echo build: Building package files
-#	gzip -9f man/*
-	
-install:
-	@echo install: Creating directory structure
-	@install -d \
-		$(RPM_BUILD_ROOT)/usr/bin \
-		$(RPM_BUILD_ROOT)/$(PATBASE) \
-		$(RPM_BUILD_ROOT)/$(PATBASE)/lib \
-		$(RPM_BUILD_ROOT)/$(PATBASE)/lib/bash \
-		$(RPM_BUILD_ROOT)/$(PATBASE)/lib/python \
-		$(RPM_BUILD_ROOT)/$(PATBASE)/lib/perl/SDP \
-		$(RPM_BUILD_ROOT)/$(PATBASE)/local \
-	@echo install: Installing files
-	@install -m 644 patterns/lib/bash/* $(RPM_BUILD_ROOT)/$(PATBASE)/lib/bash
-	@install -m 644 patterns/lib/python/* $(RPM_BUILD_ROOT)/$(PATBASE)/lib/python
-	@install -m 644 patterns/lib/perl/SDP/* $(RPM_BUILD_ROOT)/$(PATBASE)/lib/perl/SDP
-	@install -m 755 tools/* $(RPM_BUILD_ROOT)/usr/bin
+install: dist
+	@echo [install]: Installing source files into build directory
+	@cp src/$(SRCFILE).gz $(BUILDDIR)/SOURCES
+	@cp spec/$(OBSPACKAGE).spec $(BUILDDIR)/SPECS
 
 uninstall:
-	@echo uninstall: Uninstalling from build directory
-	@rm -rf $(RPM_BUILD_ROOT)
+	@echo [uninstall]: Uninstalling from build directory
 	@rm -rf $(BUILDDIR)/SOURCES/$(SRCFILE).gz
-	@rm -rf $(BUILDDIR)/SPECS/$(PKGSPEC)
+	@rm -rf $(BUILDDIR)/SPECS/$(OBSPACKAGE).spec
 	@rm -rf $(BUILDDIR)/BUILD/$(SRCDIR)
-	@rm -f $(BUILDDIR)/SRPMS/$(OBSPACKAGE)*.src.rpm
-	@rm -f $(BUILDDIR)/RPMS/noarch/$(OBSPACKAGE)*.rpm
+	@rm -f $(BUILDDIR)/SRPMS/$(OBSPACKAGE)-*.src.rpm
+	@rm -f $(BUILDDIR)/RPMS/noarch/$(OBSPACKAGE)-*.noarch.rpm
 
 dist:
-	@echo dist: Creating distribution source tarball
+	@echo [dist]: Creating distribution source tarball
+	@mkdir -p src
 	@mkdir -p $(SRCDIR)
-	@for i in $(GITDIRS); do cp -a $$i $(SRCDIR); done
+	@for i in $(SVNDIRS); do cp -a $$i $(SRCDIR); done
 	@cp COPYING.GPLv2 $(SRCDIR)
-	@cp Makefile $(SRCDIR)
-	@tar zcf $(SRCFILE) $(SRCDIR)/*
+	@tar cf $(SRCFILE) $(SRCDIR)/*
+	@gzip -9f $(SRCFILE)
 	@rm -rf $(SRCDIR)
-	@mv -f $(SRCFILE) src
+	@mv -f $(SRCFILE).gz src
 
 clean: uninstall
-	@echo clean: Cleaning up make files
+	@echo [clean]: Cleaning up make files
 	@rm -rf $(OBSPACKAGE)*
-#	@for i in $(GITDIRS); do rm -f $$i/*~; done
-	@rm -f src/$(OBSPACKAGE)-*gz
+	@for i in $(SVNDIRS); do rm -f $$i/*~; done
 	@rm -f *~
+	@rm -rf src Novell:NTS:SCA
 
-prep: dist
-	@echo prep: Copying source files for build
-	@cp src/$(SRCFILE) $(BUILDDIR)/SOURCES
-	@cp spec/$(PKGSPEC) $(BUILDDIR)/SPECS
-
-rpm: clean prep
-	@echo rpm: Building RPM packages
-	@rpmbuild -ba $(BUILDDIR)/SPECS/$(PKGSPEC)
-	mv $(BUILDDIR)/SRPMS/$(OBSPACKAGE)-* .
-	mv $(BUILDDIR)/RPMS/noarch/$(OBSPACKAGE)-* .
-	@rm -rf $(BUILDDIR)/BUILD/$(SRCDIR)
-	@rm -f $(BUILDDIR)/SOURCES/$(SRCFILE)
-	@rm -f $(BUILDDIR)/SPECS/$(PKGSPEC)
-	@ls -ls $$LS_OPTIONS
+build: clean install
+	@echo [build]: Building RPM package
+	@rpmbuild -ba $(BUILDDIR)/SPECS/$(OBSPACKAGE).spec
+	@cp $(BUILDDIR)/SRPMS/$(OBSPACKAGE)-$(VERSION)-$(RELEASE).src.rpm .
+	@cp $(BUILDDIR)/RPMS/noarch/$(OBSPACKAGE)-$(VERSION)-$(RELEASE).noarch.rpm .
 	@echo
-	@echo "GIT Status"
-	@git status --short | grep -v '^?'
+	@ls -al ${LS_OPTIONS}
+	@echo
+	@git status --short
 	@echo
 
 obsetup:
-	@echo obsetup: Setup OBS Novell:NTS:SCA/$(OBSPACKAGE)
+	@echo [obsetup]: Setup OBS Novell:NTS:SCA/$(OBSPACKAGE)
 	@rm -rf Novell:NTS:SCA
 	@osc co Novell:NTS:SCA/$(OBSPACKAGE)
-	@rm -f Novell:NTS:SCA/$(OBSPACKAGE)/*
-	@cp spec/$(OBSPACKAGE).spec Novell:NTS:SCA/$(OBSPACKAGE)
-	@cp spec/$(OBSPACKAGE).changes Novell:NTS:SCA/$(OBSPACKAGE)
-	@cp src/$(SRCFILE).gz Novell:NTS:SCA/$(OBSPACKAGE)
-	@osc status Novell:NTS:SCA/$(OBSPACKAGE)
 
-obs: rpm
-	@echo commit: Committing changes to OBS Novell:NTS:SCA/$(OBSPACKAGE)
+obs: obsetup
+	@echo [obs]: Committing changes to OBS Novell:NTS:SCA/$(OBSPACKAGE)
 	@osc up Novell:NTS:SCA/$(OBSPACKAGE)
 	@osc del Novell:NTS:SCA/$(OBSPACKAGE)/*
 	@osc ci -m "Removing old files before committing: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)" Novell:NTS:SCA/$(OBSPACKAGE)
 	@rm -f Novell:NTS:SCA/$(OBSPACKAGE)/*
 	@cp spec/$(OBSPACKAGE).spec Novell:NTS:SCA/$(OBSPACKAGE)
-	@cp spec/$(OBSPACKAGE).changes Novell:NTS:SCA/$(OBSPACKAGE)
 	@cp src/$(SRCFILE).gz Novell:NTS:SCA/$(OBSPACKAGE)
 	@osc add Novell:NTS:SCA/$(OBSPACKAGE)/*
 	@osc up Novell:NTS:SCA/$(OBSPACKAGE)
 	@osc ci -m "Committing to OBS: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)" Novell:NTS:SCA/$(OBSPACKAGE)
-	@svn up
-	@svn ci -m "Committed to OBS: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)"
-	@echo
 
-commit: rpm
-	@echo commit: Committing changes to GIT
+commit: build
+	@echo [commit]: Committing changes to GIT
 	@git commit -a -m "Committing Source: $(OBSPACKAGE)-$(VERSION)-$(RELEASE)"
-	@echo
 
-push: commit
-	@echo push: Pushing changes to GIT
+push:
+	@echo [push]: Pushing changes to GIT
 	@git push -u origin master
-	@echo
 
 help:
 	@clear
-	@make -v
-	@echo
 	@echo Make options for package: $(OBSPACKAGE)
-	@echo make {build, install, uninstall, dist, clean, prep, rpm[default], obsetup, obs, commit, push}
+	@echo make [TARGETS]
+	@echo
+	@echo TARGETS
+	@echo ' clean      Uninstalls build directory and cleans up build files'
+	@echo ' install    Installs source files to the build directory'
+	@echo ' uninstall  Removes files from the build directory'
+	@echo ' dist       Creates the src directory and distribution tar ball'
+	@echo ' build      Builds the RPM packages (default)'
+	@echo ' obsetup    Checks out the OBS repository for this package'
+	@echo ' obs        Builds the packages and checks files into OBS'
+	@echo ' commit     Commits all changes to GIT'
+	@echo ' push       Pushes commits to public GIT'
+	@echo
+	@ls -l ${LS_OPTIONS}
+	@echo
+	@echo GIT Status
+	@git status --short
 	@echo
 
