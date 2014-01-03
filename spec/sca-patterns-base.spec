@@ -21,7 +21,7 @@ Vendor:       SUSE Support
 License:      GPLv2
 Autoreqprov:  on
 Version:      1.2
-Release:      1
+Release:      2
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -44,12 +44,10 @@ Authors:
 %install
 pwd;ls -la
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/usr/bin
 install -d $RPM_BUILD_ROOT/%{patdir}/local
 install -d $RPM_BUILD_ROOT/%{patlib}/bash
 install -d $RPM_BUILD_ROOT/%{patlib}/python
 install -d $RPM_BUILD_ROOT/%{patlib}/perl/SDP
-install -m 755 tools/* $RPM_BUILD_ROOT/usr/bin
 install -m 644 %{patlib}/bash/* $RPM_BUILD_ROOT/%{patlib}/bash
 install -m 644 %{patlib}/python/* $RPM_BUILD_ROOT/%{patlib}/python
 install -m 644 %{patlib}/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
@@ -67,12 +65,14 @@ install -m 644 %{patlib}/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
 %attr(-,%{patuser},%{patgrp}) %{patdir}/lib/bash/*
 %attr(-,%{patuser},%{patgrp}) %{patdir}/lib/python/*
 %attr(-,%{patuser},%{patgrp}) %{patdir}/lib/perl/SDP/*
-/usr/bin/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Thu Jan 02 2014 jrecord@suse.com
+- moved pat to sca-appliance-patdev
+
 * Wed Dec 20 2013 jrecord@suse.com
 - separated as individual RPM package
 
