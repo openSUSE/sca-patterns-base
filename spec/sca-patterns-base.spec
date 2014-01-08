@@ -67,8 +67,8 @@ install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
 %attr(-,%{patuser},%{patgrp}) %{patdir}/lib/python/*
 %attr(-,%{patuser},%{patgrp}) %{patdir}/lib/perl/SDP/*
 
-#%clean
-#rm -rf $RPM_BUILD_ROOT
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Wed Jan 08 2014 jrecord@suse.com
