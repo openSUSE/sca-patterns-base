@@ -21,7 +21,7 @@ Vendor:       SUSE Support
 License:      GPLv2
 Autoreqprov:  on
 Version:      1.2
-Release:      2
+Release:      3
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -30,7 +30,7 @@ Requires:     bash
 Requires:     perl
 %description
 Supportconfig Analysis (SCA) appliance pattern base libraries used 
-by all patterns, including pattern development tools
+by all patterns
 
 Authors:
 --------
