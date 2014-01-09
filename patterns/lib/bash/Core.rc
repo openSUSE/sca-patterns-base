@@ -1,6 +1,6 @@
 #!/bin/bash
 ##############################################################################
-#  Copyright (C) 2013 SUSE LINUX Products GmbH
+#  Copyright (C) 2013-2014 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -19,12 +19,11 @@
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Creation Date:      2013 Jun 13
-#  Last Modified Date: 2013 Jun 13
+#  Last Modified Date: 2014 Jan 09
 #
 ##############################################################################
 # Library:       Core.rc
-# Version:       0.0.1
+# Version:       0.0.2
 # Requires:      (none)
 # Description:   Provides global variables for pattern status, log level, and
 #                pattern results. I also provide common processing functions.
@@ -56,6 +55,7 @@ STATUS_PROMOTION=2
 STATUS_WARNING=3
 STATUS_CRITICAL=4
 STATUS_ERROR=5
+STATUS_IGNORE=$STATUS_ERROR
 
 LOGLEVEL_QUIET=0
 LOGLEVEL_MIN=1

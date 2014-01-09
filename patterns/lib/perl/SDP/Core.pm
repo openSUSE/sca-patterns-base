@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2008-2013 Novell, Inc.
+#  Copyright (C) 2008-2014 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -17,11 +17,8 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
-#     Douglas Kimball (dkimball@novell.com)
-#     Tregaron Bayly (tbayly@novell.com)
 #
-#  Creation Date:      2008 Dec 15
-#  Last Modified Date: 2013 Sep 27
+#  Last Modified Date: 2014 Jan 09
 #
 ##############################################################################
 
@@ -109,6 +106,7 @@ use constant STATUS_PROMOTION                 => 2;
 use constant STATUS_WARNING                   => 3;
 use constant STATUS_CRITICAL                  => 4;
 use constant STATUS_ERROR                     => 5;
+use constant STATUS_IGNORE                    => STATUS_ERROR;
 
 use constant INDEX_OVERALL                    => 5;
 use constant INDEX_OVERALL_INFO               => 6;

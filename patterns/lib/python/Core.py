@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2013 SUSE LINUX Products GmbH
+#  Copyright (C) 2013-2014 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,8 @@
 #
 #  Authors/Contributors:
 #     David Hamner (dhamner@novell.com)
-#     Modified: 2013 Oct 16
+#     Jason Record (jrecord@suse.com)
+#     Modified: 2014 Jan 09
 #
 #
 ##############################################################################
@@ -34,6 +35,7 @@ STATUS_PROMOTION = 2
 STATUS_WARNING = 3
 STATUS_CRITICAL = 4
 STATUS_ERROR = 5
+STATUS_IGNORE = STATUS_ERROR
 
 TEMP = STATUS_TEMPORARY
 PART = STATUS_PARTIAL
@@ -42,6 +44,7 @@ REC = STATUS_RECOMMEND
 WARN = STATUS_WARNING
 CRIT = STATUS_CRITICAL
 ERROR = STATUS_ERROR
+IGNORE = STATUS_IGNORE
 
 PASS = 0
 EXIT = 5

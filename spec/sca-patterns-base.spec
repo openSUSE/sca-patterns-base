@@ -22,7 +22,7 @@ Vendor:       SUSE Support
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.2
-Release:      4
+Release:      5
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -71,6 +71,9 @@ install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Thu Jan 09 2014 jrecord@suse.com
+- added STATUS_IGNORE to all Core libraries
+
 * Wed Jan 08 2014 jrecord@suse.com
 - fixed build errors
 
