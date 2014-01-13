@@ -1,3 +1,8 @@
+"""
+Supportconfig Analysis Library for Core python patterns
+
+Library of functions for creating python patterns
+"""
 ##############################################################################
 #  Copyright (C) 2013-2014 SUSE LLC
 ##############################################################################
@@ -16,10 +21,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 #  Authors/Contributors:
-#     David Hamner (dhamner@novell.com)
-#     Jason Record (jrecord@suse.com)
-#     Modified: 2014 Jan 09
+#    David Hamner (dhamner@novell.com)
+#    Jason Record (jrecord@suse.com)
 #
+#  Modified: 2014 Jan 13
 #
 ##############################################################################
 
@@ -35,7 +40,7 @@ STATUS_PROMOTION = 2
 STATUS_WARNING = 3
 STATUS_CRITICAL = 4
 STATUS_ERROR = 5
-STATUS_IGNORE = STATUS_ERROR
+STATUS_IGNORE = 6
 
 TEMP = STATUS_TEMPORARY
 PART = STATUS_PARTIAL
@@ -62,25 +67,43 @@ OTHER_LINKS = ""
 #META_LINK_<TAG>=
 
 def init(CLASS, CATEGORY, COMPONENT, ID, LINK, OVER_ALL, INFO, LINKS):
-  global META_CLASS
-  global META_CATEGORY
-  global META_COMPONENT
-  global PATTERN_ID
-  global PRIMARY_LINK
-  global OVERALL
-  global OVERALL_INFO
-  global OTHER_LINKS
-  
-  META_CLASS = CLASS
-  META_CATEGORY = CATEGORY
-  META_COMPONENT = COMPONENT
-  PATTERN_ID = ID
-  PRIMARY_LINK = LINK
-  OVERALL = OVER_ALL
-  OVERALL_INFO = INFO
-  OTHER_LINKS = LINKS
-  processOptions()
-  
+	"""
+	Initialize the pattern metadata variables and process the startup options.
+	A python pattern should initialize the metadata variables and then call
+	this function.
+
+	Args:
+		CLASS = META_CLASS
+		CATEGORY = META_CATEGORY
+		COMPONENT = META_COMPONENT
+		ID = PATTERN_ID
+		LINK = PRIMARY_LINK
+		OVER_ALL = OVERALL
+		INFO = OVERALL_INFO
+		LINKS = OTHER_LINKS
+		
+	Returns: Updates globacl variables
+	"""
+	global META_CLASS
+	global META_CATEGORY
+	global META_COMPONENT
+	global PATTERN_ID
+	global PRIMARY_LINK
+	global OVERALL
+	global OVERALL_INFO
+	global OTHER_LINKS
+
+	META_CLASS = CLASS
+	META_CATEGORY = CATEGORY
+	META_COMPONENT = COMPONENT
+	PATTERN_ID = ID
+	PRIMARY_LINK = LINK
+	OVERALL = OVER_ALL
+	OVERALL_INFO = INFO
+	OTHER_LINKS = LINKS
+	processOptions()
+
+
 def printPatternResults():
   global META_CLASS
   global META_CATEGORY
@@ -93,23 +116,16 @@ def printPatternResults():
   print "META_CLASS" + "=" + META_CLASS + "|" + "META_CATEGORY" + "=" + META_CATEGORY + "|" + "META_COMPONENT" + "=" + META_COMPONENT + "|" + "PATTERN_ID" + "=" + PATTERN_ID + "|"  + "PRIMARY_LINK" + "=" + PRIMARY_LINK + "|" + "OVERALL" + "=" + str(OVERALL) + "|"  + "OVERALL_INFO" + "=" + OVERALL_INFO + "|" + OTHER_LINKS
 
 def updateStatus(overAll, overAllInfo):
-  global OVERALL_INFO
-  global OVERALL
-  global TMP
-  global EXIT
-  syncVar()
-  if(TMP < overAll):
-    OVERALL = overAll
-  OVERALL_INFO = overAllInfo
-  if(OVERALL >= EXIT):
-    printPatternResults()
-    sys.exit()
+	global OVERALL_INFO
+	global OVERALL
+	global EXIT
+	if(OVERALL < overAll):
+		OVERALL = overAll
+		OVERALL_INFO = overAllInfo
+	if(OVERALL >= EXIT):
+		printPatternResults()
+		sys.exit()
     
-def syncVar() :
-  global OVERALL
-  global TMP
-  TMP = OVERALL
-  
 def setStatus(overAll, overAllInfo):
   global OVERALL_INFO
   global OVERALL
@@ -165,6 +181,5 @@ def compareVersions(version1, version2):
     return -1
   return 0
 
-def addBug(URL):
-  global OTHER_LINKS
-  OTHER_LINKS = OTHER_LINKS + "|META_LINK_BUG=" + URL
+
+

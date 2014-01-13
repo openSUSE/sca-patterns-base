@@ -1,7 +1,12 @@
+"""
+Supportconfig Analysis Library for Xen patterns
+
+Library of python functions used when dealing with supportconfigs from Xen
+vitural machines or their virtual machine servers.
+"""
 ##############################################################################
 #  Copyright (C) 2014 SUSE LLC
 ##############################################################################
-#  Xen library
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,25 +23,29 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
-#     Modified: 2014 Jan 13
 #
+#  Modified: 2014 Jan 13
 #
 ##############################################################################
 
 import sys, re, Core, string
 
-# Function:    isDom0
-# Description: The supportconfig is from a Xen Dom0 virtual machine server
-# Input:       None
-# Output:      True or False
-# Example:
-#
-#	if ( Xen.isDom0() ):
-#		Core.updateStatus(Core.WARN, "The server is a Xen Dom0 virtual machine server")
-#	else:
-#		Core.updateStatus(Core.ERROR, "ERROR: Not a Xen Dom0")
-#
 def isDom0():
+	"""
+	Confirms if the supportconfig is from a Xen Dom0 virtual machine server
+
+	Args: None
+	Returns: True or False
+		True - The server is a virtual machine server
+		False - The server is NOT a virutal machine server
+
+	Example:
+
+	if ( Xen.isDom0() ):
+		Core.updateStatus(Core.WARN, "The server is a Xen Dom0 virtual machine server")
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: Not a Xen Dom0")
+	"""
 	content = {}
 	if Core.getSection('basic-environment.txt', 'Virtualization', content):
 		for line in content:
@@ -46,18 +55,22 @@ def isDom0():
 	return False
 
 
-# Function:    isDomU
-# Description: The supportconfig is from a Xen DomU virtual machine
-# Input:       None
-# Output:      True or False
-# Example:
-#
-#	if ( Xen.isDomU() ):
-#		Core.updateStatus(Core.WARN, "The server is a Xen DomU virtual machine")
-#	else:
-#		Core.updateStatus(Core.ERROR, "ERROR: Not a Xen DomU")
-#
 def isDomU():
+	"""
+	Confirms if the supportconfig is from a Xen DomU virtual machine
+
+	Args: None
+	Returns: True or False
+		True - The server is a virtual machine
+		False - The server is NOT a virutal machine
+
+	Example:
+		
+	if ( Xen.isDomU() ):
+		Core.updateStatus(Core.WARN, "The server is a Xen DomU virtual machine")
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: Not a Xen DomU")
+	"""
 	content = {}
 	if Core.getSection('basic-environment.txt', 'Virtualization', content):
 		for line in content:
@@ -67,18 +80,22 @@ def isDomU():
 	return False
 
 
-# Function:    isDom0Installed
-# Description: Determines if the Xen Dom0 kernel is installed in the menu.lst available for booting
-# Input:       None
-# Output:      True or False
-# Example:
-#
-#	if ( Xen.isDom0Installed() ):
-#		Core.updateStatus(Core.WARN, "The server has Xen Dom0 installed, buy may or may not be running")
-#	else:
-#		Core.updateStatus(Core.ERROR, "ABORT: The server does not have Xen Dom0 installed")
-#
 def isDom0Installed():
+	"""
+	Determines if the Xen Dom0 kernel is installed in the menu.lst available for booting
+
+	Args: None
+	Returns: True or False
+		True - Xen virtualization is installed
+		False - Xen virtualization is NOT installed
+
+	Example:
+
+	if ( Xen.isDom0Installed() ):
+		Core.updateStatus(Core.WARN, "The server has Xen Dom0 installed, buy may or may not be running")
+	else:
+		Core.updateStatus(Core.ERROR, "ABORT: The server does not have Xen Dom0 installed")
+	"""
 	content = {}
 	if Core.getSection('boot.txt', 'menu.lst', content):
 		for line in content:
