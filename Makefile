@@ -38,6 +38,7 @@ clean: uninstall
 	@for i in $(SVNDIRS); do rm -f $$i/*~; done
 	@rm -f *~
 	@rm -rf src Novell:NTS:SCA
+	@rm -f patterns/lib/python/*.pyc
 
 build: clean install
 	@echo [build]: Building RPM package
