@@ -25,16 +25,16 @@
 
 import sys, re, Core, string
 
-# Function: isDom0
+# Function:    isDom0
 # Description: The supportconfig is from a Xen Dom0 virtual machine server
-# Input: None
-# Output: True or False
-# Usage:
+# Input:       None
+# Output:      True or False
+# Example:
 #
 #	if ( Xen.isDom0() ):
 #		Core.updateStatus(Core.WARN, "The server is a Xen Dom0 virtual machine server")
 #	else:
-#		SDP::Core::updateStatus(Core.ERROR, "ERROR: Not a Xen Dom0")
+#		Core.updateStatus(Core.ERROR, "ERROR: Not a Xen Dom0")
 #
 def isDom0():
 	content = {}
@@ -45,16 +45,17 @@ def isDom0():
 					return True
 	return False
 
-# Function: isDomU
+
+# Function:    isDomU
 # Description: The supportconfig is from a Xen DomU virtual machine
-# Input: None
-# Output: True or False
-# Usage:
+# Input:       None
+# Output:      True or False
+# Example:
 #
 #	if ( Xen.isDomU() ):
 #		Core.updateStatus(Core.WARN, "The server is a Xen DomU virtual machine")
 #	else:
-#		SDP::Core::updateStatus(Core.ERROR, "ERROR: Not a Xen DomU")
+#		Core.updateStatus(Core.ERROR, "ERROR: Not a Xen DomU")
 #
 def isDomU():
 	content = {}
@@ -65,16 +66,17 @@ def isDomU():
 					return True
 	return False
 
-# Function: isDom0Installed
+
+# Function:    isDom0Installed
 # Description: Determines if the Xen Dom0 kernel is installed in the menu.lst available for booting
-# Input: None
-# Output: True or False
-# Usage:
+# Input:       None
+# Output:      True or False
+# Example:
 #
 #	if ( Xen.isDom0Installed() ):
 #		Core.updateStatus(Core.WARN, "The server has Xen Dom0 installed, buy may or may not be running")
 #	else:
-#		SDP::Core::updateStatus(Core.ERROR, "ABORT: The server does not have Xen Dom0 installed")
+#		Core.updateStatus(Core.ERROR, "ABORT: The server does not have Xen Dom0 installed")
 #
 def isDom0Installed():
 	content = {}
