@@ -24,7 +24,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 13
+#  Modified: 2014 Jan 14
 #
 ##############################################################################
 
@@ -70,7 +70,7 @@ def init(CLASS, CATEGORY, COMPONENT, ID, LINK, OVER_ALL, INFO, LINKS):
 	"""
 	Initialize the pattern metadata variables and process the startup options.
 	A python pattern should initialize the metadata variables and then call
-	this function.
+	this function. Required at the beginning of the pattern.
 
 	Args:
 		CLASS = META_CLASS
@@ -109,6 +109,7 @@ def printPatternResults():
 	Prints to stdout the pattern result string. The pattern result string is case
 	sensitive and order dependent. This function ensures the strings is printed 
 	correctly. Call this function when the pattern had completed its processing.
+	Required at the end of the pattern.
 
 	Args: None
 	Returns: Pattern result string to stdout
@@ -132,20 +133,23 @@ def updateStatus(overAll, overAllInfo):
 	OVERALL_INFO string is displayed on the SCA Report.
 
 	Args:
-		overAll - Current pattern status. Acceptable values are: 
-			Core.TEMP
-			Core.PART
-			Core.SUCC
-			Core.REC
-			Core.WARN
-			Core.CRIT
-			Core.ERROR
-			Core.IGNORE
-		overAllInfo - Current pattern status message.
+		overAll (Integer) - Current pattern status. Acceptable values are: 
+			Core.TEMP same as Core.STATUS_TEMPORARY
+			Core.PART same as Core.STATUS_PARTIAL
+			Core.SUCC same as Core.STATUS_SUCCESS
+			Core.REC same as Core.STATUS_RECCOMENDED
+			Core.WARN same as Core.STATUS_WARNING
+			Core.CRIT same as Core.STATUS_CRITICAL
+			Core.ERROR same as Core.STATUS_ERROR
+			Core.IGNORE same as Core.STATUS_IGNORE
+		overAllInfo (String) - Current pattern status message.
 	Returns: Updates global OVERALL and OVERALL_INFO as needed
 	Example:
 
-	
+	Core.updateStatus(Core.WARN, "Found a condition suitable for a warning")
+	Core.updateStatus(Core.STATUS_CRITICAL, "Found a more severe condition, the warning is overwritten")
+	Core.updateStatus(Core.CRIT, "Another critical condition found, but ignored because critical is already set")
+	Core.updateStatus(Core.SUCC, "A successful condition found, but ignored because the severity is already at critical")
 	"""
 	global OVERALL_INFO
 	global OVERALL
@@ -159,6 +163,29 @@ def updateStatus(overAll, overAllInfo):
 
 
 def setStatus(overAll, overAllInfo):
+	"""
+	Manually overrides the OVERALL status and the OVERALL_INFO message string.
+	Regardless of the current status, this function overrides it.
+
+	Args:
+		overAll (Integer) - Current pattern status. Acceptable values are: 
+			Core.TEMP same as Core.STATUS_TEMPORARY
+			Core.PART same as Core.STATUS_PARTIAL
+			Core.SUCC same as Core.STATUS_SUCCESS
+			Core.REC same as Core.STATUS_RECCOMENDED
+			Core.WARN same as Core.STATUS_WARNING
+			Core.CRIT same as Core.STATUS_CRITICAL
+			Core.ERROR same as Core.STATUS_ERROR
+			Core.IGNORE same as Core.STATUS_IGNORE
+		overAllInfo (String) - Current pattern status message.
+	Returns: Updates global OVERALL and OVERALL_INFO as needed
+	Example:
+
+	Core.updateStatus(Core.WARN, "Found a condition suitable for a warning")
+	Core.updateStatus(Core.STATUS_CRITICAL, "Found a more severe condition, the warning is overwritten")
+	Core.updateStatus(Core.CRIT, "Another critical condition found, but ignored because critical is already set")
+	Core.setStatus(Core.SUCC, "A successful condition found, and manually set to override the previous critical condition")
+	"""
 	global OVERALL_INFO
 	global OVERALL
 	OVERALL = overAll
@@ -166,6 +193,15 @@ def setStatus(overAll, overAllInfo):
 
 
 def processOptions():
+	"""
+	A function to handle the pattern's startup options. Currently only
+	-p /path/to/extracted/archive is supported. It is the only required 
+	startup option. Required at the beginning of a pattern.
+
+	Args: None
+	Returns: global path to extracted archive
+	Example: None
+	"""
 	#find path
 	global path
 	foundPath = False
@@ -181,6 +217,28 @@ def processOptions():
 
 #get Section of supportconfig
 def getSection(FILE_OPEN, SECTION, CONTENT):
+	"""
+	Extracts a section of a supportconfig file and puts it into the CONTENT
+	list, one line per list element.
+
+	Args:
+		FILE_OPEN (String) - The supportconfig filename to open
+		SECTION (String) - The section identifier in the file
+		CONTENT (List) - Section contents line-by-line
+	Returns: True or False
+		True - The specified section was found
+		False - the section was not found
+	Example:
+
+	fileOpen = "boot.txt"
+	section = "menu.lst"
+	content = {}
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if "xen.gz" in content[line]:
+				Core.updateStatus(Core.IGNORE, "Found Xen kernel boot option"
+	Core.updateStatus(Core.WARN, "Missing Xen kernel boot option")
+	"""
 	FoundSectionTag = False
 	FoundSection = False
 	i = 0
@@ -206,6 +264,25 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 
 
 def compareVersions(version1, version2):
+	"""
+	Compares two version strings
+
+	Args:
+		version1 (String) - The first version string
+		version2 (String) - The second version string
+	Returns: -1, 0, 1
+		-1	version1 is older than version2
+		0	version1 is the same as version2
+		1	version1 is newer than version2
+	Example:
+
+	thisVersion = '1.1.0-2'
+	thatVersion = '1.2'
+	if( compareVersions(thisVersion, thatVersion) > 0 ):
+		Core.updateStatus(Core.WARN, "The version is too old, update the system")
+	else:
+		Core.updateStatus(Core.IGNORE, "The version is sufficient")
+	"""
 	if(LooseVersion(version1) > LooseVersion(version2)):
 		return 1
 	elif (LooseVersion(version1) < LooseVersion(version2)):
