@@ -22,7 +22,7 @@ Vendor:       SUSE Support
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.2
-Release:      5-140114.PTF.1
+Release:      5_140114.PTF.1
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
