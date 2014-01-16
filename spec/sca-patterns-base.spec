@@ -6,11 +6,12 @@
 # norootforbuild
 # neededforbuild
 
-%define produser sca
+%define sca_common sca
 %define prodgrp sdp
 %define patuser root
 %define patgrp root
-%define patdir /var/opt/%{produser}/patterns
+%define patdirbase /usr/lib/%{sca_common}
+%define patdir %{patdirbase}/patterns
 %define patlib %{patdir}/lib
 
 Name:         sca-patterns-base
@@ -21,8 +22,8 @@ Distribution: SUSE Linux Enterprise
 Vendor:       SUSE Support
 License:      GPL-2.0
 Autoreqprov:  on
-Version:      1.2
-Release:      6
+Version:      1.3
+Release:      0
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -55,7 +56,7 @@ install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
 
 %files
 %defattr(-,%{patuser},%{patgrp})
-%dir /var/opt/%{produser}
+%dir %{patdirbase}
 %dir %{patdir}
 %dir %{patdir}/local
 %dir %{patlib}
@@ -71,7 +72,8 @@ install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
-* Tue Jan 14 2014 jrecord@suse.com
+* Thu Jan 16 2014 jrecord@suse.com
+- relocated files according to FHS
 - added Xen.py library
 - added pydoc elements to python libraries for documentation
 - added STATUS_IGNORE to all Core libraries
