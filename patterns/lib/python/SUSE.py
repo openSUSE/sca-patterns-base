@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2014 SUSE LLC
+#  Copyright (C) 2013,2014 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@ Library of functions for creating python patterns specific to SUSE
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 13
+#  Modified: 2014 Jan 17
 #
 ##############################################################################
 
@@ -53,11 +53,10 @@ SLE12GA      = '3.999' #Update to actual version when applicable
 def packageInstalled(PackageName):
 	"""
 	The PackageName is installed on the server
-	Args:
-		PackageName - The RPM package name to check if installed
-	Returns: True or False
-		True	PackageName is installed
-		False	PackageName is NOT installed
+	Args:		PackageName - The RPM package name to check if installed
+	Returns:	True or False
+					True	PackageName is installed
+					False	PackageName is NOT installed
 	Example:
 
 	PACKAGE_NAME = 'bind'
@@ -76,13 +75,12 @@ def getRpmInfo(PackageName):
 	"""
 	Retrieves RPM package information from supportconfig files using the specified PackageName
 
-	Args:
-		PackageName - RPM package name on which you want details
-	Returns: Dictionary with keys
-		name (String) - The RPM package name
-		version (String) - The RPM package version string
-		vendor (String) - The RPM vendor
-		installTime (String) - The date and time the package was installed
+	Args:		PackageName - RPM package name on which you want details
+	Returns:	Dictionary with keys
+					name (String) - The RPM package name
+					version (String) - The RPM package version string
+					vendor (String) - The RPM vendor
+					installTime (String) - The date and time the package was installed
 	Example:
 
 	RPM_NAME = 'kernel-xen'
@@ -123,18 +121,17 @@ def getDriverInfo( DRIVER_NAME ):
 	"""
 	Gets information about the specified kernel driver
 
-	Args:
-		DRIVER_NAME - The kernel driver name on which you want details
-	Returns: Dictionary with keys
-		name (String) - The kernel driver name
-		loaded (Boolean) - True if loaded, otherwise False
-		filename (String) - The driver filename
-		version (String) - The driver's version string
-		license (String) - The driver's license string
-		description (String) - Description of the driver
-		srcversion (String) - The driver's source version
-		supported (String) - Support status string, usually yes or no
-		vermagic (String) - Version magic string
+	Args:		DRIVER_NAME - The kernel driver name on which you want details
+	Returns:	Dictionary with keys
+					name (String) - The kernel driver name
+					loaded (Boolean) - True if loaded, otherwise False
+					filename (String) - The driver filename
+					version (String) - The driver's version string
+					license (String) - The driver's license string
+					description (String) - Description of the driver
+					srcversion (String) - The driver's source version
+					supported (String) - Support status string, usually yes or no
+					vermagic (String) - Version magic string
 	Example:
 
 	DRIVER_NAME = 'zapi'
@@ -170,13 +167,12 @@ def compareRPM(package, versionString):
 	"""
 	Compares the versionString to the installed package's version
 
-	Args:
-		package - RPM package name
-		versionString - RPM package version string to compare against
-	Returns: -1, 0, 1
-		-1	if RPM_NAME older than RPM_VERSION
-		0	if RPM_NAME equals RPM_VERSION
-		1	if RPM_NAME newer than RPM_VERSION
+	Args:		package - RPM package name
+				versionString - RPM package version string to compare against
+	Returns:	-1, 0, 1
+					-1	if RPM_NAME older than RPM_VERSION
+					0	if RPM_NAME equals RPM_VERSION
+					1	if RPM_NAME newer than RPM_VERSION
 	Example:
 
 	RPM_NAME = 'mypackage'
@@ -204,12 +200,11 @@ def compareRPM(package, versionString):
 def compareKernel(kernelVerion):
 	"""
 	Checks if kernel version is newer then given version
-	Args:
-		kernelVersion - The kernel version string to compare
-	Returns: -1, 0, 1
-		-1	if Installed kernel version older than kernelVerion
-		0	if Installed kernel version equals kernelVerion
-		1	if Installed kernel version newer than kernelVerion
+	Args:		kernelVersion - The kernel version string to compare
+	Returns:	-1, 0, 1
+					-1	if Installed kernel version older than kernelVerion
+					0	if Installed kernel version equals kernelVerion
+					1	if Installed kernel version newer than kernelVerion
 	Example:
 
 	KERNEL_VERSION = '3.0.93'
@@ -234,14 +229,14 @@ def getScInfo():
 	"""
 	Gets information about the supportconfig archive itself
 
-	Args: None
-	Returns: Dictionary with keys
-		envValue (String) - Environment value
-		kernelValue (Integer) - Kernel number based on its version
-		cmdline (String) - Supportconfig's command line arguments
-		config (String) - Supportconfig configuration options
-		version (String) - Supportconfig version
-		scriptDate (String) - Supportconfig script date
+	Args:		None
+	Returns:	Dictionary with keys
+					envValue (String) - Environment value
+					kernelValue (Integer) - Kernel number based on its version
+					cmdline (String) - Supportconfig's command line arguments
+					config (String) - Supportconfig configuration options
+					version (String) - Supportconfig version
+					scriptDate (String) - Supportconfig script date
 	Example:
 
 	REQUIRED_VERSION = '2.25-173';
@@ -279,10 +274,9 @@ def getVersion():
 	"""
 	Returns the SUSE release information
 
-	Args: None
-	Returns: String
-		Version string from the SUSE release file like SLES 11 SP3
-	Example: None
+	Args:		None
+	Returns:	Version string from the SUSE release file like SLES 11 SP3
+	Example:	None
 	"""
 	content = {}
 	returnVersion = ""
@@ -310,10 +304,8 @@ def normalizeVersionName(versionString):
 	Converts versionString into its abbreviated form. For example, 
 	SUSE Linux Enterprise Server to SLES
 
-	Args:
-		versionString - A complete version string
-	Returns:
-		versionString - String with abbreviations replacing long strings
+	Args:		versionString - A complete version string
+	Returns:	versionString - String with abbreviations replacing long strings
 	Example:	None
 	"""
 	versionString = versionString.replace("SUSE Linux Enterprise Server", "SLES")

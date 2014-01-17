@@ -1,5 +1,11 @@
+"""
+Supportconfig Analysis Library for CVE generated patterns
+
+This module is used to automaticall generate CVE patterns from the 
+CVE web site and is not used for custom patterns.
+"""
 ##############################################################################
-#  Copyright (C) 2013-2014 SUSE LINUX Products GmbH
+#  Copyright (C) 2013,2014 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -17,8 +23,7 @@
 #
 #  Authors/Contributors:
 #     David Hamner (dhamner@novell.com)
-#     Modified: 2014 Jan 13
-#
+#     Modified: 2014 Jan 17
 #
 ##############################################################################
 
@@ -46,6 +51,7 @@ def checkVersion(systemName, architecture):
   return "False"
 
 
+# generates SCA pattern from CVE input string
 def cve(cveString):
   cveInfo = cveString.split(":")
   system = cveInfo[0].strip(";").split(";")

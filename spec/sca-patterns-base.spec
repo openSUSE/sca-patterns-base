@@ -7,12 +7,11 @@
 # neededforbuild
 
 %define sca_common sca
+%define patdirbase /usr/lib/%{sca_common}
+%define patdir %{patdirbase}/patterns
 %define prodgrp sdp
 %define patuser root
 %define patgrp root
-%define patdirbase /usr/lib/%{sca_common}
-%define patdir %{patdirbase}/patterns
-%define patlib %{patdir}/lib
 
 Name:         sca-patterns-base
 Summary:      Supportconfig Analysis Pattern Base Libraries
@@ -23,7 +22,7 @@ Vendor:       SUSE Support
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.3
-Release:      0
+Release:      1
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -46,33 +45,33 @@ Authors:
 %install
 pwd;ls -la
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/%{patdir}/local
-install -d $RPM_BUILD_ROOT/%{patlib}/bash
-install -d $RPM_BUILD_ROOT/%{patlib}/python
-install -d $RPM_BUILD_ROOT/%{patlib}/perl/SDP
-install -m 644 patterns/lib/bash/* $RPM_BUILD_ROOT/%{patlib}/bash
-install -m 644 patterns/lib/python/* $RPM_BUILD_ROOT/%{patlib}/python
-install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patlib}/perl/SDP
+install -d $RPM_BUILD_ROOT/%{patdirbase}/patterns/local
+install -d $RPM_BUILD_ROOT/%{patdirbase}/bash
+install -d $RPM_BUILD_ROOT/%{patdirbase}/python
+install -d $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
+install -m 644 patterns/lib/bash/* $RPM_BUILD_ROOT/%{patdirbase}/bash
+install -m 644 patterns/lib/python/* $RPM_BUILD_ROOT/%{patdirbase}/python
+install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
 
 %files
 %defattr(-,%{patuser},%{patgrp})
 %dir %{patdirbase}
 %dir %{patdir}
 %dir %{patdir}/local
-%dir %{patlib}
-%dir %{patlib}/bash
-%dir %{patlib}/python
-%dir %{patlib}/perl
-%dir %{patlib}/perl/SDP
-%attr(-,%{patuser},%{patgrp}) %{patdir}/lib/bash/*
-%attr(-,%{patuser},%{patgrp}) %{patdir}/lib/python/*
-%attr(-,%{patuser},%{patgrp}) %{patdir}/lib/perl/SDP/*
+%dir %{patdirbase}/bash
+%dir %{patdirbase}/python
+%dir %{patdirbase}/perl
+%dir %{patdirbase}/perl/SDP
+%attr(-,%{patuser},%{patgrp}) %{patdirbase}/bash/*
+%attr(-,%{patuser},%{patgrp}) %{patdirbase}/python/*
+%attr(-,%{patuser},%{patgrp}) %{patdirbase}/perl/SDP/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
-* Thu Jan 16 2014 jrecord@suse.com
+* Thu Jan 17 2014 jrecord@suse.com
+- moved libraries to root of lib directory
 - relocated files according to FHS
 - added Xen.py library
 - added pydoc elements to python libraries for documentation
