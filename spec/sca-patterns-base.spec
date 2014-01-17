@@ -49,9 +49,9 @@ install -d $RPM_BUILD_ROOT/%{patdirbase}/patterns/local
 install -d $RPM_BUILD_ROOT/%{patdirbase}/bash
 install -d $RPM_BUILD_ROOT/%{patdirbase}/python
 install -d $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
-install -m 644 patterns/lib/bash/* $RPM_BUILD_ROOT/%{patdirbase}/bash
-install -m 644 patterns/lib/python/* $RPM_BUILD_ROOT/%{patdirbase}/python
-install -m 644 patterns/lib/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
+install -m 644 libraries/bash/* $RPM_BUILD_ROOT/%{patdirbase}/bash
+install -m 644 libraries/python/* $RPM_BUILD_ROOT/%{patdirbase}/python
+install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
 
 %files
 %defattr(-,%{patuser},%{patgrp})
