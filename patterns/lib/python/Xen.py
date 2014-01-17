@@ -24,7 +24,7 @@ vitural machines or their virtual machine servers.
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 17
+#  Modified: 2014 Jan 13
 #
 ##############################################################################
 
@@ -34,10 +34,11 @@ def isDom0():
 	"""
 	Confirms if the supportconfig is from a Xen Dom0 virtual machine server
 
-	Args:		None
-	Returns:	True or False
-					True - The server is a virtual machine server
-					False - The server is NOT a virutal machine server
+	Args: None
+	Returns: True or False
+		True - The server is a virtual machine server
+		False - The server is NOT a virutal machine server
+
 	Example:
 
 	if ( Xen.isDom0() ):
@@ -58,10 +59,11 @@ def isDomU():
 	"""
 	Confirms if the supportconfig is from a Xen DomU virtual machine
 
-	Args:		None
-	Returns:	True or False
-					True - The server is a virtual machine
-					False - The server is NOT a virutal machine
+	Args: None
+	Returns: True or False
+		True - The server is a virtual machine
+		False - The server is NOT a virutal machine
+
 	Example:
 		
 	if ( Xen.isDomU() ):
@@ -82,10 +84,11 @@ def isDom0Installed():
 	"""
 	Determines if the Xen Dom0 kernel is installed in the menu.lst available for booting
 
-	Args:		None
-	Returns:	True or False
-					True - Xen virtualization is installed
-					False - Xen virtualization is NOT installed
+	Args: None
+	Returns: True or False
+		True - Xen virtualization is installed
+		False - Xen virtualization is NOT installed
+
 	Example:
 
 	if ( Xen.isDom0Installed() ):
@@ -96,9 +99,8 @@ def isDom0Installed():
 	content = {}
 	if Core.getSection('boot.txt', 'menu.lst', content):
 		for line in content:
-			if "kernel" in content[line]:
-				if 'xen.gz' in content[line]:
-					return True
+			if re.match(r'kernel.*xen.*gz', content[line]):
+				return True
 	return False
 
 
