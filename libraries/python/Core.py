@@ -24,7 +24,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 17
+#  Modified: 2014 Jan 23
 #
 ##############################################################################
 
@@ -245,7 +245,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	for line in FILE:
 		if FoundSection and not (line.startswith( '#==[' )) and not FoundSectionTag:
 			line = line.strip();
-			if not (line == ""):
+			if not (line == "") and not (line.startswith( '#' )):
 				CONTENT[i] = line
 				i = i + 1
 		if FoundSectionTag:

@@ -22,7 +22,7 @@ Vendor:       SUSE Support
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.3
-Release:      1
+Release:      2
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -70,6 +70,9 @@ install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Thu Jan 22 2014 jrecord@suse.com
+- python Core.getSection excludes commented lines
+
 * Thu Jan 17 2014 jrecord@suse.com
 - moved libraries to root of lib directory
 - relocated files according to FHS
