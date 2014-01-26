@@ -17,12 +17,10 @@ Name:         sca-patterns-base
 Summary:      Supportconfig Analysis Pattern Base Libraries
 URL:          https://bitbucket.org/g23guy/sca-patterns-base
 Group:        Documentation/SuSE
-Distribution: SUSE Linux Enterprise
-Vendor:       SUSE Support
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.3
-Release:      2
+Release:      3
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
