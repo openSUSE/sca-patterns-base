@@ -1,0 +1,29 @@
+-------------------------------------------------------------------
+Thu Jan 22 07:13:01 MST 2014 jrecord@suse.com
+
+- python Core.getSection excludes commented lines
+
+-------------------------------------------------------------------
+Thu Jan 17 07:13:01 MST 2014 jrecord@suse.com
+
+- moved libraries to root of lib directory
+- relocated files according to FHS
+- added Xen.py library
+- added pydoc elements to python libraries for documentation
+- added STATUS_IGNORE to all Core libraries
+
+-------------------------------------------------------------------
+Wed Jan 08 07:13:01 MST 2014 jrecord@suse.com
+
+- fixed build errors
+
+-------------------------------------------------------------------
+Thu Jan 02 07:13:01 MST 2014 jrecord@suse.com
+
+- moved pat to sca-appliance-patdev
+
+-------------------------------------------------------------------
+Wed Dec 20 07:13:01 MST 2013 jrecord@suse.com
+
+- separated as individual RPM package
+
