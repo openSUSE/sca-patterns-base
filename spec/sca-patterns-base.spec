@@ -23,7 +23,7 @@ Group:        Documentation/SuSE
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.3
-Release:      4
+Release:      5
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -50,6 +50,8 @@ install -d $RPM_BUILD_ROOT/%{patdirbase}/patterns/local
 install -d $RPM_BUILD_ROOT/%{patdirbase}/bash
 install -d $RPM_BUILD_ROOT/%{patdirbase}/python
 install -d $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
+install -d $RPM_BUILD_ROOT/usr/share/doc/packages/%{sca_common}
+install -m 444 libraries/COPYING.GPLv2 $RPM_BUILD_ROOT/usr/share/doc/packages/%{sca_common}
 install -m 644 libraries/bash/* $RPM_BUILD_ROOT/%{patdirbase}/bash
 install -m 644 libraries/python/* $RPM_BUILD_ROOT/%{patdirbase}/python
 install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
@@ -63,9 +65,11 @@ install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
 %dir %{patdirbase}/python
 %dir %{patdirbase}/perl
 %dir %{patdirbase}/perl/SDP
+%dir /usr/share/doc/packages/%{sca_common}
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/bash/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/python/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/perl/SDP/*
+%doc %attr(-,root,root) /usr/share/doc/packages/%{sca_common}/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
