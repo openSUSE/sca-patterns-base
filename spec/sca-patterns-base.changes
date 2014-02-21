@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Feb 21 23:08:54 UTC 2014 - jrecord@suse.com
+
+- Added SUSE.py python functions
+  getServiceDInfo, serviceHealthD
+
+-------------------------------------------------------------------
 Thu Jan 22 07:13:01 MST 2014 jrecord@suse.com
 
 - python Core.getSection excludes commented lines

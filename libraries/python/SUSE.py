@@ -24,7 +24,7 @@ Library of functions for creating python patterns specific to SUSE
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 17
+#  Modified: 2014 Feb 21
 #
 ##############################################################################
 
@@ -162,6 +162,92 @@ def getDriverInfo( DRIVER_NAME ):
 		DRIVER_DICTIONARY['loaded'] = False
 	return DRIVER_DICTIONARY
 
+def getServiceDInfo(SERVICE_NAME):
+	"""
+	Returns a dictionary of systemd service information for SERVICE
+
+	Args:		SERVICE_NAME - Name of systemd service
+	Returns:	Dictionary with keys corresponding to systemctl show SERVICE_NAME
+				output.
+	Example:
+
+	SERVICE = 'cups.service'
+	SERVICE_INFO = SUSE.getServiceDInfo(SERVICE)
+	if( SERVICE_INFO['SubState'] == 'running' ):
+		Core.updateStatus(Core.IGNORE, "Service is running: " + str(SERVICE_NAME));
+	else:
+		Core.updateStatus(Core.WARN, "Service is down: " + str(SERVICE_NAME));
+	"""
+	FILE_OPEN = "systemd.txt"
+	SECTION = "systemctl show '" + str(SERVICE_NAME) + "'"
+	SERVICED_DICTIONARY = {}
+	CONTENT = {}
+	# Get the service information section in systemd.txt.
+	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			ELEMENT = CONTENT[LINE].split('=')
+			KEY = ELEMENT[0]
+			# remove the key from the key/value pair
+			del ELEMENT[0]
+			# assign the value to the dictionary key
+			SERVICED_DICTIONARY[KEY] = '='.join(ELEMENT)
+	return SERVICED_DICTIONARY
+
+def serviceDHealth(SERVICE_NAME):
+	"""
+	Reports the health of the specified systemd service
+
+	Args:		SERVICE_NAME
+	Returns:	N/A
+	Example:	
+
+	PACKAGE = "cups"
+	SERVICE = "cups.service"
+	if( SUSE.packageInstalled(PACKAGE) ):
+		SUSE.serviceDHealth(SERVICE)
+	else:
+		Core.updateStatus(Core.ERROR, "Basic Service Health; Package Not Installed: " + str(PACKAGE))
+	"""
+	SERVICE_DICTIONARY = getServiceDInfo(SERVICE_NAME)
+	RC = 1
+	if( not SERVICE_DICTIONARY ):
+		Core.updateStatus(Core.ERROR, "Basic Service Health; Service not found: " + str(SERVICE_NAME));
+	elif( SERVICE_DICTIONARY['LoadState'] == 'not-found' ):
+		Core.updateStatus(Core.ERROR, "Basic Service Health; Service not found: " + str(SERVICE_NAME));
+	elif( 'UnitFileState' in SERVICE_DICTIONARY ):
+		if( SERVICE_DICTIONARY['UnitFileState'] == 'enabled' ):
+			if( SERVICE_DICTIONARY['SubState'] == 'running' ):
+				Core.updateStatus(Core.IGNORE, "Basic Service Health; Turned on at boot, and currently running: " + str(SERVICE_NAME));
+				RC = 0
+			else:
+				Core.updateStatus(Core.CRIT, "Basic Service Health; Turned on at boot, but not running: " + str(SERVICE_NAME));
+		elif( SERVICE_DICTIONARY['UnitFileState'] == 'disabled' ):
+			if( SERVICE_DICTIONARY['SubState'] == 'running' ):
+				Core.updateStatus(Core.WARN, "Basic Service Health; Turned off at boot, but currently running: " + str(SERVICE_NAME));
+			else:
+				Core.updateStatus(Core.IGNORE, "Basic Service Health; Turned off at boot, but not running: " + str(SERVICE_NAME));
+		elif( SERVICE_DICTIONARY['UnitFileState'] == 'static' ):
+			if( SERVICE_DICTIONARY['SubState'] == 'running' ):
+				Core.updateStatus(Core.IGNORE, "Basic Service Health; Static service is currently running: " + str(SERVICE_NAME));
+				RC = 0
+			else:
+				Core.updateStatus(Core.WARN, "Basic Service Health; Static service SubState '" + SERVICE_DICTIONARY['SubState'] + "': " + str(SERVICE_NAME));
+		else:
+			Core.updateStatus(Core.ERROR, "Basic Service Health; Unknown UnitFileState '" + str(SERVICE_DICTIONARY['UnitFileState']) + "': " + str(SERVICE_NAME));
+	else:
+		if( SERVICE_DICTIONARY['ActiveState'] == 'failed' ):
+			Core.updateStatus(Core.CRIT, "Basic Service Health; Service failure detected: " + str(SERVICE_NAME));
+		elif( SERVICE_DICTIONARY['ActiveState'] == 'inactive' ):
+			Core.updateStatus(Core.IGNORE, "Basic Service Health; Service is not active: " + str(SERVICE_NAME));
+		elif( SERVICE_DICTIONARY['ActiveState'] == 'active' ):
+			if( SERVICE_DICTIONARY['SubState'] == 'running' ):
+				Core.updateStatus(Core.IGNORE, "Basic Service Health; Service is running: " + str(SERVICE_NAME));
+			else:
+				Core.updateStatus(Core.CRIT, "Basic Service Health; Service is active, but not running: " + str(SERVICE_NAME));
+		else:
+			Core.updateStatus(Core.ERROR, "Basic Service Health; Unknown ActiveState '" + SERVICE_DICTIONARY['ActiveState'] + "': " + str(SERVICE_NAME));
+
+	return RC
 
 def compareRPM(package, versionString):
 	"""
