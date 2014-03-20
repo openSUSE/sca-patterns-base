@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 20 13:54:18 UTC 2014 - jrecord@suse.com
+
+- Removed hash pling from libraries
+
+-------------------------------------------------------------------
 Thu Mar 13 19:55:29 UTC 2014 - jrecord@suse.com
 
 - Updated copyright FSF address in all libraries
