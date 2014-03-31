@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Mar 31 21:02:47 UTC 2014 - jrecord@suse.com
+
+- Added STATUS_IGNORE to Core.pm
+
+-------------------------------------------------------------------
 Thu Mar 20 13:54:18 UTC 2014 - jrecord@suse.com
 
 - Removed hash pling from libraries

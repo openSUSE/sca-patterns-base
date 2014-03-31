@@ -17,7 +17,7 @@
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Last Modified Date: 2014 Jan 09
+#  Last Modified Date: 2014 Mar 31
 #
 ##############################################################################
 
@@ -82,6 +82,10 @@ All criteria have been checked. The critiera show the server is currently matchi
 
 Not all criteria could be checked. A fatal pattern error has occurred, like a file not found.
 
+=item STATUS_IGNORE
+
+Not all criteria could be checked. The pattern output is not applicable.
+
 =back
 
 =head2 Setting Log Levels
@@ -105,7 +109,7 @@ use constant STATUS_PROMOTION                 => 2;
 use constant STATUS_WARNING                   => 3;
 use constant STATUS_CRITICAL                  => 4;
 use constant STATUS_ERROR                     => 5;
-use constant STATUS_IGNORE                    => STATUS_ERROR;
+use constant STATUS_IGNORE                    => 6;
 
 use constant INDEX_OVERALL                    => 5;
 use constant INDEX_OVERALL_INFO               => 6;
@@ -160,8 +164,8 @@ Keeps track of the overall status. The worst case of all criteria checked is sav
 =cut
 
 our @ISA       = qw(Exporter);
-our @EXPORT    = qw(PROPERTY_NAME_CLASS PROPERTY_NAME_CATEGORY PROPERTY_NAME_COMPONENT PROPERTY_NAME_PATTERN_ID PROPERTY_NAME_PRIMARY_LINK PROPERTY_NAME_OVERALL PROPERTY_NAME_OVERALL_INFO INDEX_OVERALL INDEX_OVERALL_INFO LOGLEVEL_QUIET LOGLEVEL_DEBUG CONFIGURATION_FILE STATUS_TEMPORARY STATUS_PARTIAL STATUS_SUCCESS STATUS_RECOMMEND STATUS_PROMOTION STATUS_WARNING STATUS_CRITICAL STATUS_ERROR $OPT_LOGLEVEL $GSTATUS @PATTERN_RESULTS $PATTERN_ID $ARCH_PATH $ARCH_FILE $SRC_FILE1 $SECTION_FOUND $LINE_FOUND @SECTION $PATTERN_CONF %schealth_conf_map setStatus updateStatus loadConfFile fileOpen fileClose initFileSections listSections grepSection grepSectionLines grepSectionLinesWrap usage processOptions printDebug inSection loadFile getSection printPatternResults compareVersions convertDate2Days normalizeVersionString trimWhite ltrimWhte rtrimWhite convert2bytes fileInArchive);
-our $VERSION   = 0.1.0;
+our @EXPORT    = qw(PROPERTY_NAME_CLASS PROPERTY_NAME_CATEGORY PROPERTY_NAME_COMPONENT PROPERTY_NAME_PATTERN_ID PROPERTY_NAME_PRIMARY_LINK PROPERTY_NAME_OVERALL PROPERTY_NAME_OVERALL_INFO INDEX_OVERALL INDEX_OVERALL_INFO LOGLEVEL_QUIET LOGLEVEL_DEBUG CONFIGURATION_FILE STATUS_TEMPORARY STATUS_PARTIAL STATUS_SUCCESS STATUS_RECOMMEND STATUS_PROMOTION STATUS_WARNING STATUS_CRITICAL STATUS_ERROR STATUS_IGNORE $OPT_LOGLEVEL $GSTATUS @PATTERN_RESULTS $PATTERN_ID $ARCH_PATH $ARCH_FILE $SRC_FILE1 $SECTION_FOUND $LINE_FOUND @SECTION $PATTERN_CONF %schealth_conf_map setStatus updateStatus loadConfFile fileOpen fileClose initFileSections listSections grepSection grepSectionLines grepSectionLinesWrap usage processOptions printDebug inSection loadFile getSection printPatternResults compareVersions convertDate2Days normalizeVersionString trimWhite ltrimWhte rtrimWhite convert2bytes fileInArchive);
+our $VERSION   = 0.1.1;
 
 ##############################################################################
 # Variables
