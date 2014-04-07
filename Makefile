@@ -36,6 +36,7 @@ clean: uninstall
 	@rm -rf $(OBSPACKAGE)*
 	@for i in $(SVNDIRS); do rm -f $$i/*~; done
 	@rm -f *~
+	@rm -f libraries/python/*.pyc
 	@rm -rf src
 
 build: clean install
