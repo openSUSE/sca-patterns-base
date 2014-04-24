@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 """
 ##############################################################################
-#  Copyright (C) 2013,2014 SUSE LLC
+#  Copyright (C) 2014 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 23
+#  Modified: 2014 Apr 24
 #
 ##############################################################################
 
@@ -265,8 +265,8 @@ def compareVersions(version1, version2):
 				version2 (String) - The second version string
 	Returns:	-1, 0, 1
 					-1	version1 is older than version2
-					0	version1 is the same as version2
-					1	version1 is newer than version2
+					 0	version1 is the same as version2
+					 1	version1 is newer than version2
 	Example:
 
 	thisVersion = '1.1.0-2'
@@ -282,5 +282,45 @@ def compareVersions(version1, version2):
 		return -1
 	return 0
 
+def normalizeVersionString(versionString):
+	"""
+	Converts a version string to a list of version elements
 
+	Args:        versionString
+	Returns:     A list of version string elements
+	"""
+#	print "ORIGINAL      versionString = '" + versionString + "'"
+	versionString = re.sub("[\.,\-,_,+]", "|", versionString)
+#	print "SEPERATORS    versionString = '" + versionString + "'"
+	versionString = re.sub("([A-Z,a-z]+)", "|\\1|", versionString)
+#	print "LETTER GROUPS versionString = '" + versionString + "'"
+	versionString = versionString.lstrip("0")
+#	print "LEAD ZEROS    versionString = '" + versionString + "'"
+	versionString = re.sub("\|\|", "|", versionString)
+#	print "DOUBLE BARS   versionString = '" + versionString + "'"
+	return versionString.split("|")
 
+def compareLVersions(version1, version2):
+	"""
+	Compares the left most significant version string elements
+
+	Args:		version1 (String) - The first version string
+				version2 (String) - The second version string
+	Returns:	-1, 0, 1
+					-1	version1 is older than version2
+					 0	version1 is the same as version2
+					 1	version1 is newer than version2
+	Example:
+
+	thisVersion = '1.1.0-2'
+	thatVersion = '1.2'
+	if( compareVersions(thisVersion, thatVersion) > 0 ):
+		Core.updateStatus(Core.WARN, "The version is too old, update the system")
+	else:
+		Core.updateStatus(Core.IGNORE, "The version is sufficient")
+	"""
+	if( str(version1) == str(version2) ):
+		comparisonResult = 0
+	else:
+		comparisonResult = ''
+	return comparisonResult
