@@ -257,7 +257,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	return FoundSection
 
 
-def compareLooseVersions(version1, version2):
+def compareVersions(version1, version2):
 	"""
 	Compares two version strings using LooseVersion
 
@@ -301,7 +301,7 @@ def normalizeVersionString(versionString):
 #	print " ELEMENTS = " + str(versionString.split("|")) + "\n"
 	return versionString.split("|")
 
-def compareVersions(version1, version2):
+def compareLVersions(version1, version2):
 	"""
 	Compares the left most significant version string elements
 
