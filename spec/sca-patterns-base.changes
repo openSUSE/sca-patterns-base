@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 25 19:26:52 UTC 2014 - jrecord@suse.com
+
+- Added normalizeVersionString and compareLooseVersions in Core.py
+- Using updated compareVersions instead of compareLooseVersions
+
+-------------------------------------------------------------------
 Mon Mar 31 21:02:47 UTC 2014 - jrecord@suse.com
 
 - Added STATUS_IGNORE to Core.pm

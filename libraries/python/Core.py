@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Apr 24
+#  Modified: 2014 Apr 25
 #
 ##############################################################################
 
@@ -257,9 +257,9 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	return FoundSection
 
 
-def compareVersions(version1, version2):
+def compareLooseVersions(version1, version2):
 	"""
-	Compares two version strings
+	Compares two version strings using LooseVersion
 
 	Args:		version1 (String) - The first version string
 				version2 (String) - The second version string
@@ -271,7 +271,7 @@ def compareVersions(version1, version2):
 
 	thisVersion = '1.1.0-2'
 	thatVersion = '1.2'
-	if( compareVersions(thisVersion, thatVersion) > 0 ):
+	if( compareLooseVersions(thisVersion, thatVersion) > 0 ):
 		Core.updateStatus(Core.WARN, "The version is too old, update the system")
 	else:
 		Core.updateStatus(Core.IGNORE, "The version is sufficient")
@@ -301,7 +301,7 @@ def normalizeVersionString(versionString):
 #	print " ELEMENTS = " + str(versionString.split("|")) + "\n"
 	return versionString.split("|")
 
-def compareLVersions(version1, version2):
+def compareVersions(version1, version2):
 	"""
 	Compares the left most significant version string elements
 
@@ -337,3 +337,4 @@ def compareLVersions(version1, version2):
 			elif( str(FIRST[I]) < str(SECOND[I]) ):
 				return -1
 	return 0
+
