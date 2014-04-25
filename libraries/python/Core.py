@@ -289,15 +289,16 @@ def normalizeVersionString(versionString):
 	Args:        versionString
 	Returns:     A list of version string elements
 	"""
-#	print "ORIGINAL      versionString = '" + versionString + "'"
+#	print "ORIGINAL       versionString = '" + versionString + "'"
 	versionString = re.sub("[\.,\-,_,+]", "|", versionString)
-#	print "SEPERATORS    versionString = '" + versionString + "'"
+#	print " SEPERATORS    versionString = '" + versionString + "'"
 	versionString = re.sub("([A-Z,a-z]+)", "|\\1|", versionString)
-#	print "LETTER GROUPS versionString = '" + versionString + "'"
+#	print " LETTER GROUPS versionString = '" + versionString + "'"
 	versionString = versionString.lstrip("0")
-#	print "LEAD ZEROS    versionString = '" + versionString + "'"
+#	print " LEAD ZEROS    versionString = '" + versionString + "'"
 	versionString = re.sub("\|\|", "|", versionString)
-#	print "DOUBLE BARS   versionString = '" + versionString + "'"
+#	print " DOUBLE BARS   versionString = '" + versionString + "'"
+#	print " ELEMENTS = " + str(versionString.split("|")) + "\n"
 	return versionString.split("|")
 
 def compareLVersions(version1, version2):
@@ -319,8 +320,20 @@ def compareLVersions(version1, version2):
 	else:
 		Core.updateStatus(Core.IGNORE, "The version is sufficient")
 	"""
+	totalElements = 0
 	if( str(version1) == str(version2) ):
-		comparisonResult = 0
+		return 0
 	else:
-		comparisonResult = ''
-	return comparisonResult
+		FIRST = normalizeVersionString(version1)
+		SECOND = normalizeVersionString(version2)
+		if( len(FIRST) <= len(SECOND) ):
+			totalElements = len(FIRST)
+		else:
+			totalElements = len(SECOND)
+
+		for I in range(totalElements):
+			if( str(FIRST[I]) > str(SECOND[I]) ):
+				return 1
+			elif( str(FIRST[I]) < str(SECOND[I]) ):
+				return -1
+	return 0
