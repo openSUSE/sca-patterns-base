@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Apr 25
+#  Modified: 2014 Apr 28
 #
 ##############################################################################
 
@@ -256,8 +256,29 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	FILE.close()
 	return FoundSection
 
+def normalizeVersionString(versionString):
+	"""
+	Converts a version string to a list of version elements
 
-def compareVersions(version1, version2):
+	Args:        versionString
+	Returns:     A list of version string elements
+	"""
+#	print "normalizeVersionString ORIGINAL       versionString = '" + versionString + "'"
+	versionString = re.sub("[\.,\-,_,+]", "|", versionString)
+#	print "normalizeVersionString  SEPERATORS    versionString = '" + versionString + "'"
+	versionString = re.sub("([A-Z,a-z]+)", "|\\1|", versionString)
+#	print "normalizeVersionString  LETTER GROUPS versionString = '" + versionString + "'"
+	versionString = versionString.lstrip("0")
+#	print "normalizeVersionString  LEAD ZEROS    versionString = '" + versionString + "'"
+	versionString = re.sub("\|\|", "|", versionString)
+#	print "normalizeVersionString  DOUBLE BARS   versionString = '" + versionString + "'"
+	versionString = versionString.rstrip("|")
+#	print "normalizeVersionString  TRAILING BARS versionString = '" + versionString + "'"
+#	print "normalizeVersionString  ELEMENTS = " + str(versionString.split("|"))
+	return versionString.split("|")
+
+def compareLooseVersions(version1, version2):
+#def compareVersions(version1, version2):
 	"""
 	Compares two version strings using LooseVersion
 
@@ -282,26 +303,7 @@ def compareVersions(version1, version2):
 		return -1
 	return 0
 
-def normalizeVersionString(versionString):
-	"""
-	Converts a version string to a list of version elements
-
-	Args:        versionString
-	Returns:     A list of version string elements
-	"""
-#	print "ORIGINAL       versionString = '" + versionString + "'"
-	versionString = re.sub("[\.,\-,_,+]", "|", versionString)
-#	print " SEPERATORS    versionString = '" + versionString + "'"
-	versionString = re.sub("([A-Z,a-z]+)", "|\\1|", versionString)
-#	print " LETTER GROUPS versionString = '" + versionString + "'"
-	versionString = versionString.lstrip("0")
-#	print " LEAD ZEROS    versionString = '" + versionString + "'"
-	versionString = re.sub("\|\|", "|", versionString)
-#	print " DOUBLE BARS   versionString = '" + versionString + "'"
-#	print " ELEMENTS = " + str(versionString.split("|")) + "\n"
-	return versionString.split("|")
-
-def compareLVersions(version1, version2):
+def compareVersions(version1, version2):
 	"""
 	Compares the left most significant version string elements
 
@@ -324,17 +326,25 @@ def compareLVersions(version1, version2):
 	if( str(version1) == str(version2) ):
 		return 0
 	else:
+#		print "compareVersions: Compare " + str(version1) + " to " + str(version2)
 		FIRST = normalizeVersionString(version1)
 		SECOND = normalizeVersionString(version2)
 		if( len(FIRST) <= len(SECOND) ):
 			totalElements = len(FIRST)
 		else:
 			totalElements = len(SECOND)
-
+#		print "compareVersions: FIRST  = " + str(FIRST[0:totalElements])
+#		print "compareVersions: SECOND = " + str(SECOND[0:totalElements])
 		for I in range(totalElements):
-			if( str(FIRST[I]) > str(SECOND[I]) ):
-				return 1
-			elif( str(FIRST[I]) < str(SECOND[I]) ):
-				return -1
+			if( FIRST[I].isdigit() and SECOND[I].isdigit() ):
+				if( int(FIRST[I]) > int(SECOND[I]) ):
+					return 1
+				elif( int(FIRST[I]) < int(SECOND[I]) ):
+					return -1
+			else:
+				if( str(FIRST[I]) > str(SECOND[I]) ):
+					return 1
+				elif( str(FIRST[I]) < str(SECOND[I]) ):
+					return -1
 	return 0
 

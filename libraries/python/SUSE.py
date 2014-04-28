@@ -98,7 +98,9 @@ def getRpmInfo(PackageName):
 	if (Core.getSection(fileOpen, section, content)):
 		for line in content:
 			if content[line].startswith(PackageName + " "):
-				tmpContent = content[line].split(' ')
+				tmpContent = re.sub(' +', ' ', content[line])
+				tmpContent = tmpContent.split(' ')
+				print "getRpmInfo: tmpContent = " + str(tmpContent)
 				rpmInfo['name'] = tmpContent[0] #name
 				rpmInfo['version'] = tmpContent[-1] #version
 				tmpContent.pop(0)
@@ -106,6 +108,7 @@ def getRpmInfo(PackageName):
 				rpmInfo['vendor'] = ' '.join(tmpContent).strip() #vendor
 				#rpmInfo[1] = tmpContent[1,-2]
 
+	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
 	#get install time
 	section = "rpm -qa --last"
 	content = {}
@@ -113,6 +116,7 @@ def getRpmInfo(PackageName):
 		for line in content:
 			if content[line].startswith(PackageName):
 				rpmInfo['installTime'] = content[line].split(' ',1)[1].strip()
+	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
 	return rpmInfo
 
 
@@ -274,7 +278,9 @@ def compareRPM(package, versionString):
 	try:
 		#get package version
 		packageVersion = getRpmInfo(package)['version']
-		#print "packageVersion = " + packageVersion + ", versionString = " + versionString
+		print "compareRPM: Package                  = " + str(package)
+		print "compareRPM: Given version            = " + str(kernelVersion)
+		print "compareRPM: Version in Supportconfig = " + str(foundVersion)
 
 		return Core.compareVersions(packageVersion, versionString)
 	except Exception:
@@ -282,7 +288,7 @@ def compareRPM(package, versionString):
 		Core.updateStatus(Core.ERROR, "ERROR: Package not found")
 
 
-def compareKernel(kernelVerion):
+def compareKernel(kernelVersion):
 	"""
 	Checks if kernel version is newer then given version
 	Args:		kernelVersion - The kernel version string to compare
@@ -299,15 +305,17 @@ def compareKernel(kernelVerion):
 	else:
 		Core.updateStatus(Core.IGNORE, "Bug fixes applied for " + KERNEL_VERSION)
 	"""
-	foundVerion = ""
+	foundVersion = ""
 	fileOpen = "basic-environment.txt"
 	section = "uname -a"
 	content = {}
 	if (Core.getSection(fileOpen, section, content)):
 		for line in content:
 			if content[line] != "":
-				foundVerion = content[line].split(" ")[2]
-	return Core.compareVersions(foundVerion, kernelVerion)
+				foundVersion = content[line].split(" ")[2]
+#	print "compareKernel: Given version            = " + str(kernelVersion)
+#	print "compareKernel: Version in Supportconfig = " + str(foundVersion)
+	return Core.compareVersions(foundVersion, kernelVersion)
 
 
 def getScInfo():
@@ -353,49 +361,4 @@ def getScInfo():
 			scInfo['version'] = supportFile.readline().split(':')[-1].strip()
 			scInfo['scriptDate'] =	supportFile.readline().split(':')[-1].strip()
 	return scInfo
-
-
-def getVersion():
-	"""
-	Returns the SUSE release information
-
-	Args:		None
-	Returns:	Version string from the SUSE release file like SLES 11 SP3
-	Example:	None
-	"""
-	content = {}
-	returnVersion = ""
-	Core.getSection("basic-environment.txt", "SuSE-release", content)
-	for line in content:
-		 if "SUSE Linux Enterprise Server" in content[line]:
-			 returnVersion = "SLES"
-			 tmp = content[line].split(" ")
-			 returnVersion += " " + tmp[len(tmp) - 2]
-			 architecture = tmp[len(tmp) - 1].strip("(")
-			 architecture = architecture.strip(")")
-		 elif "SUSE Linux Enterprise Desktop" in content[line]:
-			 returnVersion = "SLED"
-			 tmp = content[line].split(" ")
-			 returnVersion += " " + tmp[len(tmp) - 2]
-			 architecture = tmp[len(tmp) - 1].strip("(")
-			 architecture = architecture.strip(")")
-		 if "PATCHLEVEL" in content[line]:
-			 returnVersion = returnVersion + " SP" + content[line].split(" = ")[1] + " " + architecture
-	return returnVersion
-
-
-def normalizeVersionName(versionString):
-	"""
-	Converts versionString into its abbreviated form. For example, 
-	SUSE Linux Enterprise Server to SLES
-
-	Args:		versionString - A complete version string
-	Returns:	versionString - String with abbreviations replacing long strings
-	Example:	None
-	"""
-	versionString = versionString.replace("SUSE Linux Enterprise Server", "SLES")
-	versionString = versionString.replace("SUSE Linux Enterprise Desktop", "SLED")
-	return versionString
-
-
 

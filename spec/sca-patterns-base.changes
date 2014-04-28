@@ -1,7 +1,10 @@
 -------------------------------------------------------------------
-Fri Apr 25 19:36:02 UTC 2014 - jrecord@suse.com
+Mon Apr 28 21:30:18 UTC 2014 - jrecord@suse.com
 
-- Added normalizeVersionString and compareLooseVersions in Core.py
+- Removed SUSE.getVersion, SUSE.normalizeVersionName and CVE.py
+  No patterns currently use or plan to this library and functions
+- Added Core.normalizeVersionString and Core.compareLooseVersions
+- Added new Core.compareVersions that checks left significant elements
 
 -------------------------------------------------------------------
 Mon Mar 31 21:02:47 UTC 2014 - jrecord@suse.com
