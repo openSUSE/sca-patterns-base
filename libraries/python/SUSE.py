@@ -100,7 +100,7 @@ def getRpmInfo(PackageName):
 			if content[line].startswith(PackageName + " "):
 				tmpContent = re.sub(' +', ' ', content[line])
 				tmpContent = tmpContent.split(' ')
-				print "getRpmInfo: tmpContent = " + str(tmpContent)
+#				print "getRpmInfo: tmpContent = " + str(tmpContent)
 				rpmInfo['name'] = tmpContent[0] #name
 				rpmInfo['version'] = tmpContent[-1] #version
 				tmpContent.pop(0)
@@ -108,7 +108,7 @@ def getRpmInfo(PackageName):
 				rpmInfo['vendor'] = ' '.join(tmpContent).strip() #vendor
 				#rpmInfo[1] = tmpContent[1,-2]
 
-	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
+#	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
 	#get install time
 	section = "rpm -qa --last"
 	content = {}
@@ -116,7 +116,7 @@ def getRpmInfo(PackageName):
 		for line in content:
 			if content[line].startswith(PackageName):
 				rpmInfo['installTime'] = content[line].split(' ',1)[1].strip()
-	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
+#	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
 	return rpmInfo
 
 
@@ -278,9 +278,9 @@ def compareRPM(package, versionString):
 	try:
 		#get package version
 		packageVersion = getRpmInfo(package)['version']
-		print "compareRPM: Package                  = " + str(package)
-		print "compareRPM: Given version            = " + str(kernelVersion)
-		print "compareRPM: Version in Supportconfig = " + str(foundVersion)
+#		print "compareRPM: Package                  = " + str(package)
+#		print "compareRPM: Given version            = " + str(kernelVersion)
+#		print "compareRPM: Version in Supportconfig = " + str(foundVersion)
 
 		return Core.compareVersions(packageVersion, versionString)
 	except Exception:

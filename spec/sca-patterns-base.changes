@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri May  2 13:55:11 UTC 2014 - jrecord@suse.com
+
+- Removed debug printouts
+
+-------------------------------------------------------------------
 Mon Apr 28 21:30:18 UTC 2014 - jrecord@suse.com
 
 - Removed SUSE.getVersion, SUSE.normalizeVersionName and CVE.py
