@@ -5,7 +5,9 @@
 # This file and all modifications and additions to the pristine
 # package are under the same license as the package itself.
 #
-
+# Source developed at:
+#  https://github.com/g23guy/sca-patterns-base
+#
 # norootforbuild
 # neededforbuild
 
@@ -18,12 +20,12 @@
 
 Name:         sca-patterns-base
 Summary:      Supportconfig Analysis Pattern Base Libraries
-URL:          https://bitbucket.org/g23guy/sca-patterns-base
+URL:          https://github.com/g23guy/sca-patterns-base
 Group:        System/Monitoring
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.3
-Release:      15
+Release:      15.1
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
