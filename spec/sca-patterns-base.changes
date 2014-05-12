@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon May 12 17:57:50 UTC 2014 - jrecord@suse.com
+
+- Fixed build errors for common directory
+
+-------------------------------------------------------------------
 Fri May  2 13:55:11 UTC 2014 - jrecord@suse.com
 
 - Removed debug printouts

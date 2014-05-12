@@ -25,7 +25,7 @@ Group:        System/Monitoring
 License:      GPL-2.0
 Autoreqprov:  on
 Version:      1.3
-Release:      15.1
+Release:      16
 Source:       %{name}-%{version}.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}
 Buildarch:    noarch
@@ -67,7 +67,7 @@ install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
 %dir %{patdirbase}/python
 %dir %{patdirbase}/perl
 %dir %{patdirbase}/perl/SDP
-%dir /usr/share/doc/packages/%{sca_common}
+%dir %attr(-,root,root) /usr/share/doc/packages/%{sca_common}
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/bash/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/python/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/perl/SDP/*
