@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu May 15 17:20:15 UTC 2014 - jrecord@suse.com
+
+- Fixed eDirStatus() in Perl eDir.pm when ndsstat is missing
+
+-------------------------------------------------------------------
 Mon May 12 17:57:50 UTC 2014 - jrecord@suse.com
 
 - Fixed build errors for common directory

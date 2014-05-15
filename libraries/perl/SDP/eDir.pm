@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2008,2009,2010-2013 Novell, Inc.
+#  Copyright (C) 2008,2009,2010-2014 Novell, Inc.
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 #     Jason Record (jrecord@suse.com)
 #     Tregaron Bayly (tbayly@novell.com)
 #
-#  Last Modified Date: 2013 Jun 13
+#  Last Modified Date: 2014 May 15
 #
 ##############################################################################
 
@@ -67,7 +67,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw(EDIR_NOT_INSTALLED EDIR_NOT_RUNNING eDirValidation eDirStatus ndsdMemoryMaximum);
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.1.1';
 
 =back
 
@@ -205,7 +205,11 @@ sub eDirStatus {
         else {
           SDP::Core::updateStatus(STATUS_ERROR, "eDirectory Pattern", "Cannot find \"$section\" section in $file");
         }
-        return %ndsstat;
+        if (%ndsstat) {
+          return %ndsstat;
+        } else {
+          SDP::Core::updateStatus(STATUS_ERROR, "Error: Invalid ndsstat in novell-edir.txt");
+        }
 }
 
 =begin html
