@@ -20,10 +20,10 @@ Library of functions for creating python patterns specific to SUSE
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
+#    David Hamner (dhamner@novell.com)
 #
-#  Modified: 2014 Feb 21
+#  Modified: 2014 Jun 05
 #
 ##############################################################################
 
@@ -180,7 +180,7 @@ def getServiceInfo(SERVICE_NAME):
 						turned on for boot. An empty string means the service is turned off at
 						boot for all runlevels.
 					RunLevel (String) - The current system runlevel
-					RunLevelStatus (Integer) - 0=Service is turned off for the current runlevel, 1=Service is turned on for the current runlevel
+					OnForRunLevel (Bool) - False=Service is turned off for the current runlevel, True=Service is turned on for the current runlevel
 	Example:
 
 	SERVICE = 'cups'
@@ -249,92 +249,66 @@ def getServiceInfo(SERVICE_NAME):
 		'Running': -1,
 		'BootLevels': '',
 		'RunLevel': '',
-		'RunLevelStatus': 0,
+		'OnForRunLevel': False,
 	}
-	if ( SERVICE_TABLE[SERVICE_NAME] ):
+	SECTION = ''
+	CONTENT = {}
+	if SERVICE_NAME in SERVICE_TABLE:
 		FILE_OPEN = SERVICE_TABLE[SERVICE_NAME]
 	else:
 		FILE_OPEN = ''
 
-	SECTION = ''
-	CONTENT = {}
-	LINE_CONTENT = {}
-	TMP = ''
-
-	if ( $FILE_OPEN ):
+	if ( FILE_OPEN ):
 		SERVICE_INFO['Running'] = 0
-		SECTION = "/etc/init.d/" + SERVICE_NAME + "status";
-		if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
-			foreach $_ (@CONTENT) {
-				next if ( /^\s*$/ );                   # Skip blank lines
-				if ( /running/i ) {
-					SDP::Core::printDebug("  getServiceInfo PROCESSING", $_);
-					$SERVICE_INFO{'running'} = 1;
-				}
-			}
-		}
-	} else {
-		$FILE_OPEN = 'basic-health-check.txt';
-		$SECTION = '/bin/ps';
-		if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
-			foreach $_ (@CONTENT) {
-				next if ( /^\s*$/ );                   # Skip blank lines
-				if ( /$SERVICE_NAME/ ) {
-					SDP::Core::printDebug("  getServiceInfo PROCESSING", $_);
-					@LINE_CONTENT = split(/\s+/, $_);
-					if ( $LINE_CONTENT[9] =~ /$SERVICE_NAME/ ) {
-						$SERVICE_INFO{'running'} = 1;
-						last;
-					}
-				}
-			}
-		}
-	}
+		SECTION = "/etc/init.d/" + SERVICE_NAME + " status"
+		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+			STATE = re.compile('running', re.IGNORECASE)
+			for LINE in CONTENT:
+				if STATE.search(CONTENT[LINE]):
+					SERVICE_INFO['Running'] = 1
+					break
+	else:
+		FILE_OPEN = 'basic-health-check.txt'
+		SECTION = '/bin/ps'
+		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+			STATE = re.compile('/' + SERVICE_NAME + '\s', re.IGNORECASE)
+			for LINE in CONTENT:
+				if STATE.search(CONTENT[LINE]):
+					SERVICE_INFO['Running'] = 1
+					break
 
-	$FILE_OPEN = 'boot.txt';
-	$SECTION = "boot.msg";
-	@CONTENT = ();
-	if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
-		foreach $_ (@CONTENT) {
-			next if ( /^\s*$/ );                   # Skip blank lines
-			if ( /Master Resource Control: runlevel (.) has been reached/i ) {
-				SDP::Core::printDebug("  getServiceInfo PROCESSING", $_);
-				$SERVICE_INFO{'runlevel'} = $1;
-			}
-		}
-	}
+	FILE_OPEN = 'boot.txt'
+	SECTION = "boot.msg"
+	CONTENT = {}
+	IDX_RUN_LEVEL = 4
+	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		STATE = re.compile("Master Resource Control: runlevel.*has been reached", re.IGNORECASE)
+		for LINE in CONTENT:
+			if STATE.search(CONTENT[LINE]):
+				SERVICE_INFO['RunLevel'] = CONTENT[LINE].strip().split()[IDX_RUN_LEVEL]
+				break
 
-	$FILE_OPEN = 'chkconfig.txt';
-	$SECTION = "chkconfig --list";
-	@CONTENT = ();
-	if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
-		foreach $_ (@CONTENT) {
-			next if ( /^\s*$/ );                   # Skip blank lines
-			if ( /^$SERVICE_NAME\s/ ) {
-				SDP::Core::printDebug("  getServiceInfo CHKCONFIG", $_);
-				@LINE_CONTENT = split(/\s+/, $_);
-				for $TMP (1..7) {
-					SDP::Core::printDebug("  getServiceInfo LINE_CONTENT[$TMP]", "$LINE_CONTENT[$TMP]");
-					if ( $LINE_CONTENT[$TMP] =~ /(\d)\:on/i ) {
-						SDP::Core::printDebug("  getServiceInfo --bootlevels", "Appending '$1' to '$SERVICE_INFO{'bootlevels'}'");
-						$SERVICE_INFO{'bootlevels'} = $SERVICE_INFO{'bootlevels'} . $1;
-						$SERVICE_INFO{'runlevelstatus'} = 1 if ( $SERVICE_INFO{'runlevel'} == $1 );
-					}
-				}
-			}
-		}
-	}
+	FILE_OPEN = 'chkconfig.txt'
+	SECTION = "chkconfig --list"
+	CONTENT = {}
+	IDX_RUN_LEVEL = 0
+	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		STATE = re.compile("^" + SERVICE_NAME + " ", re.IGNORECASE)
+		LINE_CONTENT = {}
+		for LINE in CONTENT:
+			if STATE.search(CONTENT[LINE]):
+				LINE_CONTENT = CONTENT[LINE].strip().split()
+				SWITCH = re.compile(r"\d:on", re.IGNORECASE)
+				for I in range(1, 8):
+					if SWITCH.search(LINE_CONTENT[I]):
+						RUN_LEVEL = str(LINE_CONTENT[I].split(':')[IDX_RUN_LEVEL])
+						SERVICE_INFO['BootLevels'] += RUN_LEVEL
+						if ( SERVICE_INFO['RunLevel'] == RUN_LEVEL ):
+							SERVICE_INFO['OnForRunLevel'] = True
+				break
 
-	my ($key, $value);
-	if ( $OPT_LOGLEVEL >= LOGLEVEL_DEBUG ) {
-		print('%SERVICE_INFO = ');
-		while ( ($key, $value) = each(%SERVICE_INFO) ) {
-			print("$key => \"$value\"  ");
-		}
-		print("\n");
-	}
-	SDP::Core::printDebug("< getServiceInfo", "$SERVICE_INFO{'name'}=$SERVICE_INFO{'running'}");
-	return %SERVICE_INFO;
+	print "SERVICE_INFO = " + str(SERVICE_INFO)
+	return SERVICE_INFO
 
 def getServiceHealth(SERVICE_NAME):
 	return True
