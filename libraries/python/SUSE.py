@@ -165,9 +165,6 @@ def getDriverInfo( DRIVER_NAME ):
 		DRIVER_DICTIONARY['loaded'] = False
 	return DRIVER_DICTIONARY
 
-def packageVerify(FILE_OPEN, PKG_NAME, EXCEPTION_LIST):
-	return True
-
 def getServiceInfo(SERVICE_NAME):
 	"""
 	Returns a dictionary of system service information for SERVICE_NAME
@@ -315,9 +312,6 @@ def getServiceInfo(SERVICE_NAME):
 
 #	print "SERVICE_INFO = " + str(SERVICE_INFO)
 	return SERVICE_INFO
-
-def getServiceHealth(SERVICE_NAME):
-	return True
 
 def getServiceDInfo(SERVICE_NAME):
 	"""
