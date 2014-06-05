@@ -165,9 +165,183 @@ def getDriverInfo( DRIVER_NAME ):
 		DRIVER_DICTIONARY['loaded'] = False
 	return DRIVER_DICTIONARY
 
+def packageVerify(FILE_OPEN, PKG_NAME, EXCEPTION_LIST):
+	return True
+
+def getServiceInfo(SERVICE_NAME):
+	"""
+	Returns a dictionary of system service information for SERVICE_NAME
+
+	Args:		SERVICE_NAME - Name of System V service
+	Returns:	Dictionary with keys
+					Name (String) - System V service name
+					Running (Integer) - -1=Unknown, 0=Unused or Dead, 1=Running
+					BootLevels (String) - A list of runlevel numbers in which the service is 
+						turned on for boot. An empty string means the service is turned off at
+						boot for all runlevels.
+					RunLevel (String) - The current system runlevel
+					RunLevelStatus (Integer) - 0=Service is turned off for the current runlevel, 1=Service is turned on for the current runlevel
+	Example:
+
+	SERVICE = 'cups'
+	SERVICE_INFO = SUSE.getServiceInfo(SERVICE)
+	if( SERVICE_INFO['Running'] > 0 ):
+		Core.updateStatus(Core.IGNORE, "Service is running: " + str(SERVICE_NAME));
+	else:
+		Core.updateStatus(Core.WARN, "Service is down: " + str(SERVICE_NAME));
+	"""
+	SERVICE_TABLE = {
+		'novell-afptcpd': 'novell-afp.txt',
+		'novell-ncs': 'novell-ncs.txt',
+		'auditd': 'security-audit.txt',
+		'smt': 'smt.txt',
+		'rcd': 'updates-daemon.txt',
+		'novell-zmd': 'updates-daemon.txt',
+		'novell-nss': 'novell-nss.txt',
+		'novell-smdrd': 'novell-sms.txt',
+		'novell-afptcpd': 'novell-afp.txt',
+		'novell-cifs': 'novell-cifs.txt',
+		'novell-ipsmd': 'plugin-iPrint.txt',
+		'namcd': 'novell-lum.txt',
+		'cron': 'cron.txt',
+		'atd': 'cron.txt',
+		'multipathd': 'mpio.txt',
+		'network': 'network.txt',
+		'nscd': 'network.txt',
+		'iscsitarget': 'fs-iscsi.txt',
+		'open-iscsi': 'fs-iscsi.txt',
+		'nfs': 'nfs.txt',
+		'nfsserver': 'nfs.txt',
+		'portmap': 'nfs.txt',
+		'nfslock': 'nfs.txt',
+		'xntpd': 'ntp.txt',
+		'ntp': 'ntp.txt',
+		'kdump': 'crash.txt',
+		'autofs': 'fs-autofs.txt',
+		'xend': 'xen.txt',
+		'boot.subdomain': 'security-apparmor.txt',
+		'openais': 'ha.txt',
+		'heartbeat': 'ha.txt',
+		'slpd': 'slp.txt',
+		'o2cb': 'ocfs2.txt',
+		'ocfs2': 'ocfs2.txt',
+		'smb': 'samba.txt',
+		'nmb': 'samba.txt',
+		'winbind': 'samba.txt',
+		'smartd': 'fs-smartmon.txt',
+		'ldap': 'ldap.txt',
+		'sshd': 'ssh.txt',
+		'slert': 'slert.txt',
+		'cset': 'slert.txt',
+		'cset.init.d': 'slert.txt',
+		'cups': 'print.txt',
+		'named': 'dns.txt',
+		'novell-named': 'dns.txt',
+		'dhcpd': 'dhcp.txt',
+		'owcimomd': 'cimom.txt',
+		'sfcb': 'cimom.txt',
+		'openibd': 'ib.txt',
+		'apache2': 'web.txt',
+		'novell-httpstkd': 'web.txt',
+	}
+	SERVICE_INFO = {
+		'Name': SERVICE_NAME,
+		'Running': -1,
+		'BootLevels': '',
+		'RunLevel': '',
+		'RunLevelStatus': 0,
+	}
+	if ( SERVICE_TABLE[SERVICE_NAME] ):
+		FILE_OPEN = SERVICE_TABLE[SERVICE_NAME]
+	else:
+		FILE_OPEN = ''
+
+	SECTION = ''
+	CONTENT = {}
+	LINE_CONTENT = {}
+	TMP = ''
+
+	if ( $FILE_OPEN ):
+		SERVICE_INFO['Running'] = 0
+		SECTION = "/etc/init.d/" + SERVICE_NAME + "status";
+		if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
+			foreach $_ (@CONTENT) {
+				next if ( /^\s*$/ );                   # Skip blank lines
+				if ( /running/i ) {
+					SDP::Core::printDebug("  getServiceInfo PROCESSING", $_);
+					$SERVICE_INFO{'running'} = 1;
+				}
+			}
+		}
+	} else {
+		$FILE_OPEN = 'basic-health-check.txt';
+		$SECTION = '/bin/ps';
+		if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
+			foreach $_ (@CONTENT) {
+				next if ( /^\s*$/ );                   # Skip blank lines
+				if ( /$SERVICE_NAME/ ) {
+					SDP::Core::printDebug("  getServiceInfo PROCESSING", $_);
+					@LINE_CONTENT = split(/\s+/, $_);
+					if ( $LINE_CONTENT[9] =~ /$SERVICE_NAME/ ) {
+						$SERVICE_INFO{'running'} = 1;
+						last;
+					}
+				}
+			}
+		}
+	}
+
+	$FILE_OPEN = 'boot.txt';
+	$SECTION = "boot.msg";
+	@CONTENT = ();
+	if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
+		foreach $_ (@CONTENT) {
+			next if ( /^\s*$/ );                   # Skip blank lines
+			if ( /Master Resource Control: runlevel (.) has been reached/i ) {
+				SDP::Core::printDebug("  getServiceInfo PROCESSING", $_);
+				$SERVICE_INFO{'runlevel'} = $1;
+			}
+		}
+	}
+
+	$FILE_OPEN = 'chkconfig.txt';
+	$SECTION = "chkconfig --list";
+	@CONTENT = ();
+	if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
+		foreach $_ (@CONTENT) {
+			next if ( /^\s*$/ );                   # Skip blank lines
+			if ( /^$SERVICE_NAME\s/ ) {
+				SDP::Core::printDebug("  getServiceInfo CHKCONFIG", $_);
+				@LINE_CONTENT = split(/\s+/, $_);
+				for $TMP (1..7) {
+					SDP::Core::printDebug("  getServiceInfo LINE_CONTENT[$TMP]", "$LINE_CONTENT[$TMP]");
+					if ( $LINE_CONTENT[$TMP] =~ /(\d)\:on/i ) {
+						SDP::Core::printDebug("  getServiceInfo --bootlevels", "Appending '$1' to '$SERVICE_INFO{'bootlevels'}'");
+						$SERVICE_INFO{'bootlevels'} = $SERVICE_INFO{'bootlevels'} . $1;
+						$SERVICE_INFO{'runlevelstatus'} = 1 if ( $SERVICE_INFO{'runlevel'} == $1 );
+					}
+				}
+			}
+		}
+	}
+
+	my ($key, $value);
+	if ( $OPT_LOGLEVEL >= LOGLEVEL_DEBUG ) {
+		print('%SERVICE_INFO = ');
+		while ( ($key, $value) = each(%SERVICE_INFO) ) {
+			print("$key => \"$value\"  ");
+		}
+		print("\n");
+	}
+	SDP::Core::printDebug("< getServiceInfo", "$SERVICE_INFO{'name'}=$SERVICE_INFO{'running'}");
+	return %SERVICE_INFO;
+
+def getServiceHealth(SERVICE_NAME):
+	return True
+
 def getServiceDInfo(SERVICE_NAME):
 	"""
-	Returns a dictionary of systemd service information for SERVICE
+	Returns a dictionary of systemd service information for SERVICE_NAME
 
 	Args:		SERVICE_NAME - Name of systemd service
 	Returns:	Dictionary with keys corresponding to systemctl show SERVICE_NAME
@@ -286,7 +460,6 @@ def compareRPM(package, versionString):
 	except Exception:
 		#error out...
 		Core.updateStatus(Core.ERROR, "ERROR: Package not found")
-
 
 def compareKernel(kernelVersion):
 	"""
