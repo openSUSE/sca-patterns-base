@@ -181,6 +181,7 @@ def getServiceInfo(SERVICE_NAME):
 						boot for all runlevels.
 					RunLevel (String) - The current system runlevel
 					OnForRunLevel (Bool) - False=Service is turned off for the current runlevel, True=Service is turned on for the current runlevel
+					Known (Bool) - True=The service is found in the service table, False=The service is not known and only partial information may be included.
 	Example:
 
 	SERVICE = 'cups'
@@ -191,58 +192,59 @@ def getServiceInfo(SERVICE_NAME):
 		Core.updateStatus(Core.WARN, "Service is down: " + str(SERVICE_NAME));
 	"""
 	SERVICE_TABLE = {
-		'novell-afptcpd': 'novell-afp.txt',
-		'novell-ncs': 'novell-ncs.txt',
-		'auditd': 'security-audit.txt',
-		'smt': 'smt.txt',
-		'rcd': 'updates-daemon.txt',
-		'novell-zmd': 'updates-daemon.txt',
-		'novell-nss': 'novell-nss.txt',
-		'novell-smdrd': 'novell-sms.txt',
-		'novell-afptcpd': 'novell-afp.txt',
-		'novell-cifs': 'novell-cifs.txt',
-		'novell-ipsmd': 'plugin-iPrint.txt',
-		'namcd': 'novell-lum.txt',
-		'cron': 'cron.txt',
+		'apache2': 'web.txt',
 		'atd': 'cron.txt',
-		'multipathd': 'mpio.txt',
-		'network': 'network.txt',
-		'nscd': 'network.txt',
+		'audit': 'security-audit.txt',
+		'auditd': 'security-audit.txt',
+		'autofs': 'fs-autofs.txt',
+		'boot.subdomain': 'security-apparmor.txt',
+		'cron': 'cron.txt',
+		'cset.init.d': 'slert.txt',
+		'cset': 'slert.txt',
+		'cups': 'print.txt',
+		'dhcpd': 'dhcp.txt',
+		'heartbeat': 'ha.txt',
 		'iscsitarget': 'fs-iscsi.txt',
-		'open-iscsi': 'fs-iscsi.txt',
+		'kdump': 'crash.txt',
+		'ldap': 'ldap.txt',
+		'libvirtd': 'kvm.txt',
+		'multipathd': 'mpio.txt',
+		'namcd': 'novell-lum.txt',
+		'named': 'dns.txt',
+		'network': 'network.txt',
+		'nfslock': 'nfs.txt',
 		'nfs': 'nfs.txt',
 		'nfsserver': 'nfs.txt',
-		'portmap': 'nfs.txt',
-		'nfslock': 'nfs.txt',
-		'xntpd': 'ntp.txt',
+		'nmb': 'samba.txt',
+		'novell-afptcpd': 'novell-afp.txt',
+		'novell-cifs': 'novell-cifs.txt',
+		'novell-httpstkd': 'web.txt',
+		'novell-ipsmd': 'plugin-iPrint.txt',
+		'novell-named': 'dns.txt',
+		'novell-ncs': 'novell-ncs.txt',
+		'novell-nss': 'novell-nss.txt',
+		'novell-smdrd': 'novell-sms.txt',
+		'novell-zmd': 'updates-daemon.txt',
+		'nscd': 'network.txt',
 		'ntp': 'ntp.txt',
-		'kdump': 'crash.txt',
-		'autofs': 'fs-autofs.txt',
-		'xend': 'xen.txt',
-		'boot.subdomain': 'security-apparmor.txt',
-		'openais': 'ha.txt',
-		'heartbeat': 'ha.txt',
-		'slpd': 'slp.txt',
 		'o2cb': 'ocfs2.txt',
 		'ocfs2': 'ocfs2.txt',
-		'smb': 'samba.txt',
-		'nmb': 'samba.txt',
-		'winbind': 'samba.txt',
-		'smartd': 'fs-smartmon.txt',
-		'ldap': 'ldap.txt',
-		'sshd': 'ssh.txt',
-		'slert': 'slert.txt',
-		'cset': 'slert.txt',
-		'cset.init.d': 'slert.txt',
-		'cups': 'print.txt',
-		'named': 'dns.txt',
-		'novell-named': 'dns.txt',
-		'dhcpd': 'dhcp.txt',
-		'owcimomd': 'cimom.txt',
-		'sfcb': 'cimom.txt',
+		'openais': 'ha.txt',
 		'openibd': 'ib.txt',
-		'apache2': 'web.txt',
-		'novell-httpstkd': 'web.txt',
+		'open-iscsi': 'fs-iscsi.txt',
+		'owcimomd': 'cimom.txt',
+		'portmap': 'nfs.txt',
+		'rcd': 'updates-daemon.txt',
+		'sfcb': 'cimom.txt',
+		'slert': 'slert.txt',
+		'slpd': 'slp.txt',
+		'smartd': 'fs-smartmon.txt',
+		'smb': 'samba.txt',
+		'smt': 'smt.txt',
+		'sshd': 'ssh.txt',
+		'winbind': 'samba.txt',
+		'xend': 'xen.txt',
+		'xntpd': 'ntp.txt',
 	}
 	SERVICE_INFO = {
 		'Name': SERVICE_NAME,
@@ -250,11 +252,15 @@ def getServiceInfo(SERVICE_NAME):
 		'BootLevels': '',
 		'RunLevel': '',
 		'OnForRunLevel': False,
+		'Known': False,
 	}
 	SECTION = ''
 	CONTENT = {}
+	COMPLETE_CONFIRMED = 4
+	COMPLETE_COUNT = 0
 	if SERVICE_NAME in SERVICE_TABLE:
 		FILE_OPEN = SERVICE_TABLE[SERVICE_NAME]
+		SERVICE_INFO['Known'] = True
 	else:
 		FILE_OPEN = ''
 
@@ -271,7 +277,7 @@ def getServiceInfo(SERVICE_NAME):
 		FILE_OPEN = 'basic-health-check.txt'
 		SECTION = '/bin/ps'
 		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-			STATE = re.compile('/' + SERVICE_NAME + '\s', re.IGNORECASE)
+			STATE = re.compile('/' + SERVICE_NAME + '\s|$', re.IGNORECASE)
 			for LINE in CONTENT:
 				if STATE.search(CONTENT[LINE]):
 					SERVICE_INFO['Running'] = 1
@@ -307,7 +313,7 @@ def getServiceInfo(SERVICE_NAME):
 							SERVICE_INFO['OnForRunLevel'] = True
 				break
 
-	print "SERVICE_INFO = " + str(SERVICE_INFO)
+#	print "SERVICE_INFO = " + str(SERVICE_INFO)
 	return SERVICE_INFO
 
 def getServiceHealth(SERVICE_NAME):
