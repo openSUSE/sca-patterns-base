@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 06
+#  Modified: 2014 Jun 07
 #
 ##############################################################################
 
@@ -325,34 +325,31 @@ def getHostInfo():
 
 	Args:		None
 	Returns:	Dictionary with keys
-					Architecture (String) - 
-					Hostname (String) - 
-					KernelVersion (String) - 
-					Distro (String) - 
-					PatchLevel (Integer) - 
-					OES (Boolean) - 
-					OESVersion (Integer) - 
-					OESMajor (Integer) - 
-					OESDistrO (String) - 
-					OESPatchLevel
-					OESBuild (String) - 
+		'Hostname': '',
+		'KernelVersion': '',
+		'Architecture': '',
+		'Distro': '',
+		'DistroVersion': -1,
+		'DistroPatchLevel': -1,
+		'OES': False,
+		'OESDistro': '',
+		'OESVersion': -1,
+		'OESPatchLevel': -1,
 	Example:
 
 	"""
 	FILE_OPEN = "basic-environment.txt"
 	SERVER_DICTIONARY = { 
-		'Architecture': '',
 		'Hostname': '',
 		'KernelVersion': '',
+		'Architecture': '',
 		'Distro': '',
-		'DistroMajor': -1,
+		'DistroVersion': -1,
 		'DistroPatchLevel': -1,
 		'OES': False,
-		'OESVersion': '',
 		'OESDistro': '',
-		'OESMajor': -1,
+		'OESVersion': -1,
 		'OESPatchLevel': -1,
-		'OESBuild': '',
 	}
 	CONTENT = {}
 	IDX_HOSTNAME = 1
@@ -389,7 +386,7 @@ def getHostInfo():
 				SERVER_DICTIONARY['Architecture'] = re.split(r'\(|\)', LINE)[IDX_ARCH].strip()
 			else:
 				if LINE.startswith('VERSION'):
-					SERVER_DICTIONARY['DistroMajor'] = LINE.split('=')[IDX_VALUE].strip()
+					SERVER_DICTIONARY['DistroVersion'] = LINE.split('=')[IDX_VALUE].strip()
 				elif LINE.startswith('PATCHLEVEL'):
 					SERVER_DICTIONARY['DistroPatchLevel'] = LINE.split('=')[IDX_VALUE].strip()
 		elif NOVELL_FOUND:
@@ -400,7 +397,7 @@ def getHostInfo():
 				SERVER_DICTIONARY['OES'] = True
 			else:
 				if LINE.startswith('VERSION'):
-					SERVER_DICTIONARY['OESMajor'] = LINE.split('=')[IDX_VALUE].strip().split('.')[0]
+					SERVER_DICTIONARY['OESVersion'] = LINE.split('=')[IDX_VALUE].strip().split('.')[0]
 				elif LINE.startswith('PATCHLEVEL'):
 					SERVER_DICTIONARY['OESPatchLevel'] = LINE.split('=')[IDX_VALUE].strip()
 		elif "uname -a" in LINE:
@@ -411,7 +408,7 @@ def getHostInfo():
 			NOVELL_FOUND = True
 
 	FILE.close()
-	print "SERVER_DICTIONARY = " + str(SERVER_DICTIONARY)
+#	print "SERVER_DICTIONARY = " + str(SERVER_DICTIONARY)
 	return SERVER_DICTIONARY
 	
 
