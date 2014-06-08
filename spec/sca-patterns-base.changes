@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Jun  5 23:24:19 UTC 2014 - jrecord@suse.com
+Sat Jun  7 19:17:31 UTC 2014 - jrecord@suse.com
 
+- Added getHostInfo to SUSE.py
 - Added getSeriveInfo to SUSE.py
 
 -------------------------------------------------------------------

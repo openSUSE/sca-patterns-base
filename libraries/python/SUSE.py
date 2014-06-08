@@ -23,13 +23,15 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (dhamner@novell.com)
 #
-#  Modified: 2014 Jun 05
+#  Modified: 2014 Jun 07
 #
 ##############################################################################
 
-import sys, re, Core, string
+import sys
+import re
+import Core
+import string
 
-global path
 SLE9GA       = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
 SLE9SP2      = '2.6.5-7.191'
@@ -464,6 +466,108 @@ def compareKernel(kernelVersion):
 #	print "compareKernel: Version in Supportconfig = " + str(foundVersion)
 	return Core.compareVersions(foundVersion, kernelVersion)
 
+def getHostInfo():
+	"""
+	Gets information about the server
+
+	Args:		None
+	Returns:	Dictionary with keys
+		Hostname (String) - The hostname of the server analyzed
+		KernelVersion (String) - The running kernel version
+		Architecture (String)
+		Distro (String) - The name of the distribution
+		DistroVersion (Int) - The major distribution version number
+		DistroPatchLevel (Int) - The distribution service patch level
+		OES (Boolean) - True if OES installed, False if no OES found
+		OESDistro (String) The name of the OES distribution
+		OESVersion (Int) - The major OES version number
+		OESPatchLevel (Int) - The OES service patch level
+	Example:
+
+	import re
+	SERVER = SUSE.getHostInfo()
+	SLE = re.compile("SUSE Linux Enterprise Server", re.IGNORECASE)
+	if SLE.search(SERVER['Distro']):
+		if( SERVER['DistroVersion'] >= 11 and SERVER['DistroVersion'] < 12 ):
+			Core.updateStatus(Core.WARN, "SLES" + str(SERVER['DistroVersion']) + "SP" + str(SERVER['DistroPatchLevel']) + ": Testing required")
+		else:
+			Core.updateStatus(Core.IGNORE, "SLES" + str(SERVER['DistroVersion']) + "SP" + str(SERVER['DistroPatchLevel']) + ": No Testing Needed")
+	else:
+		Core.updateStatus(Core.ERROR, SERVER['Distro'] + ": Invalid Distribution for Test Case")
+	"""
+	SERVER_DICTIONARY = { 
+		'Hostname': '',
+		'KernelVersion': '',
+		'Architecture': '',
+		'Distro': '',
+		'DistroVersion': -1,
+		'DistroPatchLevel': 0,
+		'OES': False,
+		'OESDistro': '',
+		'OESVersion': -1,
+		'OESPatchLevel': 0,
+	}
+	FILE_OPEN = "basic-environment.txt"
+	CONTENT = {}
+	IDX_HOSTNAME = 1
+	IDX_VERSION = 2
+	IDX_PATCHLEVEL = 1
+	IDX_DISTRO = 0
+	IDX_ARCH = 1
+	IDX_VALUE = 1
+	UNAME_FOUND = False
+	RELEASE_FOUND = False
+	NOVELL_FOUND = False
+	RELEASE_LINE = 0
+
+	try:
+		FILE = open(Core.path + "/" + FILE_OPEN)
+	except Exception, error:
+#		print "Error opening file: %s" % error
+		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)
+
+	RELEASE = re.compile('/etc/SuSE-release', re.IGNORECASE)
+	NOVELL = re.compile('/etc/novell-release', re.IGNORECASE)
+	OES = re.compile('Open Enterprise Server', re.IGNORECASE)
+	for LINE in FILE:
+		if UNAME_FOUND:
+			SERVER_DICTIONARY['Hostname'] = LINE.split()[IDX_HOSTNAME]
+			SERVER_DICTIONARY['KernelVersion'] = LINE.split()[IDX_VERSION]
+			UNAME_FOUND = False
+		elif RELEASE_FOUND:
+			RELEASE_LINE += 1
+			if "#==[" in LINE:
+				RELEASE_FOUND = False
+			elif ( RELEASE_LINE == 1 ):
+				SERVER_DICTIONARY['Distro'] = re.split(r'\(|\)', LINE)[IDX_DISTRO].strip()
+				SERVER_DICTIONARY['Architecture'] = re.split(r'\(|\)', LINE)[IDX_ARCH].strip()
+			else:
+				if LINE.startswith('VERSION'):
+					SERVER_DICTIONARY['DistroVersion'] = int(LINE.split('=')[IDX_VALUE].strip())
+				elif LINE.startswith('PATCHLEVEL'):
+					SERVER_DICTIONARY['DistroPatchLevel'] = int(LINE.split('=')[IDX_VALUE].strip())
+		elif NOVELL_FOUND:
+			if "#==[" in LINE:
+				NOVELL_FOUND = False
+			elif OES.search(LINE):
+				SERVER_DICTIONARY['OESDistro'] = re.split(r'\(|\)', LINE)[IDX_DISTRO].strip()
+				SERVER_DICTIONARY['OES'] = True
+			else:
+				if LINE.startswith('VERSION'):
+					SERVER_DICTIONARY['OESVersion'] = int(LINE.split('=')[IDX_VALUE].strip().split('.')[0])
+				elif LINE.startswith('PATCHLEVEL'):
+					SERVER_DICTIONARY['OESPatchLevel'] = int(LINE.split('=')[IDX_VALUE].strip())
+		elif "uname -a" in LINE:
+			UNAME_FOUND = True
+		elif RELEASE.search(LINE):
+			RELEASE_FOUND = True
+		elif NOVELL.search(LINE):
+			NOVELL_FOUND = True
+
+	FILE.close()
+#	print "SERVER_DICTIONARY = " + str(SERVER_DICTIONARY)
+	return SERVER_DICTIONARY
+	
 
 def getScInfo():
 	"""
@@ -486,7 +590,6 @@ def getScInfo():
 	else:
 		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
 	"""
-	global path
 	scInfo = {}
 	fileOpen = "supportconfig.txt"
 	section = "supportutils"
@@ -507,5 +610,6 @@ def getScInfo():
 			supportFile.readline()
 			scInfo['version'] = supportFile.readline().split(':')[-1].strip()
 			scInfo['scriptDate'] =	supportFile.readline().split(':')[-1].strip()
+#	print "scInfo = " + str(scInfo)
 	return scInfo
 

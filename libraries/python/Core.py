@@ -23,11 +23,13 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Apr 28
+#  Modified: 2014 Jun 06
 #
 ##############################################################################
 
-import sys, re, distutils.version
+import sys
+import re
+import distutils.version
 from distutils.version import LooseVersion
 global path
 
