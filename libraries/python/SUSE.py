@@ -325,32 +325,42 @@ def getHostInfo():
 
 	Args:		None
 	Returns:	Dictionary with keys
-		'Hostname': '',
-		'KernelVersion': '',
-		'Architecture': '',
-		'Distro': '',
-		'DistroVersion': -1,
-		'DistroPatchLevel': -1,
-		'OES': False,
-		'OESDistro': '',
-		'OESVersion': -1,
-		'OESPatchLevel': -1,
+		Hostname (String) - The hostname of the server analyzed
+		KernelVersion (String) - The running kernel version
+		Architecture (String)
+		Distro (String) - The name of the distribution
+		DistroVersion (Int) - The major distribution version number
+		DistroPatchLevel (Int) - The distribution service patch level
+		OES (Boolean) - True if OES installed, False if no OES found
+		OESDistro (String) The name of the OES distribution
+		OESVersion (Int) - The major OES version number
+		OESPatchLevel (Int) - The OES service patch level
 	Example:
 
+	import re
+	SERVER = SUSE.getHostInfo()
+	SLE = re.compile("SUSE Linux Enterprise Server", re.IGNORECASE)
+	if SLE.search(SERVER['Distro']):
+		if( SERVER['DistroVersion'] >= 11 and SERVER['DistroVersion'] < 12 ):
+			Core.updateStatus(Core.WARN, "SLES" + str(SERVER['DistroVersion']) + "SP" + str(SERVER['DistroPatchLevel']) + ": Testing required")
+		else:
+			Core.updateStatus(Core.IGNORE, "SLES" + str(SERVER['DistroVersion']) + "SP" + str(SERVER['DistroPatchLevel']) + ": No Testing Needed")
+	else:
+		Core.updateStatus(Core.ERROR, SERVER['Distro'] + ": Invalid Distribution for Test Case")
 	"""
-	FILE_OPEN = "basic-environment.txt"
 	SERVER_DICTIONARY = { 
 		'Hostname': '',
 		'KernelVersion': '',
 		'Architecture': '',
 		'Distro': '',
 		'DistroVersion': -1,
-		'DistroPatchLevel': -1,
+		'DistroPatchLevel': 0,
 		'OES': False,
 		'OESDistro': '',
 		'OESVersion': -1,
-		'OESPatchLevel': -1,
+		'OESPatchLevel': 0,
 	}
+	FILE_OPEN = "basic-environment.txt"
 	CONTENT = {}
 	IDX_HOSTNAME = 1
 	IDX_VERSION = 2
@@ -386,9 +396,9 @@ def getHostInfo():
 				SERVER_DICTIONARY['Architecture'] = re.split(r'\(|\)', LINE)[IDX_ARCH].strip()
 			else:
 				if LINE.startswith('VERSION'):
-					SERVER_DICTIONARY['DistroVersion'] = LINE.split('=')[IDX_VALUE].strip()
+					SERVER_DICTIONARY['DistroVersion'] = int(LINE.split('=')[IDX_VALUE].strip())
 				elif LINE.startswith('PATCHLEVEL'):
-					SERVER_DICTIONARY['DistroPatchLevel'] = LINE.split('=')[IDX_VALUE].strip()
+					SERVER_DICTIONARY['DistroPatchLevel'] = int(LINE.split('=')[IDX_VALUE].strip())
 		elif NOVELL_FOUND:
 			if "#==[" in LINE:
 				NOVELL_FOUND = False
@@ -397,9 +407,9 @@ def getHostInfo():
 				SERVER_DICTIONARY['OES'] = True
 			else:
 				if LINE.startswith('VERSION'):
-					SERVER_DICTIONARY['OESVersion'] = LINE.split('=')[IDX_VALUE].strip().split('.')[0]
+					SERVER_DICTIONARY['OESVersion'] = int(LINE.split('=')[IDX_VALUE].strip().split('.')[0])
 				elif LINE.startswith('PATCHLEVEL'):
-					SERVER_DICTIONARY['OESPatchLevel'] = LINE.split('=')[IDX_VALUE].strip()
+					SERVER_DICTIONARY['OESPatchLevel'] = int(LINE.split('=')[IDX_VALUE].strip())
 		elif "uname -a" in LINE:
 			UNAME_FOUND = True
 		elif RELEASE.search(LINE):
