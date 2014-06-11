@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Jun 10 21:44:06 UTC 2014 - jrecord@suse.com
+Wed Jun 11 18:07:02 UTC 2014 - jrecord@suse.com
 
+- Updated HAE.py documentation
 - Added HAE.py with getSBDInfo 
 - Added getHostInfo to SUSE.py
 - Added getSeriveInfo to SUSE.py

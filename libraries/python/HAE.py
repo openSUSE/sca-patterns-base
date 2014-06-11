@@ -2,7 +2,7 @@
 Supportconfig Analysis Library for HAE python patterns
 
 Library of functions for creating python patterns specific to 
-High Availability Extension (HAE)
+High Availability Extension (HAE) clustering
 """
 ##############################################################################
 #  Copyright (C) 2014 SUSE LLC
@@ -34,21 +34,33 @@ import string
 
 def getSBDInfo():
 	"""
-	Gets split brain detection partition information. SBD partitions with invalid sbd dump output are ignored.
+	Gets split brain detection partition information. Gathers information from the sbd dump command and the /etc/sysconfig/sbd file. SBD partitions with invalid sbd dump output are ignored.
 
 	Args:		None
 	Returns:	List of SBD Dictionaries with keys
-		SBD_DEVICE (String) - 
-		SBD_OPTS (String) - 
-		Version (Int) - 
-		Slots (Int) - 
-		Sector_Size (Int) - 
-		Watchdog (Int) - 
-		Allocate (Int) - 
-		Loop (Int) - 
-		MsgWait (Int) - 
+		SBD_DEVICE (String) - The /etc/sysconfig/sbd SDB_DEVICE variable. This value applies to all and is stored with each sbd device.
+		SBD_OPTS (String) - The /etc/sysconfig/sbd SBD_OPTS variable
+		Version (Int) - The SDB header version string
+		Slots (Int) - The number of SDB slots
+		Sector_Size (Int) - The SBD sector size
+		Watchdog (Int) - The SBD watchdog timeout
+		Allocate (Int) - The SBD allocate timeout
+		Loop (Int) - The SBD loop timeout
+		MsgWait (Int) - The SBD msgwait timeout
 	Example:
 
+	SBD = HAE.getSBDInfo()
+	MSG_WAIT_MIN = 300
+	MSG_WAIT_OVERALL = MSG_WAIT_MIN
+	# Find the smallest msgwait value among the SBD partitions
+	for I in range(0, len(SBD)):
+		if( SBD[I]['MsgWait'] < MSG_WAIT_OVERALL ):
+			MSG_WAIT_OVERALL = SBD[I]['MsgWait']
+	# See if the smallest msgwait is less than the minimum required
+	if ( MSG_WAIT_OVERALL < MSG_WAIT_MIN ):
+		Core.updateStatus(Core.REC, "Consider changing your msgwait time")
+	else:
+		Core.updateStatus(Core.IGNORE, "The msgwait is sufficient")
 	"""
 	SBD_LIST = []
 	SBD_DICTIONARY = { 
