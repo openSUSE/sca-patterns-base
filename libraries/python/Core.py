@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 06
+#  Modified: 2014 Jun 12
 #
 ##############################################################################
 
@@ -215,15 +215,14 @@ def processOptions():
 #get Section of supportconfig
 def getSection(FILE_OPEN, SECTION, CONTENT):
 	"""
-	Extracts a section of a supportconfig file and puts it into the CONTENT
-	list, one line per list element.
+	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT list, one line per list element.
 
 	Args:		FILE_OPEN (String) - The supportconfig filename to open
-				SECTION (String) - The section identifier in the file
+				SECTION (String) - The section regex identifier in the file
 				CONTENT (List) - Section contents line-by-line
 	Returns:	True or False
 					True - The specified section was found
-					False - the section was not found
+					False - The section was not found
 	Example:
 
 	fileOpen = "boot.txt"
@@ -235,26 +234,34 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 				Core.updateStatus(Core.IGNORE, "Found Xen kernel boot option"
 	Core.updateStatus(Core.WARN, "Missing Xen kernel boot option")
 	"""
-	FoundSectionTag = False
 	FoundSection = False
+	SectionName = ''
 	i = 0
 	global path
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception:
-		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN)
+	except Exception, error:
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + error)
+	SectionTag = re.compile(SECTION)
 	for line in FILE:
-		if FoundSection and not (line.startswith( '#==[' )) and not FoundSectionTag:
-			line = line.strip();
-			if not (line == "") and not (line.startswith( '#' )):
+		line = line.strip("\n")
+		if line.startswith('#==['):
+#			print "\nNew Section Start"
+			SectionName = ''
+			if FoundSection:
+				break
+		elif ( SectionName == '' ):
+#			print " SectionName before = " + str(line)
+			SectionName = re.sub('^#', '', line).strip()
+#			print " SectionName after  = " + str(SectionName)
+		elif SectionTag.search(SectionName):
+			if( len(line) > 0 ):
+#				print " Appending line = '" + str(line) + "'"
 				CONTENT[i] = line
-				i = i + 1
-		if FoundSectionTag:
-			if SECTION in line:
+				i += 1
 				FoundSection = True
-				FoundSectionTag = False
-		if line.startswith( '#==[' ):
-			FoundSectionTag = True
+#			else:
+#				print " Skipping empty line"
 	FILE.close()
 	return FoundSection
 
