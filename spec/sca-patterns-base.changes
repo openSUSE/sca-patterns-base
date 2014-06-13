@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Fri Jun 13 16:27:06 UTC 2014 - jrecord@suse.com
+Fri Jun 13 16:43:26 UTC 2014 - jrecord@suse.com
 
 - Fixed TypeError: cannot concatenate 'str' and 'exceptions.IOError' objects
 
