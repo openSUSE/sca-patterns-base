@@ -294,6 +294,26 @@ def getConfigCTDB():
 	return CONFIG
 
 def getNodeInfo():
+	"""
+	Gets cluster node information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <node> and <node_state> tags. Only key/value pairs within the <node_state> tag itself are included, not tags below <node_state>.
+
+	Args:		None
+	Returns:	List of Node Dictionaries with keys
+		*All key:value pairs are derived from the configuration file itself.
+	Example:
+
+	STANDBY_NODES = []
+	NODES = HAE.getNodeInfo()
+	for I in range(0, len(NODES)):
+		# If the standby key exists in the node dictionary, proceed
+		if "standby" in NODES[I]:
+			if 'on' in NODES[I]['standby']:
+				STANDBY_NODES.append(NODES[I]['uname'])
+	if( len(STANDBY_NODES) > 0 ):
+		Core.updateStatus(Core.WARN, "Node(s) in standby mode: " + " ".join(STANDBY_NODES))
+	else:
+		Core.updateStatus(Core.IGNORE, "Node(s) in standby mode: None")
+	"""
 	IDX_KEY = 0
 	IDX_VALUE = 1
 	NODES = []
@@ -314,7 +334,7 @@ def getNodeInfo():
 					inNode = False
 				elif "<nvpair" in CONTENT[LINE]:
 					PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
-					print "cibadmin PARTS = " + str(PARTS)
+#					print "cibadmin PARTS = " + str(PARTS)
 					KEY = ''
 					VALUE = ''
 					for I in range(0, len(PARTS)):
@@ -328,7 +348,7 @@ def getNodeInfo():
 				if endNode.search(DATA):
 					inNode = False
 				PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
-				print "cibadmin PARTS = " + str(PARTS)
+#				print "cibadmin PARTS = " + str(PARTS)
 				KEY = ''
 				VALUE = ''
 				for I in range(0, len(PARTS)):
@@ -343,7 +363,7 @@ def getNodeInfo():
 			if "<node_state " in CONTENT[LINE]:
 				NODE_STATE = {}
 				PARTS = re.sub('<node_state|/>$|>$|"', '', CONTENT[LINE]).strip().split()
-				print "cibadmin PARTS = " + str(PARTS)
+#				print "cibadmin PARTS = " + str(PARTS)
 				KEY = ''
 				VALUE = ''
 				for I in range(0, len(PARTS)):
@@ -368,7 +388,7 @@ def getNodeInfo():
 						inNode = False
 					elif "<nvpair" in CONTENT[LINE]:
 						PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
-						print "cib.xml PARTS = " + str(PARTS)
+#						print "cib.xml PARTS = " + str(PARTS)
 						KEY = ''
 						VALUE = ''
 						for I in range(0, len(PARTS)):
@@ -382,7 +402,7 @@ def getNodeInfo():
 					if endNode.search(DATA):
 						inNode = False
 					PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
-					print "cib.xml PARTS = " + str(PARTS)
+#					print "cib.xml PARTS = " + str(PARTS)
 					KEY = ''
 					VALUE = ''
 					for I in range(0, len(PARTS)):
@@ -393,8 +413,8 @@ def getNodeInfo():
 						NODES.append(dict(NODE))
 						NODE = {}
 		
-	print "NODES = " + str(len(NODES))
-	for I in range(0, len(NODES)):
-		print "NODE[" + str(I) + "] =  " + str(NODES[I]) + "\n"
+#	print "NODES = " + str(len(NODES))
+#	for I in range(0, len(NODES)):
+#		print "NODE[" + str(I) + "] =  " + str(NODES[I]) + "\n"
 	return NODES
 
