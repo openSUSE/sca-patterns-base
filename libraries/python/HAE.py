@@ -258,3 +258,38 @@ def getClusterConfig():
 #	print "CLUSTER =      " + str(CLUSTER)
 	return CLUSTER
 
+def getConfigCTDB():
+	"""
+	Gets the /etc/sysconfig/ctdb configuration file information.
+
+	Args:		None
+	Returns:	Dictionary with keys
+		*All key:value pairs are derived from the configuration file itself. All key names are changed to uppercase. All values are left as is.
+	Example:
+
+	CTDB = HAE.getConfigCTDB()
+	if 'CTDB_START_AS_DISABLED' in CTDB:
+		if "yes" in CTDB['CTDB_START_AS_DISABLED']:
+			Core.updateStatus(Core.IGNORE, "CTDB Starting disabled")
+		else:
+			Core.updateStatus(Core.WARN, "CTDB Starting enabled")
+	else:
+		Core.updateStatus(Core.ERROR, "Missing CTDB_START_AS_DISABLED, ignoring test")
+	"""
+	IDX_KEY = 0
+	IDX_VALUE = 1
+	CONFIG = {}
+	FILE_OPEN = 'ha.txt'
+	SECTION = "/etc/sysconfig/ctdb"
+	CONTENT = {}
+	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			if( len(CONTENT[LINE]) > 0 ):
+				KEY = CONTENT[LINE].split('=')[IDX_KEY].strip().upper()
+				VALUE = re.sub('"|\'', '', CONTENT[LINE].split('=')[IDX_VALUE]).strip()
+				CONFIG.update({KEY:VALUE})
+
+#	print "CONFIG Size = " + str(len(CONFIG))
+#	print "CONFIG =      " + str(CONFIG)
+	return CONFIG
+
