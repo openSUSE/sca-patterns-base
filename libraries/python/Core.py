@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 12
+#  Modified: 2014 Jun 13
 #
 ##############################################################################
 
@@ -241,7 +241,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
 	except Exception, error:
-		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + error)
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
 	for line in FILE:
 		line = line.strip("\n")
