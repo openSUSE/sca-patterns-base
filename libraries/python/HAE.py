@@ -23,7 +23,7 @@ High Availability Extension (HAE) clustering
 #  Authors/Contributors:
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 10
+#  Modified: 2014 Jun 11
 #
 ##############################################################################
 
@@ -164,107 +164,4 @@ def getSBDInfo():
 #	print "SBD_LIST Size = " + str(len(SBD_LIST))
 #	print "SBD_LIST = " + str(SBD_LIST) + "\n"
 	return SBD_LIST
-
-def getClusterConfig():
-	IDX_KEY = 0
-	IDX_VALUE = 1
-	CLUSTER = {}
-	FILE_OPEN = 'ha.txt'
-	CONTENT = {}
-	inBootStrap = False
-	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
-		for LINE in CONTENT:
-			if inBootStrap:
-				if "</cluster_property_set>" in CONTENT[LINE]:
-					inBootStrap = False
-					break
-				elif "<nvpair" in CONTENT[LINE]:
-					PARTS = CONTENT[LINE].replace('"', '').strip().split()
-					KEY = ''
-					VALUE = ''
-					for I in range(0, len(PARTS)):
-						if "name" in PARTS[I].lower():
-							KEY = PARTS[I].split("=")[IDX_KEY]
-						elif "value" in PARTS[I].lower():
-							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
-					CLUSTER.update({KEY:VALUE})
-			elif "<cluster_property_set" in CONTENT[LINE]:
-				inBootStrap = True
-	if ( len(CLUSTER) == 0 ):
-		print "Source: cib.xml"
-		if Core.getSection(FILE_OPEN, '/cib.xml$', CONTENT):
-			for LINE in CONTENT:
-				if inBootStrap:
-					if "</cluster_property_set>" in CONTENT[LINE]:
-						inBootStrap = False
-						break
-					elif "<nvpair" in CONTENT[LINE]:
-						PARTS = CONTENT[LINE].replace('"', '').strip().split()
-						KEY = ''
-						VALUE = ''
-						for I in range(0, len(PARTS)):
-							if "name" in PARTS[I].lower():
-								KEY = PARTS[I].split("=")[IDX_KEY]
-							elif "value" in PARTS[I].lower():
-								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
-						CLUSTER.update({KEY:VALUE})
-				elif "<cluster_property_set" in CONTENT[LINE]:
-					inBootStrap = True
-	else:
-		print "Source: cibadmin -Q"
-
-	print "CLUSTER Size = " + str(len(CLUSTER))
-	print "CLUSTER =      " + str(CLUSTER)
-	return CLUSTER
-
-def getNodeInfo():
-	IDX_KEY = 0
-	IDX_VALUE = 1
-	NODE = {}
-	NODES = []
-	FILE_OPEN = 'ha.txt'
-	CONTENT = {}
-	inNodes = False
-	inNode = False
-	endNode = re.compile("/>$")
-	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
-		for LINE in CONTENT:
-			if inNodes:
-				if "</nodes>" in CONTENT[LINE]:
-					inNodes = False
-					break
-				elif inNode:
-					if "</node>" in CONTENT[LINE]:
-						inNode = False
-						NODES.append(dict(NODE))
-					else:
-						PARTS = re.sub('"|<node|>|/>.*$', '', CONTENT[LINE]).strip().split()
-						print "inNode PARTS = " + str(PARTS)
-						KEY = ''
-						VALUE = ''
-						for I in range(0, len(PARTS)):
-							KEY = PARTS[I].split("=")[IDX_KEY]
-							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
-							NODE.update({KEY:VALUE})
-				elif "<node " in CONTENT[LINE]:
-					inNode = True
-					#No instance attributes on the node, it ends in /> so process it now
-					if endNode.search(CONTENT[LINE]):
-						NODE = {}
-						PARTS = re.sub('"|<node|>|/>.*$', '', CONTENT[LINE]).strip().split()
-						print "endNode PARTS = " + str(PARTS)
-						KEY = ''
-						VALUE = ''
-						for I in range(0, len(PARTS)):
-							KEY = PARTS[I].split("=")[IDX_KEY]
-							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
-							NODE.update({KEY:VALUE})
-						NODES.append(dict(NODE))
-						inNode = False
-			elif "<nodes>" in CONTENT[LINE]:
-				inNodes = True
-
-	print "NODES Size = " + str(len(NODES))
-	print "NODES =      " + str(NODES)
-	return NODES
 
