@@ -23,7 +23,7 @@ High Availability Extension (HAE) clustering
 #  Authors/Contributors:
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 12
+#  Modified: 2014 Jun 13
 #
 ##############################################################################
 
@@ -78,7 +78,6 @@ def getSBDInfo():
 	FILE_OPEN = "ha.txt"
 	CONTENT = {}
 	IDX_PATH = 3
-	IDX_KEY = 0
 	IDX_VALUE = 1
 	SYSCONFIG_FOUND = False
 	DUMP_FOUND = False
@@ -166,7 +165,24 @@ def getSBDInfo():
 	return SBD_LIST
 
 def getClusterConfig():
-	IDX_KEY = 0
+	"""
+	Gets cluster configuration information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <cib> and <cluster_property_set> tags.
+
+	Args:		None
+	Returns:	Dictionary with keys
+		connected-to-cluster (Boolean) - True if the node is connected to the cluster, and False if not
+		*All other key:value pairs are derived from the cluster configuration file itself
+	Example:
+
+	CLUSTER = HAE.getClusterConfig()
+	if 'stonith-enabled' in CLUSTER:
+		if "true" in CLUSTER['stonith-enabled']:
+			Core.updateStatus(Core.IGNORE, "Stonith is enabled for the cluster")
+		else:
+			Core.updateStatus(Core.WARN, "Stonith is disabled for the cluster")
+	else:
+		Core.updateStatus(Core.WARN, "Stonith is disabled by default for the cluster")
+	"""
 	IDX_VALUE = 1
 	CLUSTER = {}
 	FILE_OPEN = 'ha.txt'
@@ -180,7 +196,7 @@ def getClusterConfig():
 					break
 				elif "<nvpair" in CONTENT[LINE]:
 					PARTS = CONTENT[LINE].replace('"', '').strip().split()
-					print "cibadmin PARTS = " + str(PARTS)
+#					print "cibadmin PARTS = " + str(PARTS)
 					KEY = ''
 					VALUE = ''
 					for I in range(0, len(PARTS)):
@@ -191,11 +207,54 @@ def getClusterConfig():
 					CLUSTER.update({KEY:VALUE})
 			elif "<cluster_property_set" in CONTENT[LINE]:
 				inBootStrap = True
+				CLUSTER.update({'connected-to-cluster':True})
 			elif "<cib " in CONTENT[LINE]:
-				PARTS = re.sub('<cib|>', '', CONTENT[LINE]).strip().split()
-				print "cibadmin PARTS = " + str(PARTS)
+				PARTS = re.sub('<cib|>', '', CONTENT[LINE]).strip().split('"')
+				if( len(PARTS[-1]) == 0 ):
+					del(PARTS[-1])
+#				print "cibadmin PARTS = " + str(PARTS)
+				key = re.compile("=$")
+				for I in range(0, len(PARTS)):
+					if key.search(PARTS[I]):
+						KEY_STR = PARTS[I].strip().strip('=')
+					else:
+						CLUSTER.update({KEY_STR:PARTS[I].strip()})
 
-	print "CLUSTER Size = " + str(len(CLUSTER))
-	print "CLUSTER =      " + str(CLUSTER)
+	if( len(CLUSTER) == 0 ):
+		#The node is not connected to the cluster, so get the information from the cib.xml file
+		if Core.getSection(FILE_OPEN, 'cib.xml$', CONTENT):
+			for LINE in CONTENT:
+				if inBootStrap:
+					if "</cluster_property_set>" in CONTENT[LINE]:
+						inBootStrap = False
+						break
+					elif "<nvpair" in CONTENT[LINE]:
+						PARTS = CONTENT[LINE].replace('"', '').strip().split()
+#						print "cib.xml PARTS = " + str(PARTS)
+						KEY = ''
+						VALUE = ''
+						for I in range(0, len(PARTS)):
+							if "name" in PARTS[I].lower():
+								KEY = PARTS[I].split("=")[IDX_VALUE]
+							elif "value" in PARTS[I].lower():
+								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+						CLUSTER.update({KEY:VALUE})
+				elif "<cluster_property_set" in CONTENT[LINE]:
+					inBootStrap = True
+					CLUSTER.update({'connected-to-cluster':False})
+				elif "<cib " in CONTENT[LINE]:
+					PARTS = re.sub('<cib|>', '', CONTENT[LINE]).strip().split('"')
+					if( len(PARTS[-1]) == 0 ):
+						del(PARTS[-1])
+#					print "cib.xml PARTS = " + str(PARTS)
+					key = re.compile("=$")
+					for I in range(0, len(PARTS)):
+						if key.search(PARTS[I]):
+							KEY_STR = PARTS[I].strip().strip('=')
+						else:
+							CLUSTER.update({KEY_STR:PARTS[I].strip()})
+
+#	print "CLUSTER Size = " + str(len(CLUSTER))
+#	print "CLUSTER =      " + str(CLUSTER)
 	return CLUSTER
 
