@@ -293,3 +293,108 @@ def getConfigCTDB():
 #	print "CONFIG =      " + str(CONFIG)
 	return CONFIG
 
+def getNodeInfo():
+	IDX_KEY = 0
+	IDX_VALUE = 1
+	NODES = []
+	NODE = {}
+	FILE_OPEN = 'ha.txt'
+	CONTENT = {}
+	inNode = False
+	endNode = re.compile('/>$')
+	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
+		for LINE in CONTENT:
+			DATA = CONTENT[LINE].strip()
+			if "</nodes>" in DATA:
+				break
+			elif inNode:
+				if "</node>" in DATA:
+					NODES.append(dict(NODE))
+					NODE = {}
+					inNode = False
+				elif "<nvpair" in CONTENT[LINE]:
+					PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
+					print "cibadmin PARTS = " + str(PARTS)
+					KEY = ''
+					VALUE = ''
+					for I in range(0, len(PARTS)):
+						if "name" in PARTS[I].lower():
+							KEY = PARTS[I].split("=")[IDX_VALUE]
+						elif "value" in PARTS[I].lower():
+							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+					NODE.update({KEY:VALUE})
+			elif "<node " in DATA:
+				inNode = True
+				if endNode.search(DATA):
+					inNode = False
+				PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
+				print "cibadmin PARTS = " + str(PARTS)
+				KEY = ''
+				VALUE = ''
+				for I in range(0, len(PARTS)):
+					KEY = PARTS[I].split("=")[IDX_KEY]
+					VALUE = PARTS[I].split("=")[IDX_VALUE]
+					NODE.update({KEY:VALUE})
+				if not inNode:
+					NODES.append(dict(NODE))
+					NODE = {}
+		# Add node state information on connected nodes
+		for LINE in CONTENT:
+			if "<node_state " in CONTENT[LINE]:
+				NODE_STATE = {}
+				PARTS = re.sub('<node_state|/>$|>$|"', '', CONTENT[LINE]).strip().split()
+				print "cibadmin PARTS = " + str(PARTS)
+				KEY = ''
+				VALUE = ''
+				for I in range(0, len(PARTS)):
+					KEY = PARTS[I].split("=")[IDX_KEY]
+					VALUE = PARTS[I].split("=")[IDX_VALUE]
+					NODE_STATE.update({KEY:VALUE})
+				for I in range(0, len(NODES)):
+					if( NODES[I]['id'] == NODE_STATE['id'] ):
+						NODES[I].update(NODE_STATE)
+						break
+
+	if( len(NODES) == 0 ):
+		if Core.getSection(FILE_OPEN, 'cib.xml$', CONTENT):
+			for LINE in CONTENT:
+				DATA = CONTENT[LINE].strip()
+				if "</nodes>" in DATA:
+					break
+				elif inNode:
+					if "</node>" in DATA:
+						NODES.append(dict(NODE))
+						NODE = {}
+						inNode = False
+					elif "<nvpair" in CONTENT[LINE]:
+						PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
+						print "cib.xml PARTS = " + str(PARTS)
+						KEY = ''
+						VALUE = ''
+						for I in range(0, len(PARTS)):
+							if "name" in PARTS[I].lower():
+								KEY = PARTS[I].split("=")[IDX_VALUE]
+							elif "value" in PARTS[I].lower():
+								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+						NODE.update({KEY:VALUE})
+				elif "<node " in DATA:
+					inNode = True
+					if endNode.search(DATA):
+						inNode = False
+					PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
+					print "cib.xml PARTS = " + str(PARTS)
+					KEY = ''
+					VALUE = ''
+					for I in range(0, len(PARTS)):
+						KEY = PARTS[I].split("=")[IDX_KEY]
+						VALUE = PARTS[I].split("=")[IDX_VALUE]
+						NODE.update({KEY:VALUE})
+					if not inNode:
+						NODES.append(dict(NODE))
+						NODE = {}
+		
+	print "NODES = " + str(len(NODES))
+	for I in range(0, len(NODES)):
+		print "NODE[" + str(I) + "] =  " + str(NODES[I]) + "\n"
+	return NODES
+
