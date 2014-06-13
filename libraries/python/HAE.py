@@ -23,7 +23,7 @@ High Availability Extension (HAE) clustering
 #  Authors/Contributors:
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 11
+#  Modified: 2014 Jun 12
 #
 ##############################################################################
 
@@ -164,4 +164,58 @@ def getSBDInfo():
 #	print "SBD_LIST Size = " + str(len(SBD_LIST))
 #	print "SBD_LIST = " + str(SBD_LIST) + "\n"
 	return SBD_LIST
+
+def getClusterConfig():
+	IDX_KEY = 0
+	IDX_VALUE = 1
+	CLUSTER = {}
+	FILE_OPEN = 'ha.txt'
+	CONTENT = {}
+	inBootStrap = False
+	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
+		for LINE in CONTENT:
+			if inBootStrap:
+				if "</cluster_property_set>" in CONTENT[LINE]:
+					inBootStrap = False
+					break
+				elif "<nvpair" in CONTENT[LINE]:
+					PARTS = CONTENT[LINE].replace('"', '').strip().split()
+					print "cibadmin PARTS = " + str(PARTS)
+					KEY = ''
+					VALUE = ''
+					for I in range(0, len(PARTS)):
+						if "name" in PARTS[I].lower():
+							KEY = PARTS[I].split("=")[IDX_KEY]
+						elif "value" in PARTS[I].lower():
+							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+					CLUSTER.update({KEY:VALUE})
+			elif "<cluster_property_set" in CONTENT[LINE]:
+				inBootStrap = True
+	if ( len(CLUSTER) == 0 ):
+		print "Source: cib.xml"
+		if Core.getSection(FILE_OPEN, '/cib.xml$', CONTENT):
+			for LINE in CONTENT:
+				if inBootStrap:
+					if "</cluster_property_set>" in CONTENT[LINE]:
+						inBootStrap = False
+						break
+					elif "<nvpair" in CONTENT[LINE]:
+						PARTS = CONTENT[LINE].replace('"', '').strip().split()
+						print "cib.xml PARTS = " + str(PARTS)
+						KEY = ''
+						VALUE = ''
+						for I in range(0, len(PARTS)):
+							if "name" in PARTS[I].lower():
+								KEY = PARTS[I].split("=")[IDX_KEY]
+							elif "value" in PARTS[I].lower():
+								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+						CLUSTER.update({KEY:VALUE})
+				elif "<cluster_property_set" in CONTENT[LINE]:
+					inBootStrap = True
+	else:
+		print "Source: cibadmin -Q"
+
+	print "CLUSTER Size = " + str(len(CLUSTER))
+	print "CLUSTER =      " + str(CLUSTER)
+	return CLUSTER
 
