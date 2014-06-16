@@ -436,11 +436,15 @@ def getConfigCorosync():
 	inTag = False
 	inTotem = False
 	inNet = False
+	inMember = False
 	
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		I = 0
 		TAG = re.compile('^\S+\s+{')
 		IFACE_ID = 'interface'
 		IFACE = re.compile(IFACE_ID + '\s+{', re.IGNORECASE)
+		MEMBER_ID = 'member'
+		MEMBER = re.compile(MEMBER_ID + '\s+{', re.IGNORECASE)
 		SKIP_LINE = re.compile('^#|^\s+$')
 		for LINE in CONTENT:
 			DATA = CONTENT[LINE].strip()
@@ -448,9 +452,21 @@ def getConfigCorosync():
 				continue
 			if inTotem:
 				if inNet:
-					if "}" in DATA:
+					if inMember:
+						if "}" in DATA:
+							NET_DICT[MEMBER_ID].append(dict(MEMBER_DICT))
+							inMember = False
+						elif ":" in DATA:
+							KEY = DATA.split(':')[IDX_KEY].strip()
+							VALUE = DATA.split(':')[IDX_VALUE].strip()
+							MEMBER_DICT.update({KEY:VALUE})
+					elif "}" in DATA:
 						COROSYNC[TAG_ID][IFACE_ID].append(dict(NET_DICT))
+						I += 1
 						inNet = False
+					elif MEMBER.search(DATA):
+						inMember = True
+						MEMBER_DICT = {}
 					elif ":" in DATA:
 						KEY = DATA.split(':')[IDX_KEY].strip()
 						VALUE = DATA.split(':')[IDX_VALUE].strip()
@@ -461,6 +477,7 @@ def getConfigCorosync():
 				elif IFACE.search(DATA):
 					inNet = True
 					NET_DICT = {}
+					NET_DICT[MEMBER_ID] = []
 				elif ":" in DATA:
 					KEY = DATA.split(':')[IDX_KEY].strip()
 					VALUE = DATA.split(':')[IDX_VALUE].strip()
