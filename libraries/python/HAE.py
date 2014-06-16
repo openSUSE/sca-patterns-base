@@ -439,7 +439,8 @@ def getConfigCorosync():
 	
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
 		TAG = re.compile('^\S+\s+{')
-		IFACE = re.compile('interface\s+{', re.IGNORECASE)
+		IFACE_ID = 'interface'
+		IFACE = re.compile(IFACE_ID + '\s+{', re.IGNORECASE)
 		SKIP_LINE = re.compile('^#|^\s+$')
 		for LINE in CONTENT:
 			DATA = CONTENT[LINE].strip()
@@ -448,7 +449,7 @@ def getConfigCorosync():
 			if inTotem:
 				if inNet:
 					if "}" in DATA:
-						COROSYNC[TAG_ID]['interface'].append(dict(NET_DICT))
+						COROSYNC[TAG_ID][IFACE_ID].append(dict(NET_DICT))
 						inNet = False
 					elif ":" in DATA:
 						KEY = DATA.split(':')[IDX_KEY].strip()
@@ -478,7 +479,7 @@ def getConfigCorosync():
 				TAG_DICT = {}
 				if "totem" in DATA:
 					inTotem = True
-					COROSYNC[TAG_ID]['interface'] = []
+					COROSYNC[TAG_ID][IFACE_ID] = []
 				else:
 					inTag = True
 
