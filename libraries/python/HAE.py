@@ -164,6 +164,131 @@ def getSBDInfo():
 #	print "SBD_LIST = " + str(SBD_LIST) + "\n"
 	return SBD_LIST
 
+def getNodeInfo():
+	"""
+	Gets cluster node information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <node> and <node_state> tags. Only key/value pairs within the <node_state> tag itself are included, not tags below <node_state>.
+
+	Args:		None
+	Returns:	List of Node Dictionaries with keys
+		*All key:value pairs are derived from the configuration file itself.
+	Example:
+
+	STANDBY_NODES = []
+	NODES = HAE.getNodeInfo()
+	for I in range(0, len(NODES)):
+		# If the standby key exists in the node dictionary, proceed
+		if "standby" in NODES[I]:
+			if 'on' in NODES[I]['standby']:
+				STANDBY_NODES.append(NODES[I]['uname'])
+	if( len(STANDBY_NODES) > 0 ):
+		Core.updateStatus(Core.WARN, "Node(s) in standby mode: " + " ".join(STANDBY_NODES))
+	else:
+		Core.updateStatus(Core.IGNORE, "Node(s) in standby mode: None")
+	"""
+	IDX_KEY = 0
+	IDX_VALUE = 1
+	NODES = []
+	NODE = {}
+	FILE_OPEN = 'ha.txt'
+	CONTENT = {}
+	inNode = False
+	endNode = re.compile('/>$')
+	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
+		for LINE in CONTENT:
+			DATA = CONTENT[LINE].strip()
+			if "</nodes>" in DATA:
+				break
+			elif inNode:
+				if "</node>" in DATA:
+					NODES.append(dict(NODE))
+					NODE = {}
+					inNode = False
+				elif "<nvpair" in CONTENT[LINE]:
+					PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
+#					print "cibadmin PARTS = " + str(PARTS)
+					KEY = ''
+					VALUE = ''
+					for I in range(0, len(PARTS)):
+						if "name" in PARTS[I].lower():
+							KEY = PARTS[I].split("=")[IDX_VALUE]
+						elif "value" in PARTS[I].lower():
+							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+					NODE.update({KEY:VALUE})
+			elif "<node " in DATA:
+				inNode = True
+				if endNode.search(DATA):
+					inNode = False
+				PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
+#				print "cibadmin PARTS = " + str(PARTS)
+				KEY = ''
+				VALUE = ''
+				for I in range(0, len(PARTS)):
+					KEY = PARTS[I].split("=")[IDX_KEY]
+					VALUE = PARTS[I].split("=")[IDX_VALUE]
+					NODE.update({KEY:VALUE})
+				if not inNode:
+					NODES.append(dict(NODE))
+					NODE = {}
+		# Add node state information on connected nodes
+		for LINE in CONTENT:
+			if "<node_state " in CONTENT[LINE]:
+				NODE_STATE = {}
+				PARTS = re.sub('<node_state|/>$|>$|"', '', CONTENT[LINE]).strip().split()
+#				print "cibadmin PARTS = " + str(PARTS)
+				KEY = ''
+				VALUE = ''
+				for I in range(0, len(PARTS)):
+					KEY = PARTS[I].split("=")[IDX_KEY]
+					VALUE = PARTS[I].split("=")[IDX_VALUE]
+					NODE_STATE.update({KEY:VALUE})
+				for I in range(0, len(NODES)):
+					if( NODES[I]['id'] == NODE_STATE['id'] ):
+						NODES[I].update(NODE_STATE)
+						break
+
+	if( len(NODES) == 0 ):
+		if Core.getSection(FILE_OPEN, 'cib.xml$', CONTENT):
+			for LINE in CONTENT:
+				DATA = CONTENT[LINE].strip()
+				if "</nodes>" in DATA:
+					break
+				elif inNode:
+					if "</node>" in DATA:
+						NODES.append(dict(NODE))
+						NODE = {}
+						inNode = False
+					elif "<nvpair" in CONTENT[LINE]:
+						PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
+#						print "cib.xml PARTS = " + str(PARTS)
+						KEY = ''
+						VALUE = ''
+						for I in range(0, len(PARTS)):
+							if "name" in PARTS[I].lower():
+								KEY = PARTS[I].split("=")[IDX_VALUE]
+							elif "value" in PARTS[I].lower():
+								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+						NODE.update({KEY:VALUE})
+				elif "<node " in DATA:
+					inNode = True
+					if endNode.search(DATA):
+						inNode = False
+					PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
+#					print "cib.xml PARTS = " + str(PARTS)
+					KEY = ''
+					VALUE = ''
+					for I in range(0, len(PARTS)):
+						KEY = PARTS[I].split("=")[IDX_KEY]
+						VALUE = PARTS[I].split("=")[IDX_VALUE]
+						NODE.update({KEY:VALUE})
+					if not inNode:
+						NODES.append(dict(NODE))
+						NODE = {}
+		
+#	print "NODES = " + str(len(NODES))
+#	for I in range(0, len(NODES)):
+#		print "NODE[" + str(I) + "] =  " + str(NODES[I]) + "\n"
+	return NODES
+
 def getClusterConfig():
 	"""
 	Gets cluster configuration information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <cib> and <cluster_property_set> tags.
@@ -293,128 +418,34 @@ def getConfigCTDB():
 #	print "CONFIG =      " + str(CONFIG)
 	return CONFIG
 
-def getNodeInfo():
+def getConfigCorosync():
 	"""
-	Gets cluster node information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <node> and <node_state> tags. Only key/value pairs within the <node_state> tag itself are included, not tags below <node_state>.
+	Gets cluster configuration information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <cib> and <cluster_property_set> tags.
 
 	Args:		None
-	Returns:	List of Node Dictionaries with keys
-		*All key:value pairs are derived from the configuration file itself.
+	Returns:	Dictionary with keys
+		connected-to-cluster (Boolean) - True if the node is connected to the cluster, and False if not
+		*All other key:value pairs are derived from the cluster configuration file itself
 	Example:
 
-	STANDBY_NODES = []
-	NODES = HAE.getNodeInfo()
-	for I in range(0, len(NODES)):
-		# If the standby key exists in the node dictionary, proceed
-		if "standby" in NODES[I]:
-			if 'on' in NODES[I]['standby']:
-				STANDBY_NODES.append(NODES[I]['uname'])
-	if( len(STANDBY_NODES) > 0 ):
-		Core.updateStatus(Core.WARN, "Node(s) in standby mode: " + " ".join(STANDBY_NODES))
+	CLUSTER = HAE.getClusterConfig()
+	if 'stonith-enabled' in CLUSTER:
+		if "true" in CLUSTER['stonith-enabled']:
+			Core.updateStatus(Core.IGNORE, "Stonith is enabled for the cluster")
+		else:
+			Core.updateStatus(Core.WARN, "Stonith is disabled for the cluster")
 	else:
-		Core.updateStatus(Core.IGNORE, "Node(s) in standby mode: None")
+		Core.updateStatus(Core.WARN, "Stonith is disabled by default for the cluster")
 	"""
-	IDX_KEY = 0
 	IDX_VALUE = 1
-	NODES = []
-	NODE = {}
+	CLUSTER = {}
 	FILE_OPEN = 'ha.txt'
 	CONTENT = {}
-	inNode = False
-	endNode = re.compile('/>$')
+	inBootStrap = False
 	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
 		for LINE in CONTENT:
-			DATA = CONTENT[LINE].strip()
-			if "</nodes>" in DATA:
-				break
-			elif inNode:
-				if "</node>" in DATA:
-					NODES.append(dict(NODE))
-					NODE = {}
-					inNode = False
-				elif "<nvpair" in CONTENT[LINE]:
-					PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
-#					print "cibadmin PARTS = " + str(PARTS)
-					KEY = ''
-					VALUE = ''
-					for I in range(0, len(PARTS)):
-						if "name" in PARTS[I].lower():
-							KEY = PARTS[I].split("=")[IDX_VALUE]
-						elif "value" in PARTS[I].lower():
-							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
-					NODE.update({KEY:VALUE})
-			elif "<node " in DATA:
-				inNode = True
-				if endNode.search(DATA):
-					inNode = False
-				PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
-#				print "cibadmin PARTS = " + str(PARTS)
-				KEY = ''
-				VALUE = ''
-				for I in range(0, len(PARTS)):
-					KEY = PARTS[I].split("=")[IDX_KEY]
-					VALUE = PARTS[I].split("=")[IDX_VALUE]
-					NODE.update({KEY:VALUE})
-				if not inNode:
-					NODES.append(dict(NODE))
-					NODE = {}
-		# Add node state information on connected nodes
-		for LINE in CONTENT:
-			if "<node_state " in CONTENT[LINE]:
-				NODE_STATE = {}
-				PARTS = re.sub('<node_state|/>$|>$|"', '', CONTENT[LINE]).strip().split()
-#				print "cibadmin PARTS = " + str(PARTS)
-				KEY = ''
-				VALUE = ''
-				for I in range(0, len(PARTS)):
-					KEY = PARTS[I].split("=")[IDX_KEY]
-					VALUE = PARTS[I].split("=")[IDX_VALUE]
-					NODE_STATE.update({KEY:VALUE})
-				for I in range(0, len(NODES)):
-					if( NODES[I]['id'] == NODE_STATE['id'] ):
-						NODES[I].update(NODE_STATE)
-						break
-
-	if( len(NODES) == 0 ):
-		if Core.getSection(FILE_OPEN, 'cib.xml$', CONTENT):
-			for LINE in CONTENT:
-				DATA = CONTENT[LINE].strip()
-				if "</nodes>" in DATA:
+			if inBootStrap:
+				if "</cluster_property_set>" in CONTENT[LINE]:
+					inBootStrap = False
 					break
-				elif inNode:
-					if "</node>" in DATA:
-						NODES.append(dict(NODE))
-						NODE = {}
-						inNode = False
-					elif "<nvpair" in CONTENT[LINE]:
-						PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
-#						print "cib.xml PARTS = " + str(PARTS)
-						KEY = ''
-						VALUE = ''
-						for I in range(0, len(PARTS)):
-							if "name" in PARTS[I].lower():
-								KEY = PARTS[I].split("=")[IDX_VALUE]
-							elif "value" in PARTS[I].lower():
-								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
-						NODE.update({KEY:VALUE})
-				elif "<node " in DATA:
-					inNode = True
-					if endNode.search(DATA):
-						inNode = False
-					PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
-#					print "cib.xml PARTS = " + str(PARTS)
-					KEY = ''
-					VALUE = ''
-					for I in range(0, len(PARTS)):
-						KEY = PARTS[I].split("=")[IDX_KEY]
-						VALUE = PARTS[I].split("=")[IDX_VALUE]
-						NODE.update({KEY:VALUE})
-					if not inNode:
-						NODES.append(dict(NODE))
-						NODE = {}
-		
-#	print "NODES = " + str(len(NODES))
-#	for I in range(0, len(NODES)):
-#		print "NODE[" + str(I) + "] =  " + str(NODES[I]) + "\n"
-	return NODES
 
