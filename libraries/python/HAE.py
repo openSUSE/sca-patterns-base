@@ -426,6 +426,22 @@ def getConfigCorosync():
 	Returns:	Dictionary with keys and lists
 		*All key:value pairs are derived from the cluster configuration file itself. The totem interfaces are a list of dictionaries within the totem dictionary.
 	Example:
+
+	COROSYNC = HAE.getConfigCorosync()
+	BINDADDRS = {}
+	DUP_BINDADDRS = {}
+	for I in range(0, len(COROSYNC['totem']['interface'])):
+		ADDR = COROSYNC['totem']['interface'][I]['bindnetaddr']
+		if ADDR in BINDADDRS:
+			# There is a duplicate bind net address key, add the duplicate to the list
+			DUP_BINDADDRS[ADDR] = True
+		else:
+			# The address is not a duplicate, add it to the list of bind net addresses to check
+			BINDADDRS[ADDR] = True
+	if( len(DUP_BINDADDRS) > 0 ):
+		Core.updateStatus(Core.CRIT, "Detected Duplicate Corosync Bind Addresses: " + " ".join(DUP_BINDADDRS.keys()))
+	else:
+		Core.updateStatus(Core.IGNORE, "All Corosync Bind Addresses are Unique")
 	"""
 	IDX_KEY = 0
 	IDX_VALUE = 1
@@ -439,7 +455,6 @@ def getConfigCorosync():
 	inMember = False
 	
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-		I = 0
 		TAG = re.compile('^\S+\s+{')
 		IFACE_ID = 'interface'
 		IFACE = re.compile(IFACE_ID + '\s+{', re.IGNORECASE)
@@ -462,7 +477,6 @@ def getConfigCorosync():
 							MEMBER_DICT.update({KEY:VALUE})
 					elif "}" in DATA:
 						COROSYNC[TAG_ID][IFACE_ID].append(dict(NET_DICT))
-						I += 1
 						inNet = False
 					elif MEMBER.search(DATA):
 						inMember = True
@@ -501,14 +515,14 @@ def getConfigCorosync():
 					inTag = True
 
 	# print the data structure for debugging purposes
-	for X in COROSYNC:
-		for Y in COROSYNC[X]:
-			if 'interface' in Y:
-				for I in range(0, len(COROSYNC[X][Y])):
-					for Z in COROSYNC[X][Y][I]:
-						print ("COROSYNC[" + X + "][" + Y + "][" + str(I) + "][" + Z + "] : " + str(COROSYNC[X][Y][I][Z]))
-			else:
-				print ("COROSYNC[" + X + "][" + Y + "] : " + str(COROSYNC[X][Y]))
+#	for X in COROSYNC:
+#		for Y in COROSYNC[X]:
+#			if 'interface' in Y:
+#				for I in range(0, len(COROSYNC[X][Y])):
+#					for Z in COROSYNC[X][Y][I]:
+#						print ("COROSYNC[" + X + "][" + Y + "][" + str(I) + "][" + Z + "] : " + str(COROSYNC[X][Y][I][Z]))
+#			else:
+#				print ("COROSYNC[" + X + "][" + Y + "] : " + str(COROSYNC[X][Y]))
 
 	return COROSYNC
 
