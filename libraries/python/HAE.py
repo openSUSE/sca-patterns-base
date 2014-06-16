@@ -420,32 +420,77 @@ def getConfigCTDB():
 
 def getConfigCorosync():
 	"""
-	Gets cluster configuration information from the cibadmin -Q output or cib.xml if the node is not connected to the cluster. It includes information from the <cib> and <cluster_property_set> tags.
+	Gets Corosync configuration information from /etc/corosync/corosync.conf. All values are forced to lowercase.
 
 	Args:		None
-	Returns:	Dictionary with keys
-		connected-to-cluster (Boolean) - True if the node is connected to the cluster, and False if not
-		*All other key:value pairs are derived from the cluster configuration file itself
+	Returns:	Dictionary with keys and lists
+		*All key:value pairs are derived from the cluster configuration file itself. The totem interfaces are a list of dictionaries within the totem dictionary.
 	Example:
-
-	CLUSTER = HAE.getClusterConfig()
-	if 'stonith-enabled' in CLUSTER:
-		if "true" in CLUSTER['stonith-enabled']:
-			Core.updateStatus(Core.IGNORE, "Stonith is enabled for the cluster")
-		else:
-			Core.updateStatus(Core.WARN, "Stonith is disabled for the cluster")
-	else:
-		Core.updateStatus(Core.WARN, "Stonith is disabled by default for the cluster")
 	"""
+	IDX_KEY = 0
 	IDX_VALUE = 1
-	CLUSTER = {}
+	COROSYNC = {}
 	FILE_OPEN = 'ha.txt'
+	SECTION = 'corosync.conf'
 	CONTENT = {}
-	inBootStrap = False
-	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
+	inTag = False
+	inTotem = False
+	inNet = False
+	
+	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		TAG = re.compile('^\S+\s+{')
+		IFACE = re.compile('interface\s+{', re.IGNORECASE)
+		SKIP_LINE = re.compile('^#|^\s+$')
 		for LINE in CONTENT:
-			if inBootStrap:
-				if "</cluster_property_set>" in CONTENT[LINE]:
-					inBootStrap = False
-					break
+			DATA = CONTENT[LINE].strip()
+			if SKIP_LINE.search(DATA):
+				continue
+			if inTotem:
+				if inNet:
+					if "}" in DATA:
+						COROSYNC[TAG_ID]['interface'].append(dict(NET_DICT))
+						inNet = False
+					else:
+						KEY = DATA.split(':')[IDX_KEY].strip()
+						VALUE = DATA.split(':')[IDX_VALUE].strip()
+						NET_DICT.update({KEY:VALUE})
+				elif "}" in DATA:
+					COROSYNC[TAG_ID].update(dict(TAG_DICT))
+					inTotem = False
+				elif IFACE.search(DATA):
+					inNet = True
+					NET_DICT = {}
+				elif ":" in DATA:
+					KEY = DATA.split(':')[IDX_KEY].strip()
+					VALUE = DATA.split(':')[IDX_VALUE].strip()
+					TAG_DICT.update({KEY:VALUE})
+			elif inTag:
+				if "}" in DATA:
+					COROSYNC[TAG_ID].update(dict(TAG_DICT))
+					inTag = False
+				elif ":" in DATA:
+					KEY = DATA.split(':')[IDX_KEY].strip()
+					VALUE = DATA.split(':')[IDX_VALUE].strip()
+					TAG_DICT.update({KEY:VALUE})
+			elif TAG.search(DATA):
+				TAG_ID = DATA.split()[IDX_KEY]
+				COROSYNC[TAG_ID] = {}
+				TAG_DICT = {}
+				if "totem" in DATA:
+					inTotem = True
+					COROSYNC[TAG_ID]['interface'] = []
+				else:
+					inTag = True
+
+	for X in COROSYNC:
+		for Y in COROSYNC[X]:
+			print ("COROSYNC[" + X + "][" + Y + "] : " + str(COROSYNC[X][Y]))
+	return COROSYNC
+
+
+
+
+
+
+
 
