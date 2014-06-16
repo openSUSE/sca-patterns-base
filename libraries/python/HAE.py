@@ -450,7 +450,7 @@ def getConfigCorosync():
 					if "}" in DATA:
 						COROSYNC[TAG_ID]['interface'].append(dict(NET_DICT))
 						inNet = False
-					else:
+					elif ":" in DATA:
 						KEY = DATA.split(':')[IDX_KEY].strip()
 						VALUE = DATA.split(':')[IDX_VALUE].strip()
 						NET_DICT.update({KEY:VALUE})
@@ -482,9 +482,16 @@ def getConfigCorosync():
 				else:
 					inTag = True
 
+	# print the data structure for debugging purposes
 	for X in COROSYNC:
 		for Y in COROSYNC[X]:
-			print ("COROSYNC[" + X + "][" + Y + "] : " + str(COROSYNC[X][Y]))
+			if 'interface' in Y:
+				for I in range(0, len(COROSYNC[X][Y])):
+					for Z in COROSYNC[X][Y][I]:
+						print ("COROSYNC[" + X + "][" + Y + "][" + str(I) + "][" + Z + "] : " + str(COROSYNC[X][Y][I][Z]))
+			else:
+				print ("COROSYNC[" + X + "][" + Y + "] : " + str(COROSYNC[X][Y]))
+
 	return COROSYNC
 
 
