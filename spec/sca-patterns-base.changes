@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jun 17 18:26:13 UTC 2014 - jrecord@suse.com
+
+- Added getNodeInfo to HAE.py
+- Added getConfigCTDB to HAE.py
+- Added getConfigCorosync to HAE.py
+- Added getClusterConfig to HAE.Py
+
+-------------------------------------------------------------------
 Fri Jun 13 16:43:26 UTC 2014 - jrecord@suse.com
 
 - Fixed TypeError: cannot concatenate 'str' and 'exceptions.IOError' objects
