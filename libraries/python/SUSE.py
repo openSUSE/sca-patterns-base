@@ -23,14 +23,12 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (dhamner@novell.com)
 #
-#  Modified: 2014 Jun 07
+#  Modified: 2014 Jun 17
 #
 ##############################################################################
 
-import sys
 import re
 import Core
-import string
 
 SLE9GA       = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'

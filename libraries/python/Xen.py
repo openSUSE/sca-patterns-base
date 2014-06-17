@@ -23,11 +23,12 @@ vitural machines or their virtual machine servers.
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jan 13
+#  Modified: 2014 Jun 17
 #
 ##############################################################################
 
-import sys, re, Core, string
+import re
+import Core
 
 def isDom0():
 	"""

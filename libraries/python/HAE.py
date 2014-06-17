@@ -27,10 +27,8 @@ High Availability Extension (HAE) clustering
 #
 ##############################################################################
 
-import sys
 import re
 import Core
-import string
 
 def haeEnabled():
 	"""

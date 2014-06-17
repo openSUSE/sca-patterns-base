@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Jun 17 21:46:11 UTC 2014 - jrecord@suse.com
+Tue Jun 17 23:04:45 UTC 2014 - jrecord@suse.com
 
+- Removed unecessary python imported libraries
 - Added listSections to Core.py
 - Added haeEnabled to HAE.py
 - Added haeConnected to HAE.Py

@@ -29,7 +29,6 @@ Core library of functions for creating and processing python patterns
 
 import sys
 import re
-import distutils.version
 from distutils.version import LooseVersion
 global path
 
