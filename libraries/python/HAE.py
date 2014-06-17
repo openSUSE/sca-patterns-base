@@ -23,7 +23,7 @@ High Availability Extension (HAE) clustering
 #  Authors/Contributors:
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 13
+#  Modified: 2014 Jun 17
 #
 ##############################################################################
 
@@ -31,6 +31,52 @@ import sys
 import re
 import Core
 import string
+
+def haeEnabled():
+	"""
+	Determines if an HAE cluster is enabled on the node based on a corosysnc.conf file.
+
+	Args:		None
+	Returns:	True if enabled, False if disabled
+	Example:
+
+	if HAE.haeEnabled():
+		Core.updateStatus(Core.IGNORE, "HAE Cluster enabled")
+	else:
+		Core.updateStatus(Core.WARN, "HAE Cluster disabled")
+	"""
+	FILE_OPEN = 'ha.txt'
+	CONTENT = {}
+
+	if Core.listSections(FILE_OPEN, CONTENT):
+		for LINE in CONTENT:
+#			print CONTENT[LINE]
+			if "corosync.conf" in CONTENT[LINE]:
+				return True
+	return False
+
+def haeConnected():
+	"""
+	Determines if the node is connected to the HAE cluster.
+
+	Args:		None
+	Returns:	True if connected, False if disconnected
+	Example:
+
+	if HAE.haeConnected():
+		Core.updateStatus(Core.IGNORE, "Node connected to HAE Cluster")
+	else:
+		Core.updateStatus(Core.WARN, "Node is disconnected, start HAE cluster services")
+	"""
+	FILE_OPEN = 'ha.txt'
+	SECTION = 'cibadmin -Q'
+	CONTENT = {}
+	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+		CONNECTED = re.compile('<cib.*epoch=')
+		for LINE in CONTENT:
+			if CONNECTED.search(CONTENT[LINE]):
+				return True
+	return False
 
 def getSBDInfo():
 	"""

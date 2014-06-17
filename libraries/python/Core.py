@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 13
+#  Modified: 2014 Jun 17
 #
 ##############################################################################
 
@@ -210,6 +210,50 @@ def processOptions():
 		if i == "-p":
 			foundPath = True
 	return path
+
+
+def listSections(FILE_OPEN, CONTENT):
+	"""
+	Extracts all section names from FILE_OPEN and adds them to CONTENT.
+
+	Args:		FILE_OPEN (String) - The supportconfig filename to open
+				CONTENT (List) - Section names in FILE_OPEN
+	Returns:	True or False
+					True - Sections were found in FILE_OPEN
+					False - No sections found in FILE_OPEN
+	Example:
+
+	FILE_OPEN = "ha.txt"
+	CONTENT = {}
+	if Core.listSections(FILE_OPEN, CONTENT):
+		for LINE in CONTENT:
+			if "corosync.conf" in CONTENT[LINE]:
+				return True
+	return False
+	"""
+	global path
+	inSection = False
+	RESULT = False
+	I = 0
+
+	try:
+		FILE = open(path + "/" + FILE_OPEN)
+	except Exception, error:
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
+
+	SECTION = re.compile('^#==\[')
+	for LINE in FILE:
+		LINE = LINE.strip("\n")
+		if inSection:
+			CONTENT[I] = re.sub('^#\s+', '', LINE)
+			I += 1
+			RESULT = True
+			inSection = False
+		elif SECTION.search(LINE):
+			inSection = True
+
+	FILE.close()
+	return RESULT
 
 
 #get Section of supportconfig
