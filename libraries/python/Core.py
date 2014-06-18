@@ -286,7 +286,10 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	except Exception, error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
+	CommentedLine = re.compile('^#|^\s+#')
 	for line in FILE:
+		if CommentedLine.search(line):
+			continue
 		line = line.strip("\n")
 		if line.startswith('#==['):
 #			print "\nNew Section Start"

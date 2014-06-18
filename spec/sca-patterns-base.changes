@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Jun 17 23:04:45 UTC 2014 - jrecord@suse.com
+Wed Jun 18 22:38:44 UTC 2014 - jrecord@suse.com
 
+- getSection in Core.py excludes commented lines
 - Removed unecessary python imported libraries
 - Added listSections to Core.py
 - Added haeEnabled to HAE.py
