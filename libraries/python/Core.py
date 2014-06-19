@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (dhamner@novell.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 17
+#  Modified: 2014 Jun 19
 #
 ##############################################################################
 
@@ -288,8 +288,6 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	SectionTag = re.compile(SECTION)
 	CommentedLine = re.compile('^#|^\s+#')
 	for line in FILE:
-		if CommentedLine.search(line):
-			continue
 		line = line.strip("\n")
 		if line.startswith('#==['):
 #			print "\nNew Section Start"
@@ -302,10 +300,14 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 #			print " SectionName after  = " + str(SectionName)
 		elif SectionTag.search(SectionName):
 			if( len(line) > 0 ):
-#				print " Appending line = '" + str(line) + "'"
-				CONTENT[i] = line
-				i += 1
-				FoundSection = True
+				if CommentedLine.search(line):
+#					print " Skipping Line: '" + str(line) + "'"
+					continue
+				else:
+#					print " Appending Line: '" + str(line) + "'"
+					CONTENT[i] = line
+					i += 1
+					FoundSection = True
 #			else:
 #				print " Skipping empty line"
 	FILE.close()
