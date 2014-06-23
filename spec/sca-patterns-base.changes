@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jun 23 19:09:35 UTC 2014 - jrecord@suse.com
+
+- getSection in Core.pm excludes commented lines
+
+-------------------------------------------------------------------
 Thu Jun 19 18:44:44 UTC 2014 - jrecord@suse.com
 
 - getSection in Core.py excludes commented lines

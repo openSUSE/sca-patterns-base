@@ -17,7 +17,7 @@
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Last Modified Date: 2014 Mar 31
+#  Last Modified Date: 2014 Jun 23
 #
 ##############################################################################
 
@@ -992,8 +992,10 @@ sub getSection {
 			$line =~ s/# //g;
 			$section_name = $line;
 		} elsif ($section_name =~ /$search_string/) {
-			push(@$array_ref, $line);
-			$section_found = 1;
+			if ($line !~ m/^#|^\s+#/) {
+				push(@$array_ref, $line);
+				$section_found = 1;
+			}
 		}
 	}
 
