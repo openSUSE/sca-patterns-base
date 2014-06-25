@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2013 SUSE LINUX Products GmbH
+#  Copyright (C) 2014 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
-#     Modified: 2013 Oct 11
+#     Modified: 2014 Jun 25
 #
 #
 ##############################################################################
@@ -86,7 +86,7 @@ require      Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE12GA getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.3.3;
+our $VERSION   = 0.3.4;
 
 use      SDP::Core;
 
@@ -2317,6 +2317,7 @@ sub securityAnnouncementPackageCheck {
 	SDP::Core::printDebug('> securityAnnouncementPackageCheck');
 	my %PACKAGES = %{+shift};
 	my @FAILED = ();
+	my $INSTALLED = 0;
 	my $RCODE = 0;
 	if ( "$MAIN" eq '' || SDP::SUSE::packageInstalled($MAIN) ) {
 		while ( my ($CHECK_PKG, $FIXED_VER) = each(%PACKAGES) ) {
@@ -2327,6 +2328,7 @@ sub securityAnnouncementPackageCheck {
 				SDP::Core::printDebug('  securityAnnouncementPackageCheck NOT INSTALLED', "$CHECK_PKG-$FIXED_VER");
 				SDP::Core::updateStatus(STATUS_PARTIAL, "Package not installed, $CHECK_PKG");
 			} else {
+				$INSTALLED++;
 				if ( $RPM_COMPARISON < 0 ) {
 					SDP::Core::printDebug('  securityAnnouncementPackageCheck FAILED', "$CHECK_PKG-$FIXED_VER");
 					$RCODE = 1;
@@ -2337,10 +2339,14 @@ sub securityAnnouncementPackageCheck {
 			}
 		}
 		my $FAILED_PACKAGES = scalar @FAILED;
-		if ( $FAILED_PACKAGES ) {
-			SDP::Core::updateStatus(STATUS_CRITICAL, "$SEVERITY $NAME Security Announcement $TAG, update system to apply: @FAILED");
+		if ( $INSTALLED > 0 ) {
+			if ( $FAILED_PACKAGES ) {
+				SDP::Core::updateStatus(STATUS_CRITICAL, "$SEVERITY $NAME Security Announcement $TAG, update system to apply: @FAILED");
+			} else {
+				SDP::Core::updateStatus(STATUS_IGNORE, "$SEVERITY $NAME Security Announcement $TAG AVOIDED");
+			}
 		} else {
-			SDP::Core::updateStatus(STATUS_ERROR, "$SEVERITY $NAME Security Announcement $TAG AVOIDED");
+			SDP::Core::updateStatus(STATUS_ERROR, "ERROR: No affected packages installed, skipping security test");
 		}
 	} else {
 		SDP::Core::updateStatus(STATUS_ERROR, "ERROR: $NAME Not Installed, Skipping Security Test");
