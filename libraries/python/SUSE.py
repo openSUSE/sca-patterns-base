@@ -554,7 +554,11 @@ def getHostInfo():
 				if LINE.startswith('VERSION'):
 					SERVER_DICTIONARY['OESVersion'] = int(LINE.split('=')[IDX_VALUE].strip().split('.')[0])
 				elif LINE.startswith('PATCHLEVEL'):
-					SERVER_DICTIONARY['OESPatchLevel'] = int(LINE.split('=')[IDX_VALUE].strip())
+					ValueString = LINE.split('=')[IDX_VALUE].strip()
+					if "SP" in ValueString:
+						SERVER_DICTIONARY['OESPatchLevel'] = int(list(ValueString)[-1])
+					else:
+						SERVER_DICTIONARY['OESPatchLevel'] = int(ValueString)
 		elif "uname -a" in LINE:
 			UNAME_FOUND = True
 		elif RELEASE.search(LINE):
