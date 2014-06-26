@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (dhamner@novell.com)
 #
-#  Modified: 2014 Jun 17
+#  Modified: 2014 Jun 26
 #
 ##############################################################################
 
@@ -65,7 +65,7 @@ def packageInstalled(PackageName):
 		Core.updateStatus(Core.IGNORE, "The package " + PACKAGE_NAME + " is NOT installed")	
 	"""
 	rpmInfo = getRpmInfo(PackageName)
-	if len(rpmInfo) > 0:
+	if "version" in rpmInfo:
 		return True
 	return False
 
@@ -310,7 +310,7 @@ def getServiceInfo(SERVICE_NAME):
 							SERVICE_INFO['OnForRunLevel'] = True
 				break
 
-#	print "SERVICE_INFO = " + str(SERVICE_INFO)
+#	print "getServiceInfo: SERVICE_INFO = " + str(SERVICE_INFO)
 	return SERVICE_INFO
 
 def getServiceDInfo(SERVICE_NAME):
@@ -431,9 +431,9 @@ def compareRPM(package, versionString):
 #		print "compareRPM: Version in Supportconfig = " + str(foundVersion)
 
 		return Core.compareVersions(packageVersion, versionString)
-	except Exception:
+	except Exception, error:
 		#error out...
-		Core.updateStatus(Core.ERROR, "ERROR: Package not found")
+		Core.updateStatus(Core.ERROR, "ERROR: Package info not found -- " + str(error))
 
 def compareKernel(kernelVersion):
 	"""
@@ -521,7 +521,7 @@ def getHostInfo():
 	try:
 		FILE = open(Core.path + "/" + FILE_OPEN)
 	except Exception, error:
-#		print "Error opening file: %s" % error
+#		print "getHostInfo: Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)
 
 	RELEASE = re.compile('/etc/SuSE-release', re.IGNORECASE)
@@ -563,7 +563,7 @@ def getHostInfo():
 			NOVELL_FOUND = True
 
 	FILE.close()
-#	print "SERVER_DICTIONARY = " + str(SERVER_DICTIONARY)
+#	print "getHostInfo: SERVER_DICTIONARY = " + str(SERVER_DICTIONARY)
 	return SERVER_DICTIONARY
 	
 
@@ -608,6 +608,84 @@ def getScInfo():
 			supportFile.readline()
 			scInfo['version'] = supportFile.readline().split(':')[-1].strip()
 			scInfo['scriptDate'] =	supportFile.readline().split(':')[-1].strip()
-#	print "scInfo = " + str(scInfo)
+#	print "getScInfo: scInfo = " + str(scInfo)
 	return scInfo
+
+def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
+	"""
+	Specialty function for SUSE Security Announcements (http://lists.opensuse.org/opensuse-security-announce/) that checks the versions of the listed PACKAGES and displays a uniform output string. If any one of the packages listed is less than the fixed version in the PACKAGES dictionary, a hit is triggered. The MAIN is optional. If the MAIN package is installed the other PACKAGES are checked, otherwise no packages are checked. If MAIN is missing, all PACKAGES are checked.
+
+	Args:		NAME (String) - The display name of the package group being checked
+				MAIN (String) - The MAIN package that must be present as a condition of checking the others; leave blank to check all PACKAGES
+				LTSS (Boolean) - True if an LTSS package, False if not
+				SEVERITY (String) - The severity of the security announcement (ie 'Critical', 'Important', etc)
+				TAG (String) - The specific security announcement tag (ie SUSE-SU-2014:0824-1)
+				PACKAGES (Dictionary) - A dictionary of package names for keys and their fixed version number for values
+	Returns:	True if at least one from PACKAGES was installed, False if no PACKAGES were installed
+	Example:
+
+	LTSS = False
+	NAME = 'Firefox'
+	MAIN = 'MozillaFirefox'
+	SEVERITY = 'Important'
+	TAG = 'SUSE-SU-2014:0824-1'
+	PACKAGES = {}
+	SERVER = SUSE.getHostInfo()
+
+	if ( SERVER['DistroVersion'] == 11 and SERVER['DistroPatchLevel'] == 3 ):
+		PACKAGES = {
+			'libfreebl3': '3.16.1-0.8.1',
+			'MozillaFirefox': '24.6.0esr-0.8.1',
+			'MozillaFirefox-translations': '24.6.0esr-0.8.1',
+			'mozilla-nspr': '4.10.6-0.3.1',
+			'mozilla-nss': '3.16.1-0.8.1',
+		}
+		SUSE.securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES)
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: " + NAME + " Security Announcement: Outside the distribution scope")
+	"""
+	FAILED = []
+	INSTALLED = False
+	CHECK_IT = False
+	if( LTSS ):
+		TITLE = SEVERITY + " LTSS " + NAME
+	else:
+		TITLE = SEVERITY + " " + NAME
+
+	if ( len(MAIN) > 0 ):
+#		print "securityAnnouncementPackageCheck: MAIN initialized: " + str(MAIN)
+		if( packageInstalled(MAIN) ):
+#			print "securityAnnouncementPackageCheck: MAIN installed"
+			CHECK_IT = True
+#		else:
+#			print "securityAnnouncementPackageCheck: MAIN not installed"
+	else:
+		CHECK_IT = True
+
+	if ( CHECK_IT ):
+		for I in PACKAGES:
+			RPM_NAME = str(I)
+			RPM_VERSION = str(PACKAGES[I])
+			if packageInstalled(RPM_NAME):
+#				print "securityAnnouncementPackageCheck: +Checking: " + RPM_NAME
+				INSTALLED = True
+				if( compareRPM(RPM_NAME, RPM_VERSION) < 0 ):
+#					print "securityAnnouncementPackageCheck:  OUTDATED"
+					FAILED.append(RPM_NAME + "-" + RPM_VERSION)
+#				else:
+#					print "securityAnnouncementPackageCheck:  Current"
+#			else:
+#				print "securityAnnouncementPackageCheck: -Missing:  " + str(RPM_NAME)
+		if( INSTALLED ):
+			if( len(FAILED) > 0 ):
+				Core.updateStatus(Core.CRIT, TITLE + " Security Announcement " + str(TAG) + ", update system to apply: " + " ".join(FAILED))
+			else:
+				Core.updateStatus(Core.IGNORE, TITLE + " Security Announcement " + str(TAG) + " AVOIDED")
+		else:
+			Core.updateStatus(Core.ERROR, "ERROR: No " + TITLE + " affected packages installed, skipping security test")
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: " + TITLE + " not installed, skipping security test")
+
+	return INSTALLED
+
 
