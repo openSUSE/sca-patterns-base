@@ -623,7 +623,7 @@ def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
 				MAIN (String) - The MAIN package that must be present as a condition of checking the others; leave blank to check all PACKAGES
 				LTSS (Boolean) - True if an LTSS package, False if not
 				SEVERITY (String) - The severity of the security announcement (ie 'Critical', 'Important', etc)
-				TAG (String) - The specific security announcement tag (ie SUSE-SU-2014:0824-1)
+				TAG (String) - The specific security announcement tag (ie SUSE-SU-2012:0000-0)
 				PACKAGES (Dictionary) - A dictionary of package names for keys and their fixed version number for values
 	Returns:	True if at least one from PACKAGES was installed, False if no PACKAGES were installed
 	Example:
@@ -632,7 +632,7 @@ def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
 	NAME = 'Firefox'
 	MAIN = 'MozillaFirefox'
 	SEVERITY = 'Important'
-	TAG = 'SUSE-SU-2014:0824-1'
+	TAG = 'SUSE-SU-2012:0000-0'
 	PACKAGES = {}
 	SERVER = SUSE.getHostInfo()
 

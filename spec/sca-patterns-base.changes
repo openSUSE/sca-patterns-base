@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Thu Jun 26 20:09:53 UTC 2014 - jrecord@suse.com
+Thu Jun 26 20:12:10 UTC 2014 - jrecord@suse.com
 
 - Fixed SUSE.getHostInfo OES patchlevel error
 - Added Python SUSE.securityAnnouncementPackageCheck
