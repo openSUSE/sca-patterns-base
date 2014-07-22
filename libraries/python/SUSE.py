@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (dhamner@novell.com)
 #
-#  Modified: 2014 Jun 26
+#  Modified: 2014 Jul 21
 #
 ##############################################################################
 
@@ -259,9 +259,9 @@ def getServiceInfo(SERVICE_NAME):
 		FILE_OPEN = SERVICE_TABLE[SERVICE_NAME]
 		SERVICE_INFO['Known'] = True
 	else:
-		FILE_OPEN = ''
+		FILE_OPEN = 'basic-health-check.txt'
 
-	if ( FILE_OPEN ):
+	if ( SERVICE_INFO['Known'] ):
 		SERVICE_INFO['Running'] = 0
 		SECTION = "/etc/init.d/" + SERVICE_NAME + " status"
 		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
@@ -271,12 +271,12 @@ def getServiceInfo(SERVICE_NAME):
 					SERVICE_INFO['Running'] = 1
 					break
 	else:
-		FILE_OPEN = 'basic-health-check.txt'
 		SECTION = '/bin/ps'
 		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-			STATE = re.compile('/' + SERVICE_NAME + '\s|$', re.IGNORECASE)
+			STATE = re.compile('/' + SERVICE_NAME + '\s|/' + SERVICE_NAME + '$', re.IGNORECASE)
 			for LINE in CONTENT:
 				if STATE.search(CONTENT[LINE]):
+#					print "State Found: " + str(CONTENT[LINE])
 					SERVICE_INFO['Running'] = 1
 					break
 
