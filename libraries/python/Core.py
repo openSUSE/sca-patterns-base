@@ -20,17 +20,17 @@ Core library of functions for creating and processing python patterns
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#    David Hamner (dhamner@novell.com)
+#    David Hamner (ke7oxh@gmail.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 19
+#  Modified: 2014 Sep 17
 #
 ##############################################################################
 
 import sys
 import re
 from distutils.version import LooseVersion
-global path
+path = ''
 
 STATUS_TEMPORARY = -2
 STATUS_PARTIAL = -1

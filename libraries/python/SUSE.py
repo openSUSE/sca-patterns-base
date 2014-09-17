@@ -21,14 +21,15 @@ Library of functions for creating python patterns specific to SUSE
 #
 #  Authors/Contributors:
 #    Jason Record (jrecord@suse.com)
-#    David Hamner (dhamner@novell.com)
+#    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2014 Jul 21
+#  Modified: 2014 Sep 17
 #
 ##############################################################################
 
 import re
 import Core
+from Core import path
 
 SLE9GA       = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
@@ -119,6 +120,95 @@ def getRpmInfo(PackageName):
 #	print "getRpmInfo: rpmInfo    = " + str(rpmInfo)
 	return rpmInfo
 
+class PatchInfo:
+	'Patch information class'
+	patchCount = 0
+
+	def __init__(self, search_name):
+		PatchInfo.patchCount += 1
+		self.search_name = search_name
+		self.patch_name = ''
+		self.patch_count = 0
+		self.installed = False
+		self.all_installed = True
+		self.needed = False
+		self.valid = False
+		self.patchlist = []
+		# populate the patchlist
+		PATCH_DICTIONARY = {}
+		FILE_OPEN = "updates.txt"
+		SECTIONS = ['zypper --non-interactive --no-gpg-checks patches', '/rug pch']
+		CONTENT = {}
+		PATCH = re.compile(self.search_name, re.IGNORECASE)
+		for SECTION in SECTIONS:
+#			print "Check section: " + str(SECTION)
+			if Core.getSection(FILE_OPEN, SECTION, CONTENT):
+				for LINE in CONTENT:
+					if PATCH.search(CONTENT[LINE]):
+#						print CONTENT[LINE]
+						PATCH_ARRAY = re.sub(r"\s+", "", CONTENT[LINE]).split("|")
+						PATCH_DICTIONARY['Catalog'] = PATCH_ARRAY[0]
+						PATCH_DICTIONARY['Name'] = PATCH_ARRAY[1]
+						PATCH_DICTIONARY['Version'] = PATCH_ARRAY[2]
+						PATCH_DICTIONARY['Category'] = PATCH_ARRAY[3]
+						PATCH_DICTIONARY['Status'] = PATCH_ARRAY[4]
+						if( PATCH_DICTIONARY['Status'] == "Installed" or PATCH_DICTIONARY['Status'] == "Applied" ):
+							PATCH_DICTIONARY['Installed'] = True
+							self.installed = True
+						elif( PATCH_DICTIONARY['Status'] == "Needed" ):
+							PATCH_DICTIONARY['Installed'] = False
+							self.needed = True
+							self.all_installed = False
+						else:
+							PATCH_DICTIONARY['Installed'] = False
+							self.all_installed = False
+#						print "  " + str(PATCH_DICTIONARY)
+						self.patchlist.append(dict(PATCH_DICTIONARY))
+						if( len(self.patch_name) == 0 ):
+							self.patch_name = PATCH_DICTIONARY['Name']
+							PATCH = re.compile(r'\|\s+' + self.patch_name + '\s+\|')
+				self.valid = True
+				self.patch_count = len(self.patchlist)
+#				print "Total Patches: " + str(self.patch_count) + "\n"
+				break
+
+		if( self.patch_count == 0 ):
+			self.installed = False
+			self.all_installed = False
+			self.needed = False
+
+	def getLastInstalled(self):
+		VER = 0
+		PATCH_FOUND = {}
+		for PATCH in self.patchlist:
+			if( PATCH['Status'] == "Installed" or PATCH['Status'] == "Applied" ):
+				if( PATCH['Version'] > VER ):
+					VER = PATCH['Version']
+					PATCH_FOUND = PATCH
+		return PATCH_FOUND
+
+	def getLastNeeded(self):
+		VER = 0
+		PATCH_FOUND = {}
+		for PATCH in self.patchlist:
+			if( PATCH['Status'] == "Needed" ):
+				if( PATCH['Version'] > VER ):
+					VER = PATCH['Version']
+					PATCH_FOUND = PATCH
+		return PATCH_FOUND
+
+	def displayPatchInfo(self):
+		print "Patch List:"
+		for patch in self.patchlist:
+			print "  " + str(patch)
+		print "Valid Section:         " + str(self.valid)
+		print "Patches Found:         " + str(self.patch_count)
+		print "PatchInfo Instances:   " + str(PatchInfo.patchCount)
+		print "Search String:         '" + str(self.search_name) + "'"
+		print "Patch Name Found:      '" + str(self.patch_name) + "'"
+		print "Patch Installed:       " + str(self.installed)
+		print "All Patches Installed: " + str(self.all_installed)
+		print "Any Patches Needed:    " + str(self.needed)
 
 def getDriverInfo( DRIVER_NAME ):
 	"""
