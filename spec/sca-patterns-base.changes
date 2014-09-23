@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Sep 23 18:40:03 UTC 2014 - jrecord@suse.com
+
+- Added the PatchInfo class to SUSE.py
+
+-------------------------------------------------------------------
 Tue Jul 22 17:22:01 UTC 2014 - jrecord@suse.com
 
 - Fixed getServiceInfo for unknown services (bnc#888241)

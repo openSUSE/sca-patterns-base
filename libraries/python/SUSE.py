@@ -121,7 +121,44 @@ def getRpmInfo(PackageName):
 	return rpmInfo
 
 class PatchInfo:
-	'Patch information class'
+	"""
+	A class to retrieve patch information by patch name. The first patch name that matches the search string will be used for the patch information.
+
+	Variables
+	---------
+	search_name = (String) The string used to find the patch from the name column
+	patch_name = (String) The exact patch name string found in the name column
+	patch_count = (Int) The number of patches that match patch_name
+	installed = (Boolean) True if at least one patch is installed in the patch_name set, otherwise False
+	all_installed = (Boolean) True if all patches in the patch_name set are installed, otherwise False
+	needed = (Boolean) True if at least one patch is needed in the patch_name set, otherwise False
+	valid = (Boolean) True if a valid updates.txt section with patch information was found, otherwise False
+	patchlist = (List of Dictionaries) The dictionary keys correspond to the 'zypper patches' or 'rug pch' output columns with the exception of Installed
+		Dictionary Keys:
+			Category (String) The patch category like security or recommended
+			Status (String) The patch status including Installed, NotApplicable, Applied, Needed, etc.
+			Catalog (String) The catalog from which the patch came
+			Version (String) The patch's version number string
+			Name (String) The name of the patch
+			Installed (Boolean) True if the patch is installed or applied, otherwise False
+
+	Example:
+
+	import Core
+	import SUSE
+
+	DEBUG = False
+	PATCH = SUSE.PatchInfo('slessp3-kernel')
+	if( DEBUG ):
+		PATCH.debugPatchDisplay()
+	if( PATCH.valid ):
+		if( PATCH.all_installed ):
+			Core.updateStatus(Core.IGNORE, "Patches have been applied")
+		else:
+			Core.updateStatus(Core.WARN, "Update server to apply missing kernel patches")
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: Invalid patch updates.txt section")
+	"""
 	patchCount = 0
 
 	def __init__(self, search_name):
@@ -178,6 +215,9 @@ class PatchInfo:
 			self.needed = False
 
 	def getLastInstalled(self):
+		"""
+		Returns a dictionary of the last installed patch in the patch_name set based on the version string
+		"""
 		VER = 0
 		PATCH_FOUND = {}
 		for PATCH in self.patchlist:
@@ -188,6 +228,9 @@ class PatchInfo:
 		return PATCH_FOUND
 
 	def getLastNeeded(self):
+		"""
+		Returns a dictionary of the last needed patch in the patch_name set based on the version string
+		"""
 		VER = 0
 		PATCH_FOUND = {}
 		for PATCH in self.patchlist:
@@ -197,18 +240,21 @@ class PatchInfo:
 					PATCH_FOUND = PATCH
 		return PATCH_FOUND
 
-	def displayPatchInfo(self):
+	def debugPatchDisplay(self):
+		"""
+		Prints the entire list of dictionaries and the class variables. Used for debug purposes only.
+		"""
 		print "Patch List:"
 		for patch in self.patchlist:
 			print "  " + str(patch)
-		print "Valid Section:         " + str(self.valid)
-		print "Patches Found:         " + str(self.patch_count)
-		print "PatchInfo Instances:   " + str(PatchInfo.patchCount)
-		print "Search String:         '" + str(self.search_name) + "'"
-		print "Patch Name Found:      '" + str(self.patch_name) + "'"
-		print "Patch Installed:       " + str(self.installed)
-		print "All Patches Installed: " + str(self.all_installed)
-		print "Any Patches Needed:    " + str(self.needed)
+		print "PatchInfo.valid         " + str(self.valid)
+		print "PatchInfo.patch_count   " + str(self.patch_count)
+		print "PatchInfo.patchCount    " + str(PatchInfo.patchCount)
+		print "PatchInfo.search_name   '" + str(self.search_name) + "'"
+		print "PatchInfo.patch_name    '" + str(self.patch_name) + "'"
+		print "PatchInfo.installed     " + str(self.installed)
+		print "PatchInfo.all_installed " + str(self.all_installed)
+		print "PatchInfo.needed        " + str(self.needed)
 
 def getDriverInfo( DRIVER_NAME ):
 	"""
