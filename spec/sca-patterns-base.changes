@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Dec  2 23:02:29 UTC 2014 - jrecord@suse.com
+
+- Created new SUSE Manger library suma.py
+
+-------------------------------------------------------------------
 Tue Sep 23 18:40:03 UTC 2014 - jrecord@suse.com
 
 - Added the PatchInfo class to SUSE.py
