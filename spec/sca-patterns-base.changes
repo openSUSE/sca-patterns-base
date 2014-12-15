@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Mon Dec 15 21:03:43 UTC 2014 - jrecord@suse.com
+Mon Dec 15 21:10:45 UTC 2014 - jrecord@suse.com
 
+- Added SLE11SP4 to bash SUSE library
+- Added SLE12SP1 to all SUSE libraries
 - SDP::SUSE::getFileSystems() now ignores lines starting with ---
 
 -------------------------------------------------------------------

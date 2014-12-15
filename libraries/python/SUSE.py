@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2014 Sep 17
+#  Modified: 2014 Dec 15
 #
 ##############################################################################
 
@@ -48,7 +48,8 @@ SLE11SP1     = '2.6.32.12-0.7'
 SLE11SP2     = '3.0.13-0.27'
 SLE11SP3     = '3.0.76-0.11.1'
 SLE11SP4     = '3.1' #Update to actual version when/if ready
-SLE12GA      = '3.999' #Update to actual version when applicable
+SLE12GA      = '3.12.28-4'
+SLE12SP1     = '3.999' #Update to actual version when applicable
 
 def packageInstalled(PackageName):
 	"""

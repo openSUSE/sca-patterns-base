@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2013 SUSE LINUX Products GmbH
+#  Copyright (C) 2014 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,11 @@
 #     Jason Record (jrecord@suse.com)
 #
 #  Creation Date:      2013 Jun 13
-#  Last Modified Date: 2013 Jun 13
+#  Last Modified Date: 2014 Dec 15
 #
 ##############################################################################
 # Library:       SUSE.rc
-# Version:       0.0.1
+# Version:       0.0.2
 # Requires:      Core.rc
 # Description:   Provides global variables for SLE kernel versions and base 
 #                information functions.
@@ -59,8 +59,10 @@ declare -r SLE10SP5='2.6.17' #Update to actual version when/if ready
 declare -r SLE11GA='2.6.27.19-5'
 declare -r SLE11SP1='2.6.32.12-0.7'
 declare -r SLE11SP2='3.0.13-0.27'
-declare -r SLE11SP3='3.0.999' #Update to actual version when/if ready
-declare -r SLE12GA='3.999' #Update to actual version when applicable
+declare -r SLE11SP3='3.0.76-0.11.1'
+declare -r SLE11SP4='3.1' #Update to actual version when/if ready
+declare -r SLE12GA='3.12.28-4' #Update to actual version when applicable
+declare -r SLE12SP1='3.999' #Update to actual version when applicable
 
 SC_INFO_VERSION=''
 SC_INFO_SCRIPTDATE=''

@@ -50,7 +50,7 @@ running on SUSE servers.
 
 =over 5
 
-=item SLE9GA, SLE9SP1, SLE9SP2, SLE9SP3, SLE9SP4, SLE9SP5, SLE10GA, SLE10SP1, SLE10SP2, SLE10SP3, SLE10SP4, SLE10SP5, SLE11GA, SLE11SP1, SLE11SP2, SLE11SP3, SLE11SP4, SLE12GA
+=item SLE9GA, SLE9SP1, SLE9SP2, SLE9SP3, SLE9SP4, SLE9SP5, SLE10GA, SLE10SP1, SLE10SP2, SLE10SP3, SLE10SP4, SLE10SP5, SLE11GA, SLE11SP1, SLE11SP2, SLE11SP3, SLE11SP4, SLE12GA, SLE12SP1
 
 SUSE Linux Enterprise Server/Desktop kernel versions
 
@@ -76,7 +76,8 @@ use constant SLE11SP1     => '2.6.32.12-0.7';
 use constant SLE11SP2     => '3.0.13-0.27';
 use constant SLE11SP3     => '3.0.76-0.11.1';
 use constant SLE11SP4     => '3.1'; #Update to actual version when/if ready
-use constant SLE12GA      => '3.999'; #Update to actual version when applicable
+use constant SLE12GA      => '3.12.28-4'; 
+use constant SLE12SP1     => '3.999'; #Update to actual version when applicable
 
 ##############################################################################
 # Exports
@@ -85,8 +86,8 @@ use constant SLE12GA      => '3.999'; #Update to actual version when applicable
 require      Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE12GA getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.3.4;
+our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE12GA SLE12SP1 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
+our $VERSION   = 0.3.5;
 
 use      SDP::Core;
 
