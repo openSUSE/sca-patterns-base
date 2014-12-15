@@ -16,7 +16,7 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
-#     Modified: 2014 Jun 25
+#     Modified: 2014 Dec 15
 #
 #
 ##############################################################################
@@ -1153,7 +1153,7 @@ sub getFileSystems {
 
 	# Add unmounted fstab entries
 	foreach $FSTAB (@FSTABS) {
-		next if ( $FSTAB =~ m/^\s*$|^#/ ); # Skip blank and commented lines
+		next if ( $FSTAB =~ m/^\s*$|^#|^---/ ); # Skip blank and commented lines
 		SDP::Core::printDebug("FSTAB", $FSTAB);
 		@FIELD = split(/\s+/, $FSTAB);
 		# If there is more than one swap device, and any one of them is on, each swap device will be declared mounted. I can't tell if each individual device is mounted.

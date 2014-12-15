@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Dec 15 21:03:43 UTC 2014 - jrecord@suse.com
+
+- SDP::SUSE::getFileSystems() now ignores lines starting with ---
+
+-------------------------------------------------------------------
 Tue Dec  2 23:02:29 UTC 2014 - jrecord@suse.com
 
 - Created new SUSE Manger library suma.py
