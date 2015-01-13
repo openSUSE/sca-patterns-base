@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 13 16:35:08 UTC 2015 - jrecord@suse.com
+
+- Updated perl docs on OESLinux.pm
+
+-------------------------------------------------------------------
 Sat Jan 10 17:32:28 UTC 2015 - jrecord@suse.com
 
 - Created new OES library oes.py

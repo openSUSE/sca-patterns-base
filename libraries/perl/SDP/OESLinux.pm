@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2009,2010-2013 Novell, Inc.
+#  Copyright (C) 2009,2010-2015 Novell, Inc.
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 #     Jason Record (jrecord@novell.com)
 #
 #  Creation Date:      2009 Jun 23
-#  Last Modified Date: 2013 Jun 18
+#  Last Modified Date: 2015 Jan 06
 #
 ##############################################################################
 
@@ -310,14 +310,14 @@ sub dsfwCapable {
 
 =item Description
 
-Checks for DSfW capabilities from the LDAP root DSE server in novell-lum.txt file.
+Checks if Dynamic Storage Technology (DST) shadow volumes are present.
 
 =item Usage
 
 	if ( SDP::OESLinux::shadowVolumes() ) {
-		SDP::Core::updateStatus(STATUS_SUCCESS, "Server is DSfW Capable");
+		SDP::Core::updateStatus(STATUS_SUCCESS, "DST Shadow Volumes in Use");
 	} else {
-		SDP::Core::updateStatus(STATUS_WARNING, "Server is not DSfW Capable");
+		SDP::Core::updateStatus(STATUS_WARNING, "No DST Shadow Volumes in Use");
 	}
 
 
