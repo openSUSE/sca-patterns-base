@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013,2014 SUSE LLC
+#  Copyright (C) 2013-2015 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2014 Dec 15
+#  Modified: 2015 Jan 13
 #
 ##############################################################################
 
@@ -554,11 +554,11 @@ def compareRPM(package, versionString):
 	if( SUSE.packageInstalled(RPM_NAME) ):
 		INSTALLED_VERSION = SUSE.compareRPM(RPM_NAME, RPM_VERSION)
 		if( INSTALLED_VERSION <= 0 ):
-			Core.updateStatus(Core.CRIT, "Bug detected in " + RPM_VERSION + ", update server for fixes")
+			Core.updateStatus(Core.CRIT, "Bug detected in " + RPM_NAME + ", update server for fixes")
 		else:
-			Core.updateStatus(Core.IGNORE, "Bug fixes applied for " + RPM_VERSION)
+			Core.updateStatus(Core.IGNORE, "Bug fixes applied for " + RPM_NAME)
 	else:
-		Core.updateStatus(Core.ERROR, "ERROR: " + RPM_NAME + " not installed")
+		Core.updateStatus(Core.ERROR, "ERROR: RPM package not installed: " + RPM_NAME)
 	"""
 	try:
 		#get package version
