@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jan 30 17:27:09 UTC 2015 - jrecord@suse.com
+
+- Update Makefile for submissions
+
+-------------------------------------------------------------------
 Tue Jan 27 16:49:20 UTC 2015 - jrecord@suse.com
 
 - Updated python/SUSE.py docs
