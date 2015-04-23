@@ -30,6 +30,7 @@ Library of functions for creating python patterns specific to SUSE
 import re
 import Core
 from Core import path
+import datetime
 
 SLE9GA       = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
@@ -828,5 +829,108 @@ def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
 		Core.updateStatus(Core.ERROR, "ERROR: " + TITLE + " not installed, skipping security test")
 
 	return INSTALLED
+
+def getSCRunTime():
+	"""
+	Gets information about when the supportconfig was run
+
+	Requires: import datetime
+	Args:			None
+	Returns:	datetime object
+
+	Example:
+
+	REQUIRED_VERSION = '2.25-173';
+	SC_INFO = SUSE.getSCInfo();
+	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
+		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
+	else:
+		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
+	"""
+	#requires: import datetime
+	fileOpen = "basic-environment.txt"
+	section = "/date"
+	content = {}
+	EVENT = None
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if( len(content[line]) > 0 ):
+				#print "PROCESS = " + str(content[line])
+				PART = content[line].split()
+				del PART[4]
+				PARTS = ' '.join(PART)
+				EVENT = datetime.datetime.strptime(PARTS, "%a %b %w %H:%M:%S %Y")
+				#print "EVENT   = " + str(EVENT)
+				break
+	return EVENT				
+
+def compareDateTime(FROM, DATETIME):
+	"""
+	Gets information about when the supportconfig was run
+
+	Requires: import datetime
+	Args:			None
+	Returns:	datetime object
+
+	Example:
+
+	REQUIRED_VERSION = '2.25-173';
+	SC_INFO = SUSE.getSCInfo();
+	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
+		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
+	else:
+		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
+	"""
+	FROM = FROM.lower()
+	if "today" in FROM:
+		FROM_DATETIME = datetime.datetime.now()
+	elif "now" in FROM:
+		FROM_DATETIME = datetime.datetime.now()
+	else:
+		FROM_DATETIME = getSCRunTime()
+
+	if( FROM_DATETIME > DATETIME ):
+		return 1
+	elif( FROM_DATETIME < DATETIME ):
+		return -1
+	else:
+		return 0
+
+def getSCCInfo():
+	"""
+	Gets information about when the supportconfig was run
+
+	Requires: import datetime
+	Args:			None
+	Returns:	datetime object
+
+	Example:
+
+	REQUIRED_VERSION = '2.25-173';
+	SC_INFO = SUSE.getSCInfo();
+	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
+		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
+	else:
+		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
+	"""
+	fileOpen = "updates.txt"
+	section = "SUSEConnect --status"
+	content = {}
+	PRODUCTS = []
+	INFO = []
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if "identifier" in content[line].lower():
+				PRODUCTS = content[line].strip("[]").split(',{')
+				#print str(PRODUCTS) + "\n"
+				for PROD in PRODUCTS:
+					if( len(PROD) > 0 ):
+						#print " = " + PROD
+						S = list(PROD.strip(",{}").replace('"', '').split(','))
+						#print " = " + str(S) + "\n"
+						INFO.append(S)
+	#for PROD in INFO:
+		#print str(PROD)
+	return INFO
 
 
