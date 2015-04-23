@@ -840,8 +840,7 @@ def getSCRunTime():
 
 	Example:
 
-	REQUIRED_VERSION = '2.25-173';
-	SC_INFO = SUSE.getSCInfo();
+	SC_RUN_TIME = SUSE.getSCRunTime()
 	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
 		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
 	else:
@@ -874,20 +873,17 @@ def compareDateTime(FROM, DATETIME):
 
 	Example:
 
-	REQUIRED_VERSION = '2.25-173';
-	SC_INFO = SUSE.getSCInfo();
+	SC_INFO = SUSE.getSCInfo()
 	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
 		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
 	else:
 		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
 	"""
 	FROM = FROM.lower()
-	if "today" in FROM:
-		FROM_DATETIME = datetime.datetime.now()
-	elif "now" in FROM:
-		FROM_DATETIME = datetime.datetime.now()
+	if "supportconfig" in FROM:
+		FROM_DATETIME = SUSE.getSCRunTime()
 	else:
-		FROM_DATETIME = getSCRunTime()
+		FROM_DATETIME = datetime.datetime.now()
 
 	if( FROM_DATETIME > DATETIME ):
 		return 1
@@ -907,7 +903,7 @@ def getSCCInfo():
 	Example:
 
 	REQUIRED_VERSION = '2.25-173';
-	SC_INFO = SUSE.getSCInfo();
+	SC_INFO = SUSE.getSCCInfo();
 	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
 		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
 	else:
@@ -932,5 +928,122 @@ def getSCCInfo():
 	#for PROD in INFO:
 		#print str(PROD)
 	return INFO
+
+def getZypperRepoList():
+	"""
+	Gathers zypper repos output into a list of dictionaries
+
+	Args:			None
+	Returns:	List of Dictionaries
+	Keys:			The key names correspond to the field names from zypper repos command.
+						Num - Repository number
+						Alias
+						Name
+						Enabled - True (Yes) if the repository is enabled, otherwise False (No).
+						Refresh - True (Yes) is the repository is set to refresh, otherwise False (No).
+
+	Example:
+
+	REPO_LIST = SUSE.getZypperRepoList()
+	DISABLED_REPOS = []
+	for I in range(len(REPO_LIST)):
+		if( not REPO_LIST[I]['Enabled'] ):
+			DISABLED_REPOS.append(REPO_LIST[I]['Name'])
+	if( DISABLED_REPOS ):
+		Core.updateStatus(Core.WARN, "Detected " + str(len(DISABLED_REPOS)) + " disabled repositories of " + str(len(REPO_LIST)) + " available: " + str(DISABLED_REPOS))
+	else:
+		Core.updateStatus(Core.IGNORE, "Not disabled repositories detected")	
+	"""
+	fileOpen = "updates.txt"
+	section = "/zypper\s--.*\srepos"
+	startRepos = re.compile("^-*\+-*\+")
+	endRepos = re.compile("^#==|^$")
+	REPOS = []
+	IN_REPOS = False
+	content = {}
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if( IN_REPOS ):
+				if endRepos.search(content[line]):
+					IN_REPOS = False
+				else:
+					ONE_REPO = content[line].split('|')
+					for I in range(len(ONE_REPO)):
+						ONE_REPO[I] = ONE_REPO[I].strip()
+					#Converts ONE_REPO into a dictionary with the named keys
+					ONE_DICT = dict(zip(['Num', 'Alias', 'Name', 'Enabled', 'Refresh'], ONE_REPO))
+					REPOS.append(ONE_DICT)
+			elif startRepos.search(content[line]):
+				IN_REPOS = True
+	for I in range(len(REPOS)):
+		if 'yes' in REPOS[I]['Enabled'].lower():
+			REPOS[I]['Enabled'] = True
+		else:
+			REPOS[I]['Enabled'] = False
+		if 'yes' in REPOS[I]['Refresh'].lower():
+			REPOS[I]['Refresh'] = True
+		else:
+			REPOS[I]['Refresh'] = False
+		#print REPOS[I]
+	#print "\n"
+	return REPOS
+
+def getZypperProductList():
+	"""
+	Gathers zypper products output into a list of dictionaries
+
+	Args:			None
+	Returns:	List of Dictionaries
+	Keys:			The key names correspond to the field names from zypper products command.
+						Status (S) - Product status
+						Repository
+						InternalName
+						Name
+						Version
+						Architecture (Arch)
+						IsBase - True (Yes) is the product is a base product, otherwise False (No).
+
+	Example:
+
+	PRODUCT_LIST = SUSE.getZypperProductList()
+	BASE_PRODUCTS = []
+	for I in range(len(PRODUCT_LIST)):
+		if( PRODUCT_LIST[I]['IsBase'] ):
+			BASE_PRODUCTS.append(PRODUCT_LIST[I]['Name'])
+	if( BASE_PRODUCTS ):
+		Core.updateStatus(Core.SUCC, "Base products found: " + str(BASE_PRODUCTS))
+	else:
+		Core.updateStatus(Core.CRIT, "No base products found")	
+	"""
+	fileOpen = "updates.txt"
+	section = "/zypper\s--.*\sproducts"
+	startProducts = re.compile("^-*\+-*\+")
+	endProducts = re.compile("^#==|^$")
+	PRODUCTS = []
+	IN_PRODUCTS = False
+	content = {}
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if( IN_PRODUCTS ):
+				if endProducts.search(content[line]):
+					IN_PRODUCTS = False
+				else:
+					ONE_PRODUCT = content[line].split('|')
+					for I in range(len(ONE_PRODUCT)):
+						ONE_PRODUCT[I] = ONE_PRODUCT[I].strip()
+					#Converts ONE_PRODUCT into a dictionary with the named keys
+					ONE_DICT = dict(zip(['Status', 'Respository', 'InternalName', 'Name', 'Version', 'Architecture', 'IsBase'], ONE_PRODUCT))
+					PRODUCTS.append(ONE_DICT)
+			elif startProducts.search(content[line]):
+				IN_PRODUCTS = True
+	for I in range(len(PRODUCTS)):
+		if 'yes' in PRODUCTS[I]['IsBase'].lower():
+			PRODUCTS[I]['IsBase'] = True
+		else:
+			PRODUCTS[I]['IsBase'] = False
+		#print PRODUCTS[I]
+	#print "\n"
+	return PRODUCTS
+
 
 
