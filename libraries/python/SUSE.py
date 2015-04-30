@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jan 13
+#  Modified: 2015 Apr 24
 #
 ##############################################################################
 
@@ -31,6 +31,7 @@ import re
 import Core
 from Core import path
 import datetime
+import ast
 
 SLE9GA       = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
@@ -840,11 +841,12 @@ def getSCRunTime():
 
 	Example:
 
+	import datetime
 	SC_RUN_TIME = SUSE.getSCRunTime()
-	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
-		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
+	if( SC_RUN_TIME < datetime.datetime.now() - datetime.timedelta(days=30) ):
+		Core.updateStatus(Core.WARN, "Supportconfig data are older than 30 days, run a new supportconfig")
 	else:
-		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
+		Core.updateStatus(Core.IGNORE, "Supportconfig data is current")	
 	"""
 	#requires: import datetime
 	fileOpen = "basic-environment.txt"
@@ -858,39 +860,11 @@ def getSCRunTime():
 				PART = content[line].split()
 				del PART[4]
 				PARTS = ' '.join(PART)
+				print "PARTS = " + str(PARTS) + "\n"
 				EVENT = datetime.datetime.strptime(PARTS, "%a %b %w %H:%M:%S %Y")
 				#print "EVENT   = " + str(EVENT)
 				break
 	return EVENT				
-
-def compareDateTime(FROM, DATETIME):
-	"""
-	Gets information about when the supportconfig was run
-
-	Requires: import datetime
-	Args:			None
-	Returns:	datetime object
-
-	Example:
-
-	SC_INFO = SUSE.getSCInfo()
-	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
-		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
-	else:
-		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
-	"""
-	FROM = FROM.lower()
-	if "supportconfig" in FROM:
-		FROM_DATETIME = SUSE.getSCRunTime()
-	else:
-		FROM_DATETIME = datetime.datetime.now()
-
-	if( FROM_DATETIME > DATETIME ):
-		return 1
-	elif( FROM_DATETIME < DATETIME ):
-		return -1
-	else:
-		return 0
 
 def getSCCInfo():
 	"""
@@ -902,31 +876,30 @@ def getSCCInfo():
 
 	Example:
 
-	REQUIRED_VERSION = '2.25-173';
-	SC_INFO = SUSE.getSCCInfo();
-	if( Core.compareVersions(SC_INFO['version'], REQUIRED_VERSION) >= 0 ):
-		Core.updateStatus(Core.IGNORE, "Supportconfig v" + str(SC_INFO['version']) + " meets minimum requirement")
+	SCC_INFO = SUSE.getSCCInfo()
+	UNREGISTERED_LIST = []
+	if( SCC_INFO ):
+		for I in range(len(SCC_INFO)):
+			if( "registered" != str(SCC_INFO[I]['status'].lower()) ):
+				UNREGISTERED_LIST.append(SCC_INFO[I]['identifier'])
+		if( UNREGISTERED_LIST ):
+			Core.updateStatus(Core.WARN, "Detected unregistered products: " + str(UNREGISTERED_LIST))
+		else:
+			Core.updateStatus(Core.IGNORE, "All products appear to be registered")
 	else:
-		Core.updateStatus(Core.WARN, "Supportconfig v" + str(SC_INFO['version']) + " NOT sufficient, " + str(REQUIRED_VERSION) + " or higher needed")	
+		Core.updateStatus(Core.ERROR, "ERROR: Missing SUSEConnect Information")
 	"""
 	fileOpen = "updates.txt"
 	section = "SUSEConnect --status"
 	content = {}
-	PRODUCTS = []
 	INFO = []
 	if Core.getSection(fileOpen, section, content):
 		for line in content:
 			if "identifier" in content[line].lower():
-				PRODUCTS = content[line].strip("[]").split(',{')
-				#print str(PRODUCTS) + "\n"
-				for PROD in PRODUCTS:
-					if( len(PROD) > 0 ):
-						#print " = " + PROD
-						S = list(PROD.strip(",{}").replace('"', '').split(','))
-						#print " = " + str(S) + "\n"
-						INFO.append(S)
-	#for PROD in INFO:
-		#print str(PROD)
+				INFO = ast.literal_eval(content[line].replace(':null,', ':"",').replace(':null}', ':""}'))
+	#for I in range(len(INFO)):
+		#print "INFO[" + str(I) + "]: " + str(INFO[I])
+	#print "\n"
 	return INFO
 
 def getZypperRepoList():
