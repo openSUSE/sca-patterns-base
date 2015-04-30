@@ -908,7 +908,7 @@ def getZypperRepoList():
 
 	Args:			None
 	Returns:	List of Dictionaries
-	Keys:			The key names correspond to the field names from zypper repos command.
+	Keys:			The dictionary key names correspond to the field names from zypper repos command.
 						Num - Repository number
 						Alias
 						Name
@@ -967,7 +967,7 @@ def getZypperProductList():
 
 	Args:			None
 	Returns:	List of Dictionaries
-	Keys:			The key names correspond to the field names from zypper products command.
+	Keys:			The dictionary key names correspond to the field names from zypper products command.
 						Status (S) - Product status
 						Repository
 						InternalName
