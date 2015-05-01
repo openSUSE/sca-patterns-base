@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri May  1 18:23:02 UTC 2015 - jrecord@suse.com
+
+- Added python library functions:
+  SUSE.getZypperProductList
+  SUSE.getZypperRepoList
+  SUSE.getSCCInfo
+  SUSE.getSCRunTime
+
+-------------------------------------------------------------------
 Fri Jan 30 17:27:09 UTC 2015 - jrecord@suse.com
 
 - Update Makefile for submissions

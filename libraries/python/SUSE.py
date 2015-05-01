@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Apr 24
+#  Modified: 2015 May 1
 #
 ##############################################################################
 
@@ -846,7 +846,7 @@ def getSCRunTime():
 	if( SC_RUN_TIME < datetime.datetime.now() - datetime.timedelta(days=30) ):
 		Core.updateStatus(Core.WARN, "Supportconfig data are older than 30 days, run a new supportconfig")
 	else:
-		Core.updateStatus(Core.IGNORE, "Supportconfig data is current")	
+		Core.updateStatus(Core.IGNORE, "Supportconfig data are current")	
 	"""
 	#requires: import datetime
 	fileOpen = "basic-environment.txt"
@@ -860,19 +860,20 @@ def getSCRunTime():
 				PART = content[line].split()
 				del PART[4]
 				PARTS = ' '.join(PART)
-				print "PARTS = " + str(PARTS) + "\n"
-				EVENT = datetime.datetime.strptime(PARTS, "%a %b %w %H:%M:%S %Y")
+				#print "PARTS = " + str(PARTS) + "\n"
+				EVENT = datetime.datetime.strptime(PARTS, "%c")
 				#print "EVENT   = " + str(EVENT)
 				break
 	return EVENT				
 
 def getSCCInfo():
 	"""
-	Gets information about when the supportconfig was run
+	Gets information provided by the SUSEConnect --status command in SLE12
 
-	Requires: import datetime
+	Requires: None
 	Args:			None
-	Returns:	datetime object
+	Returns:	List of Dictionaries
+	Keys:			The dictionary key names correspond to the field names from SUSEConnect command. The dictionaries are variable in length.
 
 	Example:
 
@@ -896,6 +897,8 @@ def getSCCInfo():
 	if Core.getSection(fileOpen, section, content):
 		for line in content:
 			if "identifier" in content[line].lower():
+				#SUSEConnect --status generates output that looks like a python list of dictionaries, eval is used to convert it to just that: a list of dictionaries.
+				#Since the source is not trusted, literal_eval is used to secure the evaluation.
 				INFO = ast.literal_eval(content[line].replace(':null,', ':"",').replace(':null}', ':""}'))
 	#for I in range(len(INFO)):
 		#print "INFO[" + str(I) + "]: " + str(INFO[I])
