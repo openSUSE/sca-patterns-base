@@ -23,7 +23,7 @@ vitural machines or their virtual machine servers.
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Jun 17
+#  Modified: 2015 Jun 06
 #
 ##############################################################################
 
@@ -103,4 +103,40 @@ def isDom0Installed():
 				return True
 	return False
 
+def getConfigFiles():
+	"""
+	Stores the non-XML Xen configuration files in list of dictionaries
+
+	Args: None
+	Returns: List of Dictionaries
+
+	Example:
+	Pending
+	"""
+	CONFIG_FILES = []
+	CONFIG_FILE_LIST = []
+	CONTENT = {}
+	if Core.listSections("xen.txt", CONTENT):
+		for LINE in CONTENT:
+			if CONTENT[LINE].startswith("/etc/xen/vm/"):
+				if '.xml' not in CONTENT[LINE]:
+					CONFIG_FILE_LIST.append(CONTENT[LINE])
+		for CONFIG in CONFIG_FILE_LIST:
+			#print "----------------------\nGetting", CONFIG
+			CONTENT = []
+			if Core.getExactSection("xen.txt", CONFIG, CONTENT):
+				CONFIG_VALUES = {}
+				for LINE in CONTENT:
+					TMP = LINE.split("=", 1)
+					#print "TMP", TMP
+					CONFIG_VALUES[TMP[0]] = TMP[1].strip('"')
+					#print "  CONFIG_VALUES", CONFIG_VALUES
+				CONFIG_FILES.append(CONFIG_VALUES)
+		#if( CONFIG_FILES ):
+			#print "======\n"
+			#for I in range(len(CONFIG_FILES)):
+				#print I, "==", CONFIG_FILES[I]
+		#else:
+			#print "CONFIG_FILES empty"
+	return CONFIG_FILES
 

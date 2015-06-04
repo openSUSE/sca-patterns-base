@@ -258,11 +258,13 @@ def listSections(FILE_OPEN, CONTENT):
 #get Section of supportconfig
 def getSection(FILE_OPEN, SECTION, CONTENT):
 	"""
-	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT list, one line per list element.
+	Deprecated: Use Core.getRegExSection or Core.getExactSection instead.
+
+	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT dictionary, one line per list element.
 
 	Args:		FILE_OPEN (String) - The supportconfig filename to open
 				SECTION (String) - The section regex identifier in the file
-				CONTENT (List) - Section contents line-by-line
+				CONTENT (Dictionary) - Section contents line-by-line
 	Returns:	True or False
 					True - The specified section was found
 					False - The section was not found
@@ -307,6 +309,117 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 #					print " Appending Line: '" + str(line) + "'"
 					CONTENT[i] = line
 					i += 1
+					FoundSection = True
+#			else:
+#				print " Skipping empty line"
+	FILE.close()
+	return FoundSection
+
+def getRegExSection(FILE_OPEN, SECTION, CONTENT):
+	"""
+	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT list, one line per list element.
+	NOTE: getRegExSection differs from getSection in that CONTENT is a list instead of a dictionary.
+
+	Args:		FILE_OPEN (String) - The supportconfig filename to open
+				SECTION (String) - The section regex identifier in the file
+				CONTENT (List) - Section contents line-by-line
+	Returns:	True or False
+					True - The specified section was found
+					False - The section was not found
+	Example:
+
+	FILE_OPEN = "boot.txt"
+	SECTION = "menu.lst"
+	CONTENT = []
+	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			if "xen.gz" in LINE:
+				Core.updateStatus(Core.IGNORE, "Found Xen kernel boot option"
+	Core.updateStatus(Core.WARN, "Missing Xen kernel boot option")
+	"""
+	FoundSection = False
+	SectionName = ''
+	global path
+	try:
+		FILE = open(path + "/" + FILE_OPEN)
+	except Exception, error:
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
+	SectionTag = re.compile(SECTION)
+	CommentedLine = re.compile('^#|^\s+#')
+	for line in FILE:
+		line = line.strip("\n")
+		if line.startswith('#==['):
+#			print "\nNew Section Start"
+			SectionName = ''
+			if FoundSection:
+				break
+		elif ( SectionName == '' ):
+#			print " SectionName before = " + str(line)
+			SectionName = re.sub('^#', '', line).strip()
+#			print " SectionName after  = " + str(SectionName)
+		elif SectionTag.search(SectionName):
+			if( len(line) > 0 ):
+				if CommentedLine.search(line):
+#					print " Skipping Line: '" + str(line) + "'"
+					continue
+				else:
+#					print " Appending Line: '" + str(line) + "'"
+					CONTENT.append(line)
+					FoundSection = True
+#			else:
+#				print " Skipping empty line"
+	FILE.close()
+	return FoundSection
+
+def getExactSection(FILE_OPEN, SECTION, CONTENT):
+	"""
+	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT list, one line per list element.
+	NOTE: getExactSection differs from getSection in that CONTENT is a list instead of a dictionary and the SECTION string must match exactly to the Section name in the file.
+
+	Args:		FILE_OPEN (String) - The supportconfig filename to open
+				SECTION (String) - The section regex identifier in the file
+				CONTENT (List) - Section contents line-by-line
+	Returns:	True or False
+					True - The specified section was found
+					False - The section was not found
+	Example:
+
+	fileOpen = "boot.txt"
+	section = "menu.lst"
+	content = []
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if "xen.gz" in line:
+				Core.updateStatus(Core.IGNORE, "Found Xen kernel boot option"
+	Core.updateStatus(Core.WARN, "Missing Xen kernel boot option")
+	"""
+	FoundSection = False
+	SectionName = ''
+	global path
+	try:
+		FILE = open(path + "/" + FILE_OPEN)
+	except Exception, error:
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
+	CommentedLine = re.compile('^#|^\s+#')
+	for line in FILE:
+		line = line.strip("\n")
+		if line.startswith('#==['):
+#			print "\nNew Section Start"
+			SectionName = ''
+			if FoundSection:
+				break
+		elif ( SectionName == '' ):
+#			print " SectionName before = " + str(line)
+			SectionName = re.sub('^#', '', line).strip()
+#			print " SectionName after  = " + str(SectionName)
+		elif( SECTION == SectionName ):
+			if( len(line) > 0 ):
+				if CommentedLine.search(line):
+#					print " Skipping Line: '" + str(line) + "'"
+					continue
+				else:
+#					print " Appending Line: '" + str(line) + "'"
+					CONTENT.append(line)
 					FoundSection = True
 #			else:
 #				print " Skipping empty line"

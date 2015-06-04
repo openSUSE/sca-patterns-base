@@ -1021,5 +1021,73 @@ def getZypperProductList():
 	#print "\n"
 	return PRODUCTS
 
+def mpioDevicesManaged():
+	"""
+	Determines if any disks are managed with Device Mapper Multi-path MPIO.
+
+	Args: None
+	Returns: True if devices are being managed or False if they are not.
+	
+	Example:
+	if( SUSE.mpioDevicesManaged() ):
+		Core.updateStatus(Core.IGNORE, "MPIO Disks are being managed")
+	else:
+		Core.updateStatus(Core.WARNG, "No MPIO Disks are being managed")
+
+	"""
+	fileOpen = "mpio.txt"
+	section = "multipath -ll"
+	content = {}
+	if Core.getSection(fileOpen, section, content):
+		for line in content:
+			if '-+-' in content[line]:
+				return True
+	return False
+
+def mpioGetManagedDevices():
+	FILE_OPEN = "mpio.txt"
+	SECTION = "multipath -ll"
+	CONTENT = []
+	DEVICES = []
+	IN_DEVICE = False
+	MPATH = {}
+	ENTRIES = []
+	DeviceStart = re.compile(" dm-\d+ ")
+	DeviceEntry = re.compile("\d+:\d+:\d+:\d+\s+\D+\s+\d+:\d+", re.IGNORECASE)
+	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			if DeviceStart.search(LINE):
+				MPATH = {'device': []}
+				if( len(MPATH) > 1 ):
+					print " Complete LEN", len(MPATH), "MPATH", MPATH
+					DEVICES.append(dict(MPATH))
+				PARTS = LINE.split()
+				print " New LEN", len(MPATH), "MPATH", MPATH
+				if PARTS[1].startswith('('): # user friendly names in use
+					MPATH['friendly'] = PARTS[0]
+					MPATH['wwid'] = PARTS[1].strip('()')
+					MPATH['dmdev'] = PARTS[2]
+					del PARTS[0:3]
+					MPATH['description'] = ' '.join(PARTS)
+				else:
+					MPATH['friendly'] = ''
+					MPATH['wwid'] = PARTS[0]
+					MPATH['dmdev'] = PARTS[1]
+					del PARTS[0:2]
+					MPATH['description'] = ' '.join(PARTS)
+			elif DeviceEntry.search(LINE):
+					TMP = LINE.split()
+					while TMP[0].startswith(('|','`')):
+						del TMP[0]
+					MPATH['device'].append(TMP)
+					
+
+		#print 'MPATH', MPATH
+		for I in range(len(DEVICES)):
+			print "DEVICES[" + str(I) + "]=", DEVICES, "\n"
+
+	return DEVICES
+
+
 
 
