@@ -1057,12 +1057,10 @@ def mpioGetManagedDevices():
 	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
 			if DeviceStart.search(LINE):
-				MPATH = {'device': []}
 				if( len(MPATH) > 1 ):
-					print " Complete LEN", len(MPATH), "MPATH", MPATH
 					DEVICES.append(dict(MPATH))
+				MPATH = {'device': []}
 				PARTS = LINE.split()
-				print " New LEN", len(MPATH), "MPATH", MPATH
 				if PARTS[1].startswith('('): # user friendly names in use
 					MPATH['friendly'] = PARTS[0]
 					MPATH['wwid'] = PARTS[1].strip('()')
@@ -1075,17 +1073,60 @@ def mpioGetManagedDevices():
 					MPATH['dmdev'] = PARTS[1]
 					del PARTS[0:2]
 					MPATH['description'] = ' '.join(PARTS)
+			elif "size=" in LINE:
+				TMP = LINE.split()
+				#print "\n", TMP
+				#process the single-value key/value pairs
+				for ITEM in TMP:
+					if "='" in ITEM and ITEM.endswith("'"):
+						PART = ITEM.split("=")
+						MPATH[PART[0]] = PART[1].strip("'")
+					elif "='" in ITEM or ITEM.endswith("'"):
+						#skip multi-value items
+						continue
+					elif not "=" in ITEM:
+						#skip multi-value items
+						continue
+					else:
+						PART = ITEM.split("=")
+						MPATH[PART[0]] = PART[1]
+				#process the multi-valued key/value pairs
+				IN_VALUE = False
+				MULTI_VALUE = []
+				for ITEM in TMP:
+					#print "Processing", ITEM
+					if "='" in ITEM and ITEM.endswith("'"):
+						#print " skipping quoted single value"
+						continue
+					elif( IN_VALUE ):
+						if ITEM.endswith("'"):
+							#print " end multi-value"
+							IN_VALUE = False
+							MULTI_VALUE.append(ITEM)
+							PARTS = ' '.join(MULTI_VALUE)
+							PART = PARTS.split("=")
+							MPATH[PART[0]] = PART[1].strip("'")
+							MULTI_VALUE = []
+						elif "=" not in ITEM:
+							#print " multi-value part"
+							MULTI_VALUE.append(ITEM)
+					else:
+						if "='" in ITEM:
+							#print " start multi-value"
+							IN_VALUE = True
+							MULTI_VALUE.append(ITEM)
 			elif DeviceEntry.search(LINE):
-					TMP = LINE.split()
-					while TMP[0].startswith(('|','`')):
-						del TMP[0]
-					MPATH['device'].append(TMP)
-					
+				TMP = LINE.split()
+				while TMP[0].startswith(('|','`')):
+					del TMP[0]
+				MPATH['device'].append(TMP)
+		if( len(MPATH) > 1 ):
+			DEVICES.append(dict(MPATH))
 
-		#print 'MPATH', MPATH
-		for I in range(len(DEVICES)):
-			print "DEVICES[" + str(I) + "]=", DEVICES, "\n"
-
+		#print "\n=============\n"
+		#for I in range(len(DEVICES)):
+			#print "DEVICES[" + str(I) + "]=", DEVICES[I], "\n"
+		#print "\n"
 	return DEVICES
 
 
