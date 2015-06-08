@@ -125,7 +125,7 @@ def getConfigFiles():
 				if '.xml' not in CONTENT[LINE]:
 					CONFIG_FILE_LIST.append(CONTENT[LINE])
 		for CONFIG in CONFIG_FILE_LIST:
-			#print "----------------------\nGetting", CONFIG
+			print "----------------------\nGetting", CONFIG
 			CONTENT = []
 			if Core.getExactSection("xen.txt", CONFIG, CONTENT):
 				CONFIG_VALUES = {}
@@ -148,8 +148,13 @@ def getConfigFiles():
 						VALUES.append(LINE)
 					else: #assume single line entry
 						TMP = LINE.split("=", 1)
-						#print "TMP", TMP
-						CONFIG_VALUES[TMP[0].strip()] = TMP[1].strip('"').strip()
+						print "TMP", TMP, "Length", len(TMP)
+						if( len(TMP) != 2 ): #Invalid entry, assume the config file is invalid and ignore it.
+							print " Invalid config file"
+							CONFIG_VALUES = {}
+							break
+						else:
+							CONFIG_VALUES[TMP[0].strip()] = TMP[1].strip('"').strip()
 				#print "  CONFIG_VALUES", CONFIG_VALUES
 				CONFIG_FILES.append(CONFIG_VALUES)
 
