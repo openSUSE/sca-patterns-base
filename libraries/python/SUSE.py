@@ -1023,10 +1023,12 @@ def getZypperProductList():
 
 def mpioDevicesManaged():
 	"""
-	Determines if any disks are managed with Device Mapper Multi-path MPIO.
+	Determines if any disks are managed with Device Mapper Multi-path MPIO. It looks at the multipath -ll output for device lines with -+- in them.
 
 	Args: None
-	Returns: True if devices are being managed or False if they are not.
+	Returns: True or False
+		True if devices are being managed
+		False if they are not.
 	
 	Example:
 	if( SUSE.mpioDevicesManaged() ):
@@ -1035,16 +1037,47 @@ def mpioDevicesManaged():
 		Core.updateStatus(Core.WARNG, "No MPIO Disks are being managed")
 
 	"""
-	fileOpen = "mpio.txt"
-	section = "multipath -ll"
-	content = {}
-	if Core.getSection(fileOpen, section, content):
-		for line in content:
-			if '-+-' in content[line]:
+	FILE_OPEN = "mpio.txt"
+	SECTION = "multipath -ll"
+	CONTENT = []
+	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			if '-+-' in LINE:
 				return True
 	return False
 
 def mpioGetManagedDevices():
+	"""
+	Normalizes the multipath -ll output into a list of dictionaries. The multipath -ll output looks like:
+	#==[ Command ]======================================#
+	# /sbin/multipath -ll
+	mpathe (3600601609e003700bd875493d3ade411) dm-2 DGC,VRAID
+	size=1.0T features='1 queue_if_no_path' hwhandler='1 emc' wp=rw
+	|-+- policy='round-robin 0' prio=4 status=active
+	| |- 2:0:1:4 sdai 66:32  active ready running
+	| `- 1:0:1:4 sdo  8:224  active ready running
+	`-+- policy='round-robin 0' prio=1 status=enabled
+		|- 1:0:0:4 sde  8:64   active ready running
+		`- 2:0:0:4 sdy  65:128 active ready running
+
+	Note: Currently the policy line values for each service processor port are ignored and not available in the list of dictionaries. In the example above, policy, prio and status are excluded.
+
+	Args: None
+	Returns: List of Dictionaries
+	Keys:
+		friendly : 
+		wwid : 
+		dmdev : 
+		description : 
+		size : 
+		features : 
+		hwhandler : 
+		wp : 
+		devicepath : 
+		
+
+	Example:
+	"""
 	FILE_OPEN = "mpio.txt"
 	SECTION = "multipath -ll"
 	CONTENT = []
@@ -1059,7 +1092,7 @@ def mpioGetManagedDevices():
 			if DeviceStart.search(LINE):
 				if( len(MPATH) > 1 ):
 					DEVICES.append(dict(MPATH))
-				MPATH = {'device': []}
+				MPATH = {'devicepath': []}
 				PARTS = LINE.split()
 				if PARTS[1].startswith('('): # user friendly names in use
 					MPATH['friendly'] = PARTS[0]
@@ -1119,14 +1152,14 @@ def mpioGetManagedDevices():
 				TMP = LINE.split()
 				while TMP[0].startswith(('|','`')):
 					del TMP[0]
-				MPATH['device'].append(TMP)
+				MPATH['devicepath'].append(TMP)
 		if( len(MPATH) > 1 ):
 			DEVICES.append(dict(MPATH))
 
-		#print "\n=============\n"
-		#for I in range(len(DEVICES)):
-			#print "DEVICES[" + str(I) + "]=", DEVICES[I], "\n"
-		#print "\n"
+		print "\n=============\n"
+		for I in range(len(DEVICES)):
+			print "DEVICES[" + str(I) + "]=", DEVICES[I], "\n"
+		print "\n"
 	return DEVICES
 
 

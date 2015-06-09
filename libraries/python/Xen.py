@@ -115,17 +115,17 @@ def getConfigFiles():
 	"""
 	CONFIG_FILES = []
 	CONFIG_FILE_LIST = []
-	CONTENT = {}
-	MultiLine = re.compile("=\s*\[") # A line that has an =[ but does not end with a ] is a multiline value.
+	SECTION_LIST = {}
+	MultiLine = re.compile("=\s*\[") # A line that has an =[ k
 	IN_MULTI_LINE = False
 	VALUES = []
-	if Core.listSections("xen.txt", CONTENT):
-		for LINE in CONTENT:
-			if CONTENT[LINE].startswith("/etc/xen/vm/"):
-				if '.xml' not in CONTENT[LINE]:
-					CONFIG_FILE_LIST.append(CONTENT[LINE])
+	if Core.listSections("xen.txt", SECTION_LIST):
+		for LINE in SECTION_LIST:
+			if SECTION_LIST[LINE].startswith("/etc/xen/vm/"):
+				if '.xml' not in SECTION_LIST[LINE]:
+					CONFIG_FILE_LIST.append(SECTION_LIST[LINE])
 		for CONFIG in CONFIG_FILE_LIST:
-			print "----------------------\nGetting", CONFIG
+			#print "----------------------\nGetting", CONFIG
 			CONTENT = []
 			if Core.getExactSection("xen.txt", CONFIG, CONTENT):
 				CONFIG_VALUES = {}
@@ -148,15 +148,20 @@ def getConfigFiles():
 						VALUES.append(LINE)
 					else: #assume single line entry
 						TMP = LINE.split("=", 1)
-						print "TMP", TMP, "Length", len(TMP)
+						#print "TMP", TMP, "Length", len(TMP)
 						if( len(TMP) != 2 ): #Invalid entry, assume the config file is invalid and ignore it.
-							print " Invalid config file"
+							#print " Invalid config file"
+							CONFIG_VALUES = {}
+							break
+						elif( "=" in TMP[1] and "]" not in TMP[1] ):
+							#print " Invalid config file"
 							CONFIG_VALUES = {}
 							break
 						else:
 							CONFIG_VALUES[TMP[0].strip()] = TMP[1].strip('"').strip()
 				#print "  CONFIG_VALUES", CONFIG_VALUES
-				CONFIG_FILES.append(CONFIG_VALUES)
+				if( CONFIG_VALUES):
+					CONFIG_FILES.append(CONFIG_VALUES)
 
 		#if( CONFIG_FILES ):
 			#print "======\n"
@@ -194,23 +199,5 @@ def getDiskValueList(XEN_CONFIG_DISK_VALUE):
 	#print "\n"
 
 	return DISK_LIST
-
-def extractDevicesFrom(DEVICE_TYPE, XEN_CONFIG_DISK_VALUE):
-	PHY_DEVICES = []
-	DISK_LIST = getDiskValueList(XEN_CONFIG_DISK_VALUE)
-	if DEVICE_TYPE.endswith(":"):
-		TYPE_KEY = DEVICE_TYPE.lower()
-	else:
-		TYPE_KEY = DEVICE_TYPE.lower() + ":"
-
-
-#[ 
-#'phy:/dev/disk/by-id/scsi-36782bcb0231313001ab1dd4d06cd1331-part1,hda,w', 
-#'phy:/dev/sdb8,hdb,w', 
-#'phy:/dev/disk/by-id/wwn-0x6782bcb0231313001ab1dd68086b31fc-part8,hdc,w', 
-#'file:/root/Desktop/ISO/AM_40_AccessGatewayAppliance_Linux_SLES11_64.iso,hdc:cdrom,r' 
-#]
-	return PHY_DEVICES
-
 
 
