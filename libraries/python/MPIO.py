@@ -54,6 +54,51 @@ def devicesManaged():
 				return True
 	return False
 
+def convertKeyValue(STR_TO_CONVERT):
+	CONVERTED = {}
+	TMP = STR_TO_CONVERT.split()
+	#print "\n", TMP
+	#process the single-value key/value pairs
+	for ITEM in TMP:
+		if "='" in ITEM and ITEM.endswith("'"):
+			PART = ITEM.split("=")
+			CONVERTED[PART[0]] = PART[1].strip("'")
+		elif "='" in ITEM or ITEM.endswith("'"):
+			#skip multi-value items
+			continue
+		elif not "=" in ITEM:
+			#skip multi-value items
+			continue
+		else:
+			PART = ITEM.split("=")
+			CONVERTED[PART[0]] = PART[1]
+	#process the multi-valued key/value pairs
+	IN_VALUE = False
+	MULTI_VALUE = []
+	for ITEM in TMP:
+		#print "Processing", ITEM
+		if "='" in ITEM and ITEM.endswith("'"):
+			#print " skipping quoted single value"
+			continue
+		elif( IN_VALUE ):
+			if ITEM.endswith("'"):
+				#print " end multi-value"
+				IN_VALUE = False
+				MULTI_VALUE.append(ITEM)
+				PARTS = ' '.join(MULTI_VALUE)
+				PART = PARTS.split("=")
+				MPATH[PART[0]] = PART[1].strip("'")
+				MULTI_VALUE = []
+			elif "=" not in ITEM:
+				#print " multi-value part"
+				MULTI_VALUE.append(ITEM)
+		else:
+			if "='" in ITEM:
+				#print " start multi-value"
+				IN_VALUE = True
+				MULTI_VALUE.append(ITEM)
+
+
 def getManagedDevices():
 	"""
 	Normalizes the multipath -ll output into a list of dictionaries. The multipath -ll output looks like:
@@ -115,47 +160,7 @@ def getManagedDevices():
 					del PARTS[0:2]
 					MPATH['description'] = ' '.join(PARTS)
 			elif "size=" in LINE:
-				TMP = LINE.split()
-				#print "\n", TMP
-				#process the single-value key/value pairs
-				for ITEM in TMP:
-					if "='" in ITEM and ITEM.endswith("'"):
-						PART = ITEM.split("=")
-						MPATH[PART[0]] = PART[1].strip("'")
-					elif "='" in ITEM or ITEM.endswith("'"):
-						#skip multi-value items
-						continue
-					elif not "=" in ITEM:
-						#skip multi-value items
-						continue
-					else:
-						PART = ITEM.split("=")
-						MPATH[PART[0]] = PART[1]
-				#process the multi-valued key/value pairs
-				IN_VALUE = False
-				MULTI_VALUE = []
-				for ITEM in TMP:
-					#print "Processing", ITEM
-					if "='" in ITEM and ITEM.endswith("'"):
-						#print " skipping quoted single value"
-						continue
-					elif( IN_VALUE ):
-						if ITEM.endswith("'"):
-							#print " end multi-value"
-							IN_VALUE = False
-							MULTI_VALUE.append(ITEM)
-							PARTS = ' '.join(MULTI_VALUE)
-							PART = PARTS.split("=")
-							MPATH[PART[0]] = PART[1].strip("'")
-							MULTI_VALUE = []
-						elif "=" not in ITEM:
-							#print " multi-value part"
-							MULTI_VALUE.append(ITEM)
-					else:
-						if "='" in ITEM:
-							#print " start multi-value"
-							IN_VALUE = True
-							MULTI_VALUE.append(ITEM)
+				KEY_VALUES = convertKeyValue(LINE)
 			elif DeviceEntry.search(LINE):
 				TMP = LINE.split()
 				while TMP[0].startswith(('|','`')):
