@@ -57,7 +57,7 @@ def devicesManaged():
 def convertKeyValue(STR_TO_CONVERT):
 	CONVERTED = {}
 	TMP = STR_TO_CONVERT.split()
-	#print "\n", TMP
+	#print "\nConverting:", TMP
 	#process the single-value key/value pairs
 	for ITEM in TMP:
 		if "='" in ITEM and ITEM.endswith("'"):
@@ -87,7 +87,7 @@ def convertKeyValue(STR_TO_CONVERT):
 				MULTI_VALUE.append(ITEM)
 				PARTS = ' '.join(MULTI_VALUE)
 				PART = PARTS.split("=")
-				MPATH[PART[0]] = PART[1].strip("'")
+				CONVERTED[PART[0]] = PART[1].strip("'")
 				MULTI_VALUE = []
 			elif "=" not in ITEM:
 				#print " multi-value part"
@@ -97,6 +97,8 @@ def convertKeyValue(STR_TO_CONVERT):
 				#print " start multi-value"
 				IN_VALUE = True
 				MULTI_VALUE.append(ITEM)
+	#print "Converted: ", CONVERTED
+	return CONVERTED
 
 
 def getManagedDevices():
@@ -113,21 +115,19 @@ def getManagedDevices():
 		|- 1:0:0:4 sde  8:64   active ready running
 		`- 2:0:0:4 sdy  65:128 active ready running
 
-	Note: Currently the policy line values for each service processor port are ignored and not available in the list of dictionaries. In the example above, policy, prio and status are excluded.
+	Example key locations from multipath -ll output:
+	alias wwid dmdev description
+	size features hwhandler wp
+	devicepath =
+		|-+- path_group_policy path_group_prio path_group_status -------------------------v
+		| |- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
+		| `- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
+		`-+- path_group_policy path_group_prio path_group_status -------------------------v
+			|- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
+			`- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
 
 	Args: None
-	Returns: List of Dictionaries
-	Keys:
-		alias : 
-		wwid : 
-		dmdev : 
-		description : 
-		size : 
-		features : 
-		hwhandler : 
-		wp : 
-		devicepath : 
-		
+	Returns: List of Dictionaries		
 
 	Example:
 	"""
@@ -147,6 +147,7 @@ def getManagedDevices():
 					DEVICES.append(dict(MPATH))
 				MPATH = {'devicepath': []}
 				PARTS = LINE.split()
+				PATH_GROUP_VALUES = {}
 				if PARTS[1].startswith('('): # user alias names in use
 					MPATH['alias'] = PARTS[0]
 					MPATH['wwid'] = PARTS[1].strip('()')
@@ -161,18 +162,53 @@ def getManagedDevices():
 					MPATH['description'] = ' '.join(PARTS)
 			elif "size=" in LINE:
 				KEY_VALUES = convertKeyValue(LINE)
+				MPATH.update(KEY_VALUES)
+			elif '-+-' in LINE:
+				D = convertKeyValue(LINE)
+				#print "==Insert path_group_", D
+				PATH_GROUP_VALUES = {}
+				# prepend "path_group_" before each PATH_GROUP_VALUES key
+				for KEY in D.keys():
+					NEW_KEY = "path_group_" + str(KEY)
+					PATH_GROUP_VALUES[NEW_KEY] = D[KEY]
+					#print "KEY", KEY
+					#print "NEW_KEY", NEW_KEY
+					#print "RESULT:", PATH_GROUP_VALUES, "\n"
+				del D
 			elif DeviceEntry.search(LINE):
 				TMP = LINE.split()
+				ENTRIES = {}
 				while TMP[0].startswith(('|','`')):
 					del TMP[0]
-				MPATH['devicepath'].append(TMP)
+				COUNT = len(TMP)
+				if( TMP > 5 ):
+					ENTRIES = {"path_scsi_addr": TMP[0], "path_devnode": TMP[1], "path_major_minor": TMP[2], "path_status": TMP[3], "dm_status": TMP[4], "path_state": TMP[5]}
+				elif( TMP > 4 ):
+					ENTRIES = {"path_scsi_addr": TMP[0], "path_devnode": TMP[1], "path_major_minor": TMP[2], "path_status": TMP[3], "dm_status": TMP[4]}
+				elif( TMP > 3 ):
+					ENTRIES = {"path_scsi_addr": TMP[0], "path_devnode": TMP[1], "path_major_minor": TMP[2], "path_status": TMP[3]}
+				elif( TMP > 2 ):
+					ENTRIES = {"path_scsi_addr": TMP[0], "path_devnode": TMP[1], "path_major_minor": TMP[2]}
+				else:
+					ENTRIES = {"path_scsi_addr": TMP[0], "path_devnode": TMP[1]}
+				if( PATH_GROUP_VALUES ):
+					ENTRIES.update(PATH_GROUP_VALUES)
+				MPATH['devicepath'].append(ENTRIES)
 		if( len(MPATH) > 1 ):
 			DEVICES.append(dict(MPATH))
 
-		print "\n=============\n"
-		for I in range(len(DEVICES)):
-			print "DEVICES[" + str(I) + "]=", DEVICES[I], "\n"
-		print "\n"
+		#print "\n=============\n"
+		#for I in range(len(DEVICES)):
+			#print "\nDEVICES[" + str(I) + "] ="
+			#for X in DEVICES[I]:
+				#if ( "devicepath" == X ):
+					#print " {0:12} = ".format(X)
+					#for Y in DEVICES[I][X]:
+						#print "  ", Y
+				#else:
+					#print " {0:12} = {1}".format(X, DEVICES[I][X])
+		#print "\n"
+
 	return DEVICES
 
 def getDiskID(DEVICE_PATH):
@@ -233,7 +269,7 @@ def partitionManagedDevice(DISK_ID, MPIO_DEVS):
 		else:
 			for LUN_PATH in MPIO['devicepath']:
 				#print "LUN_PATH[1]", "'" + str(LUN_PATH[1]) + "'"
-				if DISK_ID in LUN_PATH[1]:
+				if( DISK_ID == LUN_PATH['path_devnode']):
 					#print " MATCH"
 					return True
 	return False
