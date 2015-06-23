@@ -22,7 +22,7 @@ Library of python functions used when dealing with issues incident to MPIO
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2015 Jun 10
+#  Modified: 2015 Jun 23
 #
 ##############################################################################
 
