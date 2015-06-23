@@ -103,7 +103,7 @@ def convertKeyValue(STR_TO_CONVERT):
 
 def getManagedDevices():
 	"""
-	Normalizes the multipath -ll output into a list of dictionaries. The multipath -ll output looks like:
+	Normalizes the multipath -ll output into a list of dictionaries. The multipath -ll output looks similar to:
 	#==[ Command ]======================================#
 	# /sbin/multipath -ll
 	mpathe (3600601609e003700bd875493d3ade411) dm-2 DGC,VRAID
@@ -115,21 +115,23 @@ def getManagedDevices():
 		|- 1:0:0:4 sde  8:64   active ready running
 		`- 2:0:0:4 sdy  65:128 active ready running
 
-	Example key locations from multipath -ll output:
-	alias wwid dmdev description
-	size features hwhandler wp
-	devicepath =
-		|-+- path_group_policy path_group_prio path_group_status -------------------------v
-		| |- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
-		| `- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
-		`-+- path_group_policy path_group_prio path_group_status -------------------------v
-			|- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
-			`- path_scsi_id path_devnode path_major_minor path_status dm_status path_state {path_group_ values go here}
-
 	Args: None
-	Returns: List of Dictionaries		
+	Returns: List of Dictionaries
 
 	Example:
+	Though the order of the elements will be different that shown. These are ordered to demonstrate the key value pairs. 
+	getManagedDevices would return a list of dictionaries for the example above as follows:
+
+	[	{'alias': 'mpathe', 'wwid': '3600601609e003700bd875493d3ade411', 'dmdev': 'dm-2', 'description': 'DGC,VRAID', 
+		'size': '1.0T', 'features': '1 queue_if_no_path', 'hwhandler': '1 emc', 'wp': 'rw', 
+		'devicepath': 
+		[	{'path_group_policy': 'round-robin 0', 'path_state': 'running', 'path_group_status': 'active', 'path_devnode': 'sdai', 'path_group_prio': '4', 'dm_status': 'ready', 'path_major_minor': '66:32', 'path_scsi_addr': '2:0:1:4', 'path_status': 'active'}, 
+			{'path_group_policy': 'round-robin 0', 'path_state': 'running', 'path_group_status': 'active', 'path_devnode': 'sdo', 'path_group_prio': '4', 'dm_status': 'ready', 'path_major_minor': '8:224', 'path_scsi_addr': '1:0:1:4', 'path_status': 'active'}, 
+			{'path_group_policy': 'round-robin 0', 'path_state': 'running', 'path_group_status': 'enabled', 'path_devnode': 'sde', 'path_group_prio': '1', 'dm_status': 'ready', 'path_major_minor': '8:64', 'path_scsi_addr': '1:0:0:4', 'path_status': 'active'}, 
+			{'path_group_policy': 'round-robin 0', 'path_state': 'running', 'path_group_status': 'enabled', 'path_devnode': 'sdy', 'path_group_prio': '1', 'dm_status': 'ready', 'path_major_minor': '65:128', 'path_scsi_addr': '2:0:0:4', 'path_status': 'active'}
+		]
+	}]
+
 	"""
 	FILE_OPEN = "mpio.txt"
 	SECTION = "multipath -ll"
