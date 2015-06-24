@@ -1112,3 +1112,11 @@ def getFileSystems():
 	Example:
 
 	"""
+	MOUNTS = []
+	FSTAB = []
+	DFCMD = []
+	if( Core.getRegExSection('fs-diskio.txt', '/bin/mount', MOUNTS) and Core.getRegExSection('fs-diskio.txt', '/etc/fstab', FSTAB) and Core.getRegExSection('basic-health-check.txt', 'df -h', DFCMD) ):
+		True
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: getFileSystems: Cannot find /bin/mount(fs-diskio.txt), /etc/fstab(fs-diskio.txt), df -h(basic-health-check.txt) sections")
+
