@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 May 1
+#  Modified: 2015 Jun 24
 #
 ##############################################################################
 
@@ -1060,4 +1060,31 @@ def getBasicVirtualization():
 
 #	print "DICTIONARY", DICTIONARY
 	return DICTIONARY
+
+def getProcCmdLine():
+	"""
+	Gathers the /proc/cmdline and assigns each value to a list element.
+
+	Args:			None
+	Returns:	List
+	Example:
+
+	CMDLINE = SUSE.getProcCmdLine()
+	CRASH_DEFINED = False
+	for OPTION in CMDLINE:
+		if "crashkernel=" in OPTION:
+			CRASH_DEFINED = True
+	if( CRASH_DEFINED ):
+		Core.updateStatus(Core.IGNORE, "Kernel crash memory is defined")
+	else:
+		Core.updateStatus(Core.REC, "Consider configuring the server for a kernel core dump")
+	"""
+	FILE_OPEN = "boot.txt"
+	SECTION = "/proc/cmdline"
+	CONTENT = []
+	LIST = []
+	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			LIST = LINE.split()
+	return LIST
 

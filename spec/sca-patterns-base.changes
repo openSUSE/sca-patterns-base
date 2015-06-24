@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Wed Jun 24 18:18:21 UTC 2015 - jrecord@suse.com
+Wed Jun 24 19:47:14 UTC 2015 - jrecord@suse.com
 
 - Added python library function:
   SUSE.getBasicVirtualization
+  SUSE.getProcCmdLine
 
 -------------------------------------------------------------------
 Wed Jun 24 16:24:01 UTC 2015 - jrecord@suse.com
