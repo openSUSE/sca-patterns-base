@@ -1021,4 +1021,43 @@ def getZypperProductList():
 	#print "\n"
 	return PRODUCTS
 
+def getBasicVirtualization():
+	"""
+	Gathers Virtualization section of the basic-environment.txt file.
+
+	Args:			None
+	Returns:	Dictionary
+
+	Converts the basic-environment.txt section from this:
+
+	#==[ System ]=======================================#
+	# Virtualization
+	Manufacturer:  HP
+	Hardware:      ProLiant DL380 Gen9
+	Hypervisor:    None
+	Identity:      Not Detected
+
+	to this dictionary:
+
+  {'Hardware': 'ProLiant DL380 Gen9', 'Hypervisor': 'None', 'Identity': 'Not Detected', 'Manufacturer': 'HP'} 
+
+	Example:
+	SYSTEM = SUSE.getBasicVirtualization()
+	if "hp" in SYSTEM['Manufacturer'].lower():
+		Core.updateStatus(Core.WARN, "Detected HP hardware")
+	else:
+		Core.updateStatus(Core.IGNORE, "No HP hardware found")	
+	"""
+	FILE_OPEN = "basic-environment.txt"
+	SECTION = "Virtualization"
+	CONTENT = []
+	DICTIONARY = {}
+	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			if ":" in LINE:
+				TMP = LINE.split(":", 1)
+				DICTIONARY[TMP[0]] = TMP[1].strip()
+
+#	print "DICTIONARY", DICTIONARY
+	return DICTIONARY
 
