@@ -1088,3 +1088,27 @@ def getProcCmdLine():
 			LIST = LINE.split()
 	return LIST
 
+def getFileSystems():
+	"""
+	Gets all fields from the mounted file systems and the associated fstab file and df command output.
+
+	Args:			None
+	Returns:	List of Dictionaries
+	Keys:			DEV, DEVM, DEVF, MPT, TYPE, OPTIONS, DUMP, FSCK, MOUNTED, SIZE, USED, AVAIL, USEPCT
+		DEV     = The active device path
+		DEVM    = The device path from the mount command
+		DEVF    = The device path from /etc/fstab
+		MPT     = The mount point
+		TYPE    = File system type
+		OPTIONS = Options used when mounted or mounting
+		DUMP    = /etc/fstab dump field, -1 if unknown
+		FSCK    = /etc/fstab fsck field, -1 if unknown
+		MOUNTED = -1 Unknown, 0 Not mounted, 1 Mounted
+		SIZE    = -1 Unknown, file system size in bytes
+		USED    = -1 Unknown, file system space used in bytes
+		AVAIL   = -1 Unknown, file system space available in bytes
+		USEPCT  = -1 Unknown, file system percent used
+
+	Example:
+
+	"""
