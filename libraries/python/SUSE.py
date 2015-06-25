@@ -1094,29 +1094,88 @@ def getFileSystems():
 
 	Args:			None
 	Returns:	List of Dictionaries
-	Keys:			DEV, DEVM, DEVF, MPT, TYPE, OPTIONS, DUMP, FSCK, MOUNTED, SIZE, USED, AVAIL, USEPCT
-		DEV     = The active device path
-		DEVM    = The device path from the mount command
-		DEVF    = The device path from /etc/fstab
-		MPT     = The mount point
-		TYPE    = File system type
-		OPTIONS = Options used when mounted or mounting
-		DUMP    = /etc/fstab dump field, -1 if unknown
-		FSCK    = /etc/fstab fsck field, -1 if unknown
-		MOUNTED = -1 Unknown, 0 Not mounted, 1 Mounted
-		SIZE    = -1 Unknown, file system size in bytes
-		USED    = -1 Unknown, file system space used in bytes
-		AVAIL   = -1 Unknown, file system space available in bytes
-		USEPCT  = -1 Unknown, file system percent used
+	Keys:
+		ActiveDevice  = The active device path
+		MountedDevice = The device path from the mount command
+		FstabDevice   = The device path from /etc/fstab
+		MountPoint    = The mount point
+		Type          = File system type
+		Options       = Options used when mounted or mounting
+		Dump          = /etc/fstab dump field, -1 if unknown
+		fsck          = /etc/fstab fsck field, -1 if unknown
+		Mounted       = -1 Unknown, 0 Not mounted, 1 Mounted
+		Size          = -1 Unknown, file system size in bytes
+		UsedSpace     = -1 Unknown, file system space used in bytes
+		AvailSpace    = -1 Unknown, file system space available in bytes
+		PercentUsed   = -1 Unknown, file system percent used
 
 	Example:
 
 	"""
 	MOUNTS = []
 	FSTAB = []
-	DFCMD = []
-	if( Core.getRegExSection('fs-diskio.txt', '/bin/mount', MOUNTS) and Core.getRegExSection('fs-diskio.txt', '/etc/fstab', FSTAB) and Core.getRegExSection('basic-health-check.txt', 'df -h', DFCMD) ):
-		True
+	DFDATA = []
+	DFDATA_NORMALIZED = []
+	FSLIST = []
+	ENTRY = []
+	if( Core.getRegExSection('fs-diskio.txt', '/bin/mount', MOUNTS) and Core.getRegExSection('fs-diskio.txt', '/etc/fstab', FSTAB) and Core.getRegExSection('basic-health-check.txt', 'df -h', DFDATA) ):
+		#normalize df data for later use
+		LINE_WRAPPED = False
+		THIS_ENTRY = []
+		for DFLINE in DFDATA:
+			LINE = DFLINE.strip().split()
+			if "Filesystem" in LINE[0]:
+				continue
+			else:
+				LENLINE = len(LINE)
+				if( LENLINE == 6 ):
+					DFDATA_NORMALIZED.append(LINE)
+				elif( LENLINE == 1 ):
+					THIS_ENTRY = LINE
+				elif( LENLINE < 6 ):
+					THIS_ENTRY.extend(LINE)
+					DFDATA_NORMALIZED.append(THIS_ENTRY)
+					THIS_ENTRY = []
+			for DFLIST in DFDATA_NORMALIZED:
+				TMP = DFLIST[4].replace('%', '')
+				DFLIST[4] = TMP
+#		print "NORMALIZED", DFDATA_NORMALIZED
+
+		#compile mounted filesystem data
+		for MOUNT in MOUNTS: #load each mount line output into the ENTRY list
+			MOUNT = MOUNT.replace("(", '').replace(")", '')
+			ENTRY = MOUNT.split()
+			if( len(ENTRY) <> 6 ): #ignore non-standard mount entries. They should only have six fields.
+				ENTRY = []
+				continue
+			MATCHED = False
+#			print "ENTRY mount", ENTRY
+			for FSENTRY in FSTAB: #append matching fstab lines to the corresponding ENTRY list
+				THIS_ENTRY = FSENTRY.split()
+				if( len(THIS_ENTRY) <> 6 ): #consider non-standard entries as not MATCHED
+					break
+				if( THIS_ENTRY[1] == ENTRY[2] ): #mount points match
+					MATCHED = True
+					ENTRY.append(int(THIS_ENTRY[4])) #dump
+					ENTRY.append(int(THIS_ENTRY[5])) #fsck
+					ENTRY.append(THIS_ENTRY[0]) #fstab device
+					break
+			if( not MATCHED ): #mounted, but not defined in /etc/fstab
+				ENTRY.append(-1) #dump
+				ENTRY.append(-1) #fsck
+				ENTRY.append('') #no fstab device
+#			print "ENTRY mount+fstab", ENTRY
+			#add df info to ENTRY
+			MATCHED = False
+			for DF in DFDATA_NORMALIZED:
+				if( DF[5] == ENTRY[2] ):
+					MATCHED = True
+					ENTRY.append(DF[1])
+					ENTRY.append(DF[1])
+					ENTRY.append(DF[1])
+					ENTRY.append(DF[1])
+			print "ENTRY mount+fstab+df", len(ENTRY), ":", ENTRY
 	else:
 		Core.updateStatus(Core.ERROR, "ERROR: getFileSystems: Cannot find /bin/mount(fs-diskio.txt), /etc/fstab(fs-diskio.txt), df -h(basic-health-check.txt) sections")
 
+	return FSLIST
