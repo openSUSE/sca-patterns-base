@@ -1243,3 +1243,13 @@ def getFileSystems():
 	del DFDATA_NORMALIZED
 	del SWAP
 	return FSLIST
+
+def getGrub2Config():
+	CONFIG = []
+	VALUES = {}
+	if( Core.getRegExSection('boot.txt', '/etc/default/grub', CONFIG) ):
+		for LINE in CONFIG:
+			TMP = LINE.split("=", 1)
+			VALUES[TMP[0].upper()] = TMP[1].strip('"').strip()
+	print VALUES
+

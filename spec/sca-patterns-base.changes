@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Thu Jun 25 19:18:45 UTC 2015 - jrecord@suse.com
+Thu Jun 25 20:47:13 UTC 2015 - jrecord@suse.com
 
-- Added python library function:
+- Added python library functions:
   SUSE.getFileSystems
+  SUSE.getGrub2Config
 
 -------------------------------------------------------------------
 Wed Jun 24 19:47:14 UTC 2015 - jrecord@suse.com
