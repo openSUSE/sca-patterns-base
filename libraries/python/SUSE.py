@@ -1090,7 +1090,7 @@ def getProcCmdLine():
 
 def getFileSystems():
 	"""
-	Gets all fields from the mounted file systems and the associated fstab file and df command output.
+	Gets all fields from the mounted and unmountd file systems with their associated fstab file and df command output.
 
 	Args:			None
 	Returns:	List of Dictionaries
@@ -1100,17 +1100,26 @@ def getFileSystems():
 		FstabDevice   = The device path from /etc/fstab
 		MountPoint    = The mount point
 		Type          = File system type
-		Options       = Options used when mounted or mounting
-		Dump          = /etc/fstab dump field, -1 if unknown
-		fsck          = /etc/fstab fsck field, -1 if unknown
-		Mounted       = -1 Unknown, 0 Not mounted, 1 Mounted
-		Size          = -1 Unknown, file system size in bytes
-		UsedSpace     = -1 Unknown, file system space used in bytes
-		AvailSpace    = -1 Unknown, file system space available in bytes
-		PercentUsed   = -1 Unknown, file system percent used
+		MountOptions  = Options used when mounted as shown by the mount command
+		FstabOptions  = Options defined in the /etc/fstab
+		Dump          = /etc/fstab dump field, '' if unknown
+		fsck          = /etc/fstab fsck field, '' if unknown
+		Mounted       = False = Not mounted, True = Mounted
+		Size          = File system size in bytes, '' if unknown
+		UsedSpace     = File system space used in bytes, '' if unknown
+		AvailSpace    = file system space available in bytes, '' if unknown
+		PercentUsed   = file system percent used, -1 if unknown
 
 	Example:
-
+	UNMOUNTED = []
+	FSLIST = SUSE.getFileSystems()
+	for FS in FSLIST:
+		if( not FS['Mounted'] ):
+			UNMOUNTED.append(FS['MountPoint'])
+	if( UNMOUNTED ):
+		Core.updateStatus(Core.WARN, "Detected unmounted filesystems: " + ' '.join(UNMOUNTED))
+	else:
+		Core.updateStatus(Core.IGNORE, "All filesystems appear to be mounted")
 	"""
 	MOUNTS = []
 	FSTAB = []
@@ -1141,41 +1150,96 @@ def getFileSystems():
 				DFLIST[4] = TMP
 #		print "NORMALIZED", DFDATA_NORMALIZED
 
-		#compile mounted filesystem data
+		#compile mounted filesystem data with merged fstab and df data
 		for MOUNT in MOUNTS: #load each mount line output into the ENTRY list
 			MOUNT = MOUNT.replace("(", '').replace(")", '')
 			ENTRY = MOUNT.split()
 			if( len(ENTRY) <> 6 ): #ignore non-standard mount entries. They should only have six fields.
 				ENTRY = []
 				continue
-			MATCHED = False
 #			print "ENTRY mount", ENTRY
-			for FSENTRY in FSTAB: #append matching fstab lines to the corresponding ENTRY list
+
+			#add fstab entries to mounted filesystems
+			MATCHED = False
+			for FSENTRY in FSTAB: #check each FSENTRY to the current MOUNT
 				THIS_ENTRY = FSENTRY.split()
 				if( len(THIS_ENTRY) <> 6 ): #consider non-standard entries as not MATCHED
 					break
 				if( THIS_ENTRY[1] == ENTRY[2] ): #mount points match
 					MATCHED = True
+					ENTRY.append(THIS_ENTRY[0]) #fstab device
+					ENTRY.append(THIS_ENTRY[3]) #fstab options
 					ENTRY.append(int(THIS_ENTRY[4])) #dump
 					ENTRY.append(int(THIS_ENTRY[5])) #fsck
-					ENTRY.append(THIS_ENTRY[0]) #fstab device
 					break
 			if( not MATCHED ): #mounted, but not defined in /etc/fstab
+				ENTRY.append('') #no fstab device
+				ENTRY.append('') #fstab options
 				ENTRY.append(-1) #dump
 				ENTRY.append(-1) #fsck
-				ENTRY.append('') #no fstab device
 #			print "ENTRY mount+fstab", ENTRY
-			#add df info to ENTRY
+
+			#add df info to mounted filesystems
 			MATCHED = False
-			for DF in DFDATA_NORMALIZED:
-				if( DF[5] == ENTRY[2] ):
+			for DF in DFDATA_NORMALIZED: #check each DF entry to the current MOUNT
+				if( DF[5] == ENTRY[2] ): #mount points match
 					MATCHED = True
-					ENTRY.append(DF[1])
-					ENTRY.append(DF[1])
-					ENTRY.append(DF[1])
-					ENTRY.append(DF[1])
-			print "ENTRY mount+fstab+df", len(ENTRY), ":", ENTRY
+					ENTRY.append(DF[1]) #size
+					ENTRY.append(DF[2]) #used
+					ENTRY.append(DF[3]) #available
+					ENTRY.append(DF[4]) #percent used
+			if( not MATCHED ): #DF doesn't match MOUNT, so use undefined values
+				ENTRY.append('') #size
+				ENTRY.append('') #used
+				ENTRY.append('') #available
+				ENTRY.append(-1) #percent used
+			MATCHED = False
+#			print "ENTRY mount+fstab+df", len(ENTRY), ":", ENTRY
+			if( len(ENTRY) == 14 ): #add valid filesystems to the returnable list
+				FSLIST.append({'ActiveDevice': ENTRY[0], 'MountedDevice': ENTRY[0], 'FstabDevice': ENTRY[6], 'MountPoint': ENTRY[2], 'Type': ENTRY[4], 'MountOptions': ENTRY[5], 'FstabOptions': ENTRY[7], 'Dump': ENTRY[8], 'fsck': ENTRY[9], 'Mounted': True, 'Size': ENTRY[10], 'UsedSpace': ENTRY[11], 'AvailSpace': ENTRY[12], 'PercentUsed': int(ENTRY[13]) })
+
+		#now add any unmounted filesystems
+		UNMOUNTED = []
+		ENTRY = []
+		for FSENTRY in FSTAB: #check each FSENTRY for unmounted devices
+			ENTRY = FSENTRY.split()
+			if( len(ENTRY) <> 6 ): #consider non-standard entries as not MATCHED
+				continue
+			else:
+				MISSING = True
+				for FS in FSLIST: #check FSENTRY in each mounted FSLIST
+					if( ENTRY[1] == FS['MountPoint'] ): #FSENTRY must be mounted
+						MISSING = False
+						break
+				if( MISSING ): #the fstab entry was not found in the list of mounted filesystems
+					if( ENTRY[1].lower() == "swap" ): # If there is more than one swap device, the same free -k swap information is used for each one.
+						SWAP = []
+						if( Core.getRegExSection('memory.txt', 'free -k', SWAP) ):
+							for LINE in SWAP: #swap sizes are in the memory.txt file, not df command
+								if LINE.startswith("Swap:"):
+									TMP = LINE.split()
+									break
+#							print "SWAP", TMP
+							PCTSWAP = (int(TMP[2]) * 100 / int(TMP[1]))
+							if( int(TMP[1]) > 0 ): #if the swap size is greater than 0 assume all swap devices are mounted
+								UNMOUNTED.append({'ActiveDevice': ENTRY[0], 'MountedDevice': '', 'FstabDevice': ENTRY[0], 'MountPoint': ENTRY[1], 'Type': ENTRY[2], 'MountOptions': '', 'FstabOptions': ENTRY[3], 'Dump': ENTRY[4], 'fsck': ENTRY[5], 'Mounted': True, 'Size': TMP[1], 'UsedSpace': TMP[2], 'AvailSpace': TMP[3], 'PercentUsed': PCTSWAP })
+							else: #the swap size is zero, assume all swap devices are not mounted
+								UNMOUNTED.append({'ActiveDevice': ENTRY[0], 'MountedDevice': '', 'FstabDevice': ENTRY[0], 'MountPoint': ENTRY[1], 'Type': ENTRY[2], 'MountOptions': '', 'FstabOptions': ENTRY[3], 'Dump': ENTRY[4], 'fsck': ENTRY[5], 'Mounted': False, 'Size': TMP[1], 'UsedSpace': TMP[2], 'AvailSpace': TMP[3], 'PercentUsed': PCTSWAP })
+						else: #swap size information is not found
+							UNMOUNTED.append({'ActiveDevice': ENTRY[0], 'MountedDevice': '', 'FstabDevice': ENTRY[0], 'MountPoint': ENTRY[1], 'Type': ENTRY[2], 'MountOptions': '', 'FstabOptions': ENTRY[3], 'Dump': ENTRY[4], 'fsck': ENTRY[5], 'Mounted': False, 'Size': '', 'UsedSpace': '', 'AvailSpace': '', 'PercentUsed': -1 })
+					else: #not a swap device
+						UNMOUNTED.append({'ActiveDevice': ENTRY[0], 'MountedDevice': '', 'FstabDevice': ENTRY[0], 'MountPoint': ENTRY[1], 'Type': ENTRY[2], 'MountOptions': '', 'FstabOptions': ENTRY[3], 'Dump': ENTRY[4], 'fsck': ENTRY[5], 'Mounted': False, 'Size': '', 'UsedSpace': '', 'AvailSpace': '', 'PercentUsed': -1 })
+		if( UNMOUNTED ):
+			FSLIST.extend(UNMOUNTED)
 	else:
 		Core.updateStatus(Core.ERROR, "ERROR: getFileSystems: Cannot find /bin/mount(fs-diskio.txt), /etc/fstab(fs-diskio.txt), df -h(basic-health-check.txt) sections")
 
+#	for FS in FSLIST:
+#		print "{0:20}: {1}\n".format(FS['MountPoint'], FS)
+#	print "TOTAL", len(FSLIST)
+	del MOUNTS
+	del FSTAB
+	del DFDATA
+	del DFDATA_NORMALIZED
+	del SWAP
 	return FSLIST
