@@ -1,9 +1,10 @@
 -------------------------------------------------------------------
-Thu Jun 25 20:47:13 UTC 2015 - jrecord@suse.com
+Fri Jun 26 17:23:09 UTC 2015 - jrecord@suse.com
 
 - Added python library functions:
   SUSE.getFileSystems
   SUSE.getGrub2Config
+  SUSE.getBasicFIPSData
 
 -------------------------------------------------------------------
 Wed Jun 24 19:47:14 UTC 2015 - jrecord@suse.com

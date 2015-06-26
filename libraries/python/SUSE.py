@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jun 24
+#  Modified: 2015 Jun 26
 #
 ##############################################################################
 
@@ -1245,6 +1245,22 @@ def getFileSystems():
 	return FSLIST
 
 def getGrub2Config():
+	"""
+	Returns a dictionary of the key/value pairs found in /etc/default/grub.
+	Supportconfigs from SLE12 minimum required
+
+	Args:			None
+	Returns:	Dictionary
+	Keys:			As defined in /etc/default/grub. All keys are forced to uppercase, values are left as is.
+
+	Example:
+
+	CONFIG = SUSE.getGrub2Config()
+	if( "splash=silent" in CONFIG['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
+		Core.updateStatus(Core.REC, "Use splash=native for more screen output")
+	else:
+		Core.updateStatus(Core.IGNORE, "Additional screen output ignored")
+	"""
 	CONFIG = []
 	VALUES = {}
 	if( Core.getRegExSection('boot.txt', '/etc/default/grub', CONFIG) ):
@@ -1253,3 +1269,65 @@ def getGrub2Config():
 			VALUES[TMP[0].upper()] = TMP[1].strip('"').strip()
 #	print VALUES
 	return VALUES
+
+def getBasicFIPSData():
+	"""
+	Returns a dictionary of state of key FIPS data values.
+	Supportconfigs from SLE12 minimum required
+
+	Args:			None
+	Returns:	Dictionary
+	Keys:
+		Installed = FIPS packages are installed
+		Enabled   = FIPS is enabled per /proc/sys/crypto/fips_enabled
+		Grub      = fips=1 found in /etc/default/grub for GRUB2
+		Initrd    = fips module included in the ramdisk of the running kernel
+								Note: This key is present only if the supportconfig has the lsinitrd output in boot.txt
+
+	Example:
+
+	FIPS = SUSE.getBasicFIPSData()
+	if( FIPS['Installed'] ):
+		Core.updateStatus(Core.IGNORE, "FIPS installed")
+	else:		
+		Core.updateStatus(Core.REC, "Consider installing FIPS")
+	"""
+	FIPS = {'Installed': False, 'Enabled': False, 'Grub': False}
+	
+	if( packageInstalled('dracut-fips') ):
+		FIPS['Installed'] = True
+
+	CONTENT = []
+	if Core.getRegExSection('proc.txt', '/proc/sys/crypto/fips_enabled', CONTENT):
+		for LINE in CONTENT:
+			if( LINE.isdigit() ):
+				if( int(LINE) > 0 ):
+					FIPS['Enabled'] = True
+
+	GRUB2 = getGrub2Config()
+	if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
+		FIPS['Grub'] = True
+
+	if Core.getRegExSection('boot.txt', '/bin/lsinitrd', CONTENT):
+		FOUND = False
+		MODS = False
+		for LINE in CONTENT:
+			TEST = LINE.lower()
+			if( MODS ):
+				if TEST.startswith("=="):
+					MODS = False
+					break
+				elif TEST.startswith("fips"):
+					FOUND = True
+					break
+			elif TEST.startswith("dracut modules:"):
+				MODS = True
+		if( FOUND ):
+			FIPS['Initrd'] = True
+		else:
+			FIPS['Initrd'] = False
+
+#	print "FIPS", FIPS
+	return FIPS
+
+
