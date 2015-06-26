@@ -1251,5 +1251,5 @@ def getGrub2Config():
 		for LINE in CONFIG:
 			TMP = LINE.split("=", 1)
 			VALUES[TMP[0].upper()] = TMP[1].strip('"').strip()
-	print VALUES
-
+#	print VALUES
+	return VALUES
