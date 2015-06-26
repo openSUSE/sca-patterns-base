@@ -1280,7 +1280,10 @@ def getBasicFIPSData():
 	Keys:
 		Installed = FIPS packages are installed
 		Enabled   = FIPS is enabled per /proc/sys/crypto/fips_enabled
-		Grub      = fips=1 found in /etc/default/grub for GRUB2
+		GrubFips  = fips=1 found in /etc/default/grub for GRUB2
+		GrubBoot  = boot= found in /etc/default/grub for GRUB2
+		KernFips  = fips=1 found in /proc/cmdline
+		KernBoot  = boot= found in /proc/cmdline
 		Initrd    = fips module included in the ramdisk of the running kernel
 								Note: This key is present only if the supportconfig has the lsinitrd output in boot.txt
 
@@ -1292,7 +1295,7 @@ def getBasicFIPSData():
 	else:		
 		Core.updateStatus(Core.REC, "Consider installing FIPS")
 	"""
-	FIPS = {'Installed': False, 'Enabled': False, 'Grub': False}
+	FIPS = {'Installed': False, 'Enabled': False, 'GrubFips': False, 'GrubBoot': False, 'KernFips': False, 'KernBoot': False}
 	
 	if( packageInstalled('dracut-fips') ):
 		FIPS['Installed'] = True
@@ -1305,8 +1308,19 @@ def getBasicFIPSData():
 					FIPS['Enabled'] = True
 
 	GRUB2 = getGrub2Config()
-	if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
-		FIPS['Grub'] = True
+	if( 'GRUB_CMDLINE_LINUX_DEFAULT' in GRUB2.keys() ):
+		if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
+			FIPS['GrubFips'] = True
+		if( "boot=" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
+			FIPS['GrubBoot'] = True
+
+	CMDLINE = getProcCmdLine()
+	for OPTION in CMDLINE:
+		TEST = OPTION.lower()
+		if "fips=1" in TEST:
+			FIPS['KernFips'] = True
+		elif "boot=" in TEST:
+			FIPS['KernBoot'] = True
 
 	if Core.getRegExSection('boot.txt', '/bin/lsinitrd', CONTENT):
 		FOUND = False
