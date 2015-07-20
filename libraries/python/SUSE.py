@@ -1344,4 +1344,23 @@ def getBasicFIPSData():
 #	print "FIPS", FIPS
 	return FIPS
 
+def getConfigFileLVM(PART):
+	FILE_OPEN = "lvm.txt"
+	SECTION = "lvm.conf"
+	CONTENT = []
+	CONFIG_PART = {}
+	IN_PART = False
+	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			THIS = LINE.strip().lower()
+			if( IN_PART ):
+				if "}" in THIS: #end of lvm config file part
+					IN_PART = False
+					break
+				else:
+					print THIS
+			elif THIS.startswith(PART.lower()):
+				IN_PART = True
+
+	return CONFIG_PART
 
