@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jul 20
+#  Modified: 2015 Jul 22
 #
 ##############################################################################
 
@@ -1348,7 +1348,7 @@ def getConfigFileLVM(PART):
 	FILE_OPEN = "lvm.txt"
 	SECTION = "lvm.conf"
 	CONTENT = []
-	CONFIG_PART = {}
+	LVM_CONFIG = {}
 	IN_PART = False
 	IN_ARRAY = False
 	ARRAY_VALUES = []
@@ -1379,7 +1379,7 @@ def getConfigFileLVM(PART):
 							for VALUE in TMP2:
 								ARRAY_VALUES.append(VALUE.strip('" \' '))
 							ARRAY_VALUES = filter(None, ARRAY_VALUES)
-							CONFIG_PART[ARRAY_KEY] = ARRAY_VALUES
+							LVM_CONFIG[ARRAY_KEY] = sorted(ARRAY_VALUES)
 						else:
 							print "  Add to array:", TMP[0], "Length", len(THIS)
 							TMP2 = THIS.strip("[ ] ").split(",")
@@ -1391,7 +1391,7 @@ def getConfigFileLVM(PART):
 						VALUES = []
 						for VALUE in TMP2:
 							VALUES.append(VALUE.strip('" \' '))
-						CONFIG_PART[TMP[0]] = VALUES
+						LVM_CONFIG[TMP[0]] = VALUES
 					elif( "[" in THIS ):
 						print " Start array:", TMP[0], TMP[1]
 						IN_ARRAY = True
@@ -1402,12 +1402,12 @@ def getConfigFileLVM(PART):
 							ARRAY_VALUES.append(VALUE.strip('" \' '))
 					else:
 						print " Normal:", TMP[0], TMP[1].strip('" \' ')
-						CONFIG_PART[TMP[0]] = TMP[1].strip('" \' ')
+						LVM_CONFIG[TMP[0]] = TMP[1].strip('" \' ')
 			elif LVM_SECTION.search(THIS):
 				print "Entering PART: '" + PART + "'"
 				IN_PART = True
 
 		print
-		print CONFIG_PART
-	return CONFIG_PART
+		print "LVM_CONFIG =", LVM_CONFIG
+	return LVM_CONFIG
 
