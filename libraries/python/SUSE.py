@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jun 26
+#  Modified: 2015 Jul 20
 #
 ##############################################################################
 
@@ -1350,17 +1350,64 @@ def getConfigFileLVM(PART):
 	CONTENT = []
 	CONFIG_PART = {}
 	IN_PART = False
+	IN_ARRAY = False
+	ARRAY_VALUES = []
+	ARRAY_KEY = ''
+	LVM_SECTION = re.compile("^" + str(PART) + "\s*{", re.IGNORECASE)
 	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
 			THIS = LINE.strip().lower()
 			if( IN_PART ):
 				if "}" in THIS: #end of lvm config file part
+					print "Leaving PART: '" + PART + "'"
 					IN_PART = False
 					break
 				else:
-					print THIS
-			elif THIS.startswith(PART.lower()):
+					TMP = THIS.split("=", 1)
+					if( len(TMP) > 1 ):
+						KEY = TMP[0].strip()
+						VALUE = TMP[1].strip()
+					else:
+						KEY = ''
+						VALUE = TMP[0].strip()
+
+					if( IN_ARRAY ):
+						if( "]" in THIS ):
+							print " End array:", TMP[0], "Length", len(THIS)
+							IN_ARRAY = False
+							TMP2 = VALUE.strip("[ ] ").split(",")
+							for VALUE in TMP2:
+								ARRAY_VALUES.append(VALUE.strip('" \' '))
+							ARRAY_VALUES = filter(None, ARRAY_VALUES)
+							CONFIG_PART[ARRAY_KEY] = ARRAY_VALUES
+						else:
+							print "  Add to array:", TMP[0], "Length", len(THIS)
+							TMP2 = THIS.strip("[ ] ").split(",")
+							for VALUE in TMP2:
+								ARRAY_VALUES.append(VALUE.strip('" \' '))
+					elif( "[" in THIS and "]" in THIS ):
+						print " Complete array:", TMP[0], TMP[1]
+						TMP2 = TMP[1].strip("[ ] ").split(",")
+						VALUES = []
+						for VALUE in TMP2:
+							VALUES.append(VALUE.strip('" \' '))
+						CONFIG_PART[TMP[0]] = VALUES
+					elif( "[" in THIS ):
+						print " Start array:", TMP[0], TMP[1]
+						IN_ARRAY = True
+						ARRAY_KEY = TMP[0]
+						ARRAY_VALUES = []
+						TMP2 = TMP[1].strip("[ ] ").split(",")
+						for VALUE in TMP2:
+							ARRAY_VALUES.append(VALUE.strip('" \' '))
+					else:
+						print " Normal:", TMP[0], TMP[1].strip('" \' ')
+						CONFIG_PART[TMP[0]] = TMP[1].strip('" \' ')
+			elif LVM_SECTION.search(THIS):
+				print "Entering PART: '" + PART + "'"
 				IN_PART = True
 
+		print
+		print CONFIG_PART
 	return CONFIG_PART
 
