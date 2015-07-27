@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jul 22
+#  Modified: 2015 Jul 27
 #
 ##############################################################################
 
@@ -1349,19 +1349,23 @@ def getConfigFileLVM(PART):
 	SECTION = "lvm.conf"
 	CONTENT = []
 	LVM_CONFIG = {}
+	LVM_CONFIG_ALL = {'lvm_config_partial': False}
 	IN_PART = False
 	IN_ARRAY = False
 	ARRAY_VALUES = []
 	ARRAY_KEY = ''
-	LVM_SECTION = re.compile("^" + str(PART) + "\s*{", re.IGNORECASE)
+	LVM_SECTION_NAME = ''
+	LVM_SECTION = re.compile("^\S*\s*{", re.IGNORECASE)
 	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
 			THIS = LINE.strip().lower()
 			if( IN_PART ):
 				if "}" in THIS: #end of lvm config file part
-					print "Leaving PART: '" + PART + "'"
+					print " Leaving: '" + LVM_SECTION_NAME + "'"
 					IN_PART = False
-					break
+					LVM_CONFIG_ALL[LVM_SECTION_NAME] = LVM_CONFIG
+					LVM_CONFIG = {}
+					LVM_SECTION_NAME = ''
 				else:
 					TMP = THIS.split("=", 1)
 					if( len(TMP) > 1 ):
@@ -1404,10 +1408,21 @@ def getConfigFileLVM(PART):
 						print " Normal:", TMP[0], TMP[1].strip('" \' ')
 						LVM_CONFIG[TMP[0]] = TMP[1].strip('" \' ')
 			elif LVM_SECTION.search(THIS):
-				print "Entering PART: '" + PART + "'"
+				LVM_SECTION_NAME = THIS.strip().split()[0]
 				IN_PART = True
+				print "Entering LVM Section: '" + LVM_SECTION_NAME + "'"
 
 		print
-		print "LVM_CONFIG =", LVM_CONFIG
+		print "KEYS", LVM_CONFIG_ALL.keys()
+		print
+		if PART in LVM_CONFIG_ALL.keys():
+			LVM_CONFIG_ALL['lvm_config_partial'] = True
+			LVM_CONFIG = {'lvm_config_partial': True, PART: LVM_CONFIG_ALL[PART]}
+			print PART, LVM_CONFIG
+			print
+		else:
+			LVM_CONFIG = LVM_CONFIG_ALL
+			print 'ALL', LVM_CONFIG
+			print
 	return LVM_CONFIG
 
