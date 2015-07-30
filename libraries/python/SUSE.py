@@ -1385,8 +1385,11 @@ def getConfigFileLVM(PART):
 	ARRAY_KEY = ''
 	LVM_SECTION_NAME = ''
 	LVM_SECTION = re.compile("^\S*\s*{", re.IGNORECASE)
+	SKIP_LINE = re.compile("^\s*#|^\s*$", re.IGNORECASE)
 	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
+			if SKIP_LINE.search(LINE):
+				continue
 			THIS = LINE.strip().lower()
 			if( IN_PART ):
 				if "}" in THIS: #end of lvm config file part
