@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Jul 30 14:36:39 UTC 2015 - jrecord@suse.com
+
+- Added python library function:
+  SUSE.getConfigFileLVM
+- Updated constant SLE11SP4 in SUSE.pm, SUSE.rc, SUSE.py
+- Added constants to all SUSE libraries
+  SLE11SP5, SLE12SP1, SLE12SP2, SLE12SP3, SLE12SP4, SLE12SP5
+
+-------------------------------------------------------------------
 Fri Jun 26 18:59:04 UTC 2015 - jrecord@suse.com
 
 - Added python library functions:

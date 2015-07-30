@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jul 27
+#  Modified: 2015 Jul 29
 #
 ##############################################################################
 
@@ -49,9 +49,14 @@ SLE11GA      = '2.6.27.19-5'
 SLE11SP1     = '2.6.32.12-0.7'
 SLE11SP2     = '3.0.13-0.27'
 SLE11SP3     = '3.0.76-0.11.1'
-SLE11SP4     = '3.1' #Update to actual version when/if ready
+SLE11SP4     = '3.0.101-0.63.1'
+SLE11SP5     = '3.1' #Update to actual version when/if ready
 SLE12GA      = '3.12.28-4'
 SLE12SP1     = '3.999' #Update to actual version when applicable
+SLE12SP2     = '3.999' #Update to actual version when applicable
+SLE12SP3     = '3.999' #Update to actual version when applicable
+SLE12SP4     = '3.999' #Update to actual version when applicable
+SLE12SP5     = '3.999' #Update to actual version when applicable
 
 def packageInstalled(PackageName):
 	"""
@@ -1345,11 +1350,35 @@ def getBasicFIPSData():
 	return FIPS
 
 def getConfigFileLVM(PART):
+	"""
+	Returns a dictionary of the /etc/lvm/lvm.conf file from the lvm.txt file in supportconfig.
+
+	Args:			PART
+		If PART is set to '' or 'all', the entire lvm.conf file will be returned in a dictionary of dictionaries.
+		If PART is set to a specific lvm.conf section, like 'log' or 'activation', only that section will be returned as a dictionary.
+		If PART is set, but not found among the lvm.conf sections, an empty dictionary is returned.
+	Returns:	Dictionary
+	Keys:			Returned from the lvm.conf itself
+
+	Example 1:
+	LVM_CONFIG = SUSE.getConfigFileLVM('log')
+	if( int(LVM_CONFIG['verbose']) > 0 ):
+		Core.updateStatus(Core.WARN, "LVM logging set to greater verbosity")
+	else:		
+		Core.updateStatus(Core.IGNORE, "LMV logging is not verbose")
+
+	Example 2:
+	LVM_CONFIG = SUSE.getConfigFileLVM('ALL')
+	if( int(LVM_CONFIG['log']['verbose']) > 0 ):
+		Core.updateStatus(Core.WARN, "LVM logging set to greater verbosity")
+	else:		
+		Core.updateStatus(Core.IGNORE, "LMV logging is not verbose")
+	"""
 	FILE_OPEN = "lvm.txt"
 	SECTION = "lvm.conf"
 	CONTENT = []
 	LVM_CONFIG = {}
-	LVM_CONFIG_ALL = {'lvm_config_partial': False}
+	LVM_CONFIG_ALL = {}
 	IN_PART = False
 	IN_ARRAY = False
 	ARRAY_VALUES = []
@@ -1361,7 +1390,7 @@ def getConfigFileLVM(PART):
 			THIS = LINE.strip().lower()
 			if( IN_PART ):
 				if "}" in THIS: #end of lvm config file part
-					print " Leaving: '" + LVM_SECTION_NAME + "'"
+#					print " Leaving: '" + LVM_SECTION_NAME + "'"
 					IN_PART = False
 					LVM_CONFIG_ALL[LVM_SECTION_NAME] = LVM_CONFIG
 					LVM_CONFIG = {}
@@ -1377,27 +1406,27 @@ def getConfigFileLVM(PART):
 
 					if( IN_ARRAY ):
 						if( "]" in THIS ):
-							print " End array:", TMP[0], "Length", len(THIS)
+#							print " End array:", TMP[0], "Length", len(THIS)
 							IN_ARRAY = False
 							TMP2 = VALUE.strip("[ ] ").split(",")
 							for VALUE in TMP2:
 								ARRAY_VALUES.append(VALUE.strip('" \' '))
 							ARRAY_VALUES = filter(None, ARRAY_VALUES)
-							LVM_CONFIG[ARRAY_KEY] = sorted(ARRAY_VALUES)
+							LVM_CONFIG[ARRAY_KEY.strip()] = sorted(ARRAY_VALUES)
 						else:
-							print "  Add to array:", TMP[0], "Length", len(THIS)
+#							print "  Add to array:", TMP[0], "Length", len(THIS)
 							TMP2 = THIS.strip("[ ] ").split(",")
 							for VALUE in TMP2:
 								ARRAY_VALUES.append(VALUE.strip('" \' '))
 					elif( "[" in THIS and "]" in THIS ):
-						print " Complete array:", TMP[0], TMP[1]
+#						print " Complete array:", TMP[0], TMP[1]
 						TMP2 = TMP[1].strip("[ ] ").split(",")
 						VALUES = []
 						for VALUE in TMP2:
 							VALUES.append(VALUE.strip('" \' '))
-						LVM_CONFIG[TMP[0]] = VALUES
+						LVM_CONFIG[TMP[0].strip()] = VALUES
 					elif( "[" in THIS ):
-						print " Start array:", TMP[0], TMP[1]
+#						print " Start array:", TMP[0], TMP[1]
 						IN_ARRAY = True
 						ARRAY_KEY = TMP[0]
 						ARRAY_VALUES = []
@@ -1405,24 +1434,29 @@ def getConfigFileLVM(PART):
 						for VALUE in TMP2:
 							ARRAY_VALUES.append(VALUE.strip('" \' '))
 					else:
-						print " Normal:", TMP[0], TMP[1].strip('" \' ')
-						LVM_CONFIG[TMP[0]] = TMP[1].strip('" \' ')
+#						print " Normal:", TMP[0], TMP[1].strip('" \' ')
+						LVM_CONFIG[TMP[0].strip()] = TMP[1].strip('" \' ')
 			elif LVM_SECTION.search(THIS):
-				LVM_SECTION_NAME = THIS.strip().split()[0]
+				LVM_SECTION_NAME = THIS.strip().split()[0].strip()
 				IN_PART = True
-				print "Entering LVM Section: '" + LVM_SECTION_NAME + "'"
+#				print "Entering LVM Section: '" + LVM_SECTION_NAME + "'"
 
-		print
-		print "KEYS", LVM_CONFIG_ALL.keys()
-		print
-		if PART in LVM_CONFIG_ALL.keys():
-			LVM_CONFIG_ALL['lvm_config_partial'] = True
-			LVM_CONFIG = {'lvm_config_partial': True, PART: LVM_CONFIG_ALL[PART]}
-			print PART, LVM_CONFIG
-			print
+#		print
+#		print "KEYS", LVM_CONFIG_ALL.keys()
+#		print
+		if( len(PART) > 0 ):
+			if( PART.lower() == "all" ):
+				LVM_CONFIG = LVM_CONFIG_ALL
+#				print 'ALL:', LVM_CONFIG
+			elif PART in LVM_CONFIG_ALL.keys():
+				LVM_CONFIG = LVM_CONFIG_ALL[PART]
+#				print PART + ":", LVM_CONFIG
+			else:
+				LVM_CONFIG = {}
+#				print "KEY_NOT_FOUND:", PART
 		else:
 			LVM_CONFIG = LVM_CONFIG_ALL
-			print 'ALL', LVM_CONFIG
-			print
+#			print 'ALL:', LVM_CONFIG
+#		print
 	return LVM_CONFIG
 

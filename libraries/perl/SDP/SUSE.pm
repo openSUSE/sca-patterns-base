@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014 SUSE LINUX Products GmbH
+#  Copyright (C) 2014,2015 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
-#     Modified: 2014 Dec 15
+#     Modified: 2015 Jul 29
 #
 #
 ##############################################################################
@@ -50,7 +50,7 @@ running on SUSE servers.
 
 =over 5
 
-=item SLE9GA, SLE9SP1, SLE9SP2, SLE9SP3, SLE9SP4, SLE9SP5, SLE10GA, SLE10SP1, SLE10SP2, SLE10SP3, SLE10SP4, SLE10SP5, SLE11GA, SLE11SP1, SLE11SP2, SLE11SP3, SLE11SP4, SLE12GA, SLE12SP1
+=item SLE9GA, SLE9SP1, SLE9SP2, SLE9SP3, SLE9SP4, SLE9SP5, SLE10GA, SLE10SP1, SLE10SP2, SLE10SP3, SLE10SP4, SLE10SP5, SLE11GA, SLE11SP1, SLE11SP2, SLE11SP3, SLE11SP4, SLE12GA, SLE12SP1, SLE12SP2, SLE12SP3, SLE12SP4, SLE12SP5
 
 SUSE Linux Enterprise Server/Desktop kernel versions
 
@@ -75,9 +75,14 @@ use constant SLE11GA      => '2.6.27.19-5';
 use constant SLE11SP1     => '2.6.32.12-0.7';
 use constant SLE11SP2     => '3.0.13-0.27';
 use constant SLE11SP3     => '3.0.76-0.11.1';
-use constant SLE11SP4     => '3.1'; #Update to actual version when/if ready
+use constant SLE11SP4     => '3.0.101-0.63.1';
+use constant SLE11SP5     => '3.1'; #Update to actual version when/if ready
 use constant SLE12GA      => '3.12.28-4'; 
 use constant SLE12SP1     => '3.999'; #Update to actual version when applicable
+use constant SLE12SP2     => '3.999'; #Update to actual version when applicable
+use constant SLE12SP3     => '3.999'; #Update to actual version when applicable
+use constant SLE12SP4     => '3.999'; #Update to actual version when applicable
+use constant SLE12SP5     => '3.999'; #Update to actual version when applicable
 
 ##############################################################################
 # Exports
@@ -86,8 +91,8 @@ use constant SLE12SP1     => '3.999'; #Update to actual version when applicable
 require      Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE12GA SLE12SP1 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.3.5;
+our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE11SP5 SLE12GA SLE12SP1 SLE12SP2 SLE12SP3 SLE12SP4 SLE12SP5 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
+our $VERSION   = 0.4.0;
 
 use      SDP::Core;
 
