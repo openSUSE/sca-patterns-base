@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug 26 17:07:36 UTC 2015 - jrecord@suse.com
+
+- Fixed oes.ncsActive to detect active cluster better
+
+-------------------------------------------------------------------
 Thu Jul 30 16:31:12 UTC 2015 - jrecord@suse.com
 
 - Added python library function:

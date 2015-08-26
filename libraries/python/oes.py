@@ -23,7 +23,7 @@ Linux servers.
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2015 Jan 09
+#  Modified: 2015 Aug 26
 #
 ##############################################################################
 
@@ -78,7 +78,7 @@ def ncsActive():
 	CONTENT = {}
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
-			if "node 0" in CONTENT[LINE]:
+			if CONTENT[LINE].startswith("node"):
 				return True
 	return False
 
