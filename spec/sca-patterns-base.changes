@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb 23 19:37:11 UTC 2016 - jrecord@suse.com
+
+- Updated patterns (bsc#953203)
+
+-------------------------------------------------------------------
 Wed Aug 26 17:07:36 UTC 2015 - jrecord@suse.com
 
 - Fixed oes.ncsActive to detect active cluster better
