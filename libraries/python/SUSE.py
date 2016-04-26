@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2015 SUSE LLC
+#  Copyright (C) 2013-2016 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jrecord@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2015 Jul 29
+#  Modified: 2016 Apr 26
 #
 ##############################################################################
 
@@ -34,25 +34,29 @@ import datetime
 import ast
 
 SLE9GA       = '2.6.5-7.97'
+SLE9SP0      = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
 SLE9SP2      = '2.6.5-7.191'
 SLE9SP3      = '2.6.5-7.244'
 SLE9SP4      = '2.6.5-7.308'
-SLE9SP5      = '2.6.5-8' #Update when/if actual version ships
+SLE9SP5      = '2.6.5-8' #Update to actual version when applicable
 SLE10GA      = '2.6.16.21-0.8'
+SLE10SP0     = '2.6.16.21-0.8'
 SLE10SP1     = '2.6.16.46-0.12'
 SLE10SP2     = '2.6.16.60-0.21'
 SLE10SP3     = '2.6.16.60-0.54.5'
 SLE10SP4     = '2.6.16.60-0.85.1'
-SLE10SP5     = '2.6.17' #Update to actual version when/if ready
+SLE10SP5     = '2.6.17' #Update to actual version when applicable
 SLE11GA      = '2.6.27.19-5'
+SLE11SP0     = '2.6.27.19-5'
 SLE11SP1     = '2.6.32.12-0.7'
 SLE11SP2     = '3.0.13-0.27'
 SLE11SP3     = '3.0.76-0.11.1'
 SLE11SP4     = '3.0.101-0.63.1'
-SLE11SP5     = '3.1' #Update to actual version when/if ready
+SLE11SP5     = '3.1' #Update to actual version when applicable
 SLE12GA      = '3.12.28-4'
-SLE12SP1     = '3.999' #Update to actual version when applicable
+SLE12SP0     = '3.12.28-4'
+SLE12SP1     = '3.12.49-11.1'
 SLE12SP2     = '3.999' #Update to actual version when applicable
 SLE12SP3     = '3.999' #Update to actual version when applicable
 SLE12SP4     = '3.999' #Update to actual version when applicable
@@ -1317,6 +1321,12 @@ def getBasicFIPSData():
 		if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
 			FIPS['GrubFips'] = True
 		if( "boot=" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
+			FIPS['GrubBoot'] = True
+
+	if( 'GRUB_CMDLINE_LINUX' in GRUB2.keys() ):
+		if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX'].lower() ):
+			FIPS['GrubFips'] = True
+		if( "boot=" in GRUB2['GRUB_CMDLINE_LINUX'].lower() ):
 			FIPS['GrubBoot'] = True
 
 	CMDLINE = getProcCmdLine()

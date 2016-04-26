@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Apr 26 15:44:28 UTC 2016 - jrecord@suse.com
+
+- Assigned correct kernel version for global SLE12SP1 (bsc#977269)
+
+-------------------------------------------------------------------
 Tue Feb 23 19:37:11 UTC 2016 - jrecord@suse.com
 
 - Updated patterns (bsc#953203)

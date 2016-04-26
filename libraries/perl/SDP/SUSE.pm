@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014,2015 SUSE LINUX Products GmbH
+#  Copyright (C) 2014-2016 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
-#     Modified: 2015 Jul 29
+#     Modified: 2016 Apr 26
 #
 #
 ##############################################################################
@@ -64,21 +64,21 @@ use constant SLE9SP1      => '2.6.5-7.139';
 use constant SLE9SP2      => '2.6.5-7.191';
 use constant SLE9SP3      => '2.6.5-7.244';
 use constant SLE9SP4      => '2.6.5-7.308';
-use constant SLE9SP5      => '2.6.5-8'; #Update when/if actual version ships
+use constant SLE9SP5      => '2.6.5-8'; #Update to actual version when applicable
 use constant SLE10GA      => '2.6.16.21-0.8';
 use constant SLE10SP1     => '2.6.16.46-0.12';
 use constant SLE10SP2     => '2.6.16.60-0.21';
 use constant SLE10SP3     => '2.6.16.60-0.54.5';
 use constant SLE10SP4     => '2.6.16.60-0.85.1';
-use constant SLE10SP5     => '2.6.17'; #Update to actual version when/if ready
+use constant SLE10SP5     => '2.6.17'; #Update to actual version when applicable
 use constant SLE11GA      => '2.6.27.19-5';
 use constant SLE11SP1     => '2.6.32.12-0.7';
 use constant SLE11SP2     => '3.0.13-0.27';
 use constant SLE11SP3     => '3.0.76-0.11.1';
 use constant SLE11SP4     => '3.0.101-0.63.1';
-use constant SLE11SP5     => '3.1'; #Update to actual version when/if ready
+use constant SLE11SP5     => '3.1'; #Update to actual version when applicable
 use constant SLE12GA      => '3.12.28-4'; 
-use constant SLE12SP1     => '3.999'; #Update to actual version when applicable
+use constant SLE12SP1     => '3.12.49-11.1';
 use constant SLE12SP2     => '3.999'; #Update to actual version when applicable
 use constant SLE12SP3     => '3.999'; #Update to actual version when applicable
 use constant SLE12SP4     => '3.999'; #Update to actual version when applicable
@@ -92,7 +92,7 @@ require      Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE11SP5 SLE12GA SLE12SP1 SLE12SP2 SLE12SP3 SLE12SP4 SLE12SP5 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.4.0;
+our $VERSION   = 0.4.1;
 
 use      SDP::Core;
 
