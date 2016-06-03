@@ -462,7 +462,7 @@ def compareLooseVersions(version1, version2):
 
 	thisVersion = '1.1.0-2'
 	thatVersion = '1.2'
-	if( compareLooseVersions(thisVersion, thatVersion) > 0 ):
+	if( Core.compareLooseVersions(thisVersion, thatVersion) > 0 ):
 		Core.updateStatus(Core.WARN, "The version is too old, update the system")
 	else:
 		Core.updateStatus(Core.IGNORE, "The version is sufficient")
