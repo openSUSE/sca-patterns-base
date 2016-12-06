@@ -28,6 +28,7 @@ Core library of functions for creating and processing python patterns
 ##############################################################################
 
 import sys
+import os
 import re
 from distutils.version import LooseVersion
 path = ''
@@ -254,6 +255,22 @@ def listSections(FILE_OPEN, CONTENT):
 	FILE.close()
 	return RESULT
 
+def isFileActive(FILE_OPEN):
+	global path
+	MIN_FILE_SIZE_BYTES=500 #most inactive files are less than this, but it's not exact
+
+	try:
+		FILE = os.stat(path + "/" + FILE_OPEN)
+	except Exception, error:
+#		print "Error os.stat(" + str(FILE_OPEN) + "): " + str(error)
+		return False
+
+#	print FILE.st_size
+	if( FILE.st_size > MIN_FILE_SIZE_BYTES ):
+		return True
+	else:
+		return False
+	
 
 #get Section of supportconfig
 def getSection(FILE_OPEN, SECTION, CONTENT):

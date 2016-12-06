@@ -312,7 +312,7 @@ def getNSSPools():
 		Core.updateStatus(Core.ERROR, "No NSS Pools found")
 
 	if( len(POOL_WARNINGS) > 0 ):
-		Core.updateStatus(Core.WARN, "Pools with limited availble space: " + str(POOL_WARNINGS))
+		Core.updateStatus(Core.WARN, "Pools with limited available space: " + str(POOL_WARNINGS))
 	elif( ATTRIBUTE_ERROR ):
 		Core.updateStatus(Core.ERROR, "Some pools missing percentAvailableSpace attribute")
 	else:
