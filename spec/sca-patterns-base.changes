@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jun  1 21:49:01 UTC 2017 - jason.record@suse.com
+
+- Added getRegExSectionRaw to Core.py
+
+-------------------------------------------------------------------
 Fri Jun  3 16:27:12 UTC 2016 - jason.record@suse.com
 
 - Updated Core.py documentation

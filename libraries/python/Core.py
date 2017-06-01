@@ -388,6 +388,57 @@ def getRegExSection(FILE_OPEN, SECTION, CONTENT):
 	FILE.close()
 	return FoundSection
 
+def getRegExSectionRaw(FILE_OPEN, SECTION, CONTENT):
+	"""
+	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT list, one line per list element.
+  NOTE: getRegExSectionRaw differs from getRegExSection by searching commented lines in the file section. All lines are included in the search.
+
+	Args:		FILE_OPEN (String) - The supportconfig filename to open
+				SECTION (String) - The section regex identifier in the file
+				CONTENT (List) - Section contents line-by-line
+	Returns:	True or False
+					True - The specified section was found
+					False - The section was not found
+	Example:
+
+	FILE_OPEN = "boot.txt"
+	SECTION = "menu.lst"
+	CONTENT = []
+	if Core.getRegExSectionRaw(FILE_OPEN, SECTION, CONTENT):
+		for LINE in CONTENT:
+			if "xen.gz" in LINE:
+				Core.updateStatus(Core.IGNORE, "Found Xen kernel boot option"
+	Core.updateStatus(Core.WARN, "Missing Xen kernel boot option")
+	"""
+	FoundSection = False
+	SectionName = ''
+	global path
+	try:
+		FILE = open(path + "/" + FILE_OPEN)
+	except Exception, error:
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
+	SectionTag = re.compile(SECTION)
+	for line in FILE:
+		line = line.strip("\n")
+		if line.startswith('#==['):
+#			print "\nNew Section Start"
+			SectionName = ''
+			if FoundSection:
+				break
+		elif ( SectionName == '' ):
+#			print " SectionName before = " + str(line)
+			SectionName = re.sub('^#', '', line).strip()
+#			print " SectionName after  = " + str(SectionName)
+		elif SectionTag.search(SectionName):
+			if( len(line) > 0 ):
+#				print " Appending Line: '" + str(line) + "'"
+				CONTENT.append(line)
+				FoundSection = True
+#			else:
+#				print " Skipping empty line"
+	FILE.close()
+	return FoundSection
+
 def getExactSection(FILE_OPEN, SECTION, CONTENT):
 	"""
 	Extracts the first section of a supportconfig file matching SECTION and puts it into the CONTENT list, one line per list element.
