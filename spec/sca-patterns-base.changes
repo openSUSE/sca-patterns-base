@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun  2 22:59:46 UTC 2017 - jason.record@suse.com
+
+- Updated SLES12SP2 global library value (bsc#1042515)
+
+-------------------------------------------------------------------
 Thu Jun  1 21:49:01 UTC 2017 - jason.record@suse.com
 
 - Added getRegExSectionRaw to Core.py

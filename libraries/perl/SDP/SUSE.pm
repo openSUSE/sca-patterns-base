@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014-2016 SUSE LINUX Products GmbH
+#  Copyright (C) 2014-2017 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#     Jason Record (jrecord@suse.com)
-#     Modified: 2016 Apr 26
+#     Jason Record (jason.record@suse.com)
+#     Modified: 2017 Jun 02
 #
 #
 ##############################################################################
@@ -79,10 +79,10 @@ use constant SLE11SP4     => '3.0.101-0.63.1';
 use constant SLE11SP5     => '3.1'; #Update to actual version when applicable
 use constant SLE12GA      => '3.12.28-4'; 
 use constant SLE12SP1     => '3.12.49-11.1';
-use constant SLE12SP2     => '3.999'; #Update to actual version when applicable
-use constant SLE12SP3     => '3.999'; #Update to actual version when applicable
-use constant SLE12SP4     => '3.999'; #Update to actual version when applicable
-use constant SLE12SP5     => '3.999'; #Update to actual version when applicable
+use constant SLE12SP2     => '4.4.21-69'; #Update to actual version when applicable
+use constant SLE12SP3     => '4.4.68-2'; #Beta3: Update to actual version when applicable
+use constant SLE12SP4     => '5.999'; #Update to actual version when applicable
+use constant SLE12SP5     => '6.999'; #Update to actual version when applicable
 
 ##############################################################################
 # Exports
@@ -92,7 +92,7 @@ require      Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE11SP5 SLE12GA SLE12SP1 SLE12SP2 SLE12SP3 SLE12SP4 SLE12SP5 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.4.1;
+our $VERSION   = 0.4.2;
 
 use      SDP::Core;
 

@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2016 SUSE LLC
+#  Copyright (C) 2013-2017 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -20,10 +20,10 @@ Library of functions for creating python patterns specific to SUSE
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#    Jason Record (jrecord@suse.com)
+#    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2016 Apr 26
+#  Modified: 2017 Jun 02
 #
 ##############################################################################
 
@@ -57,10 +57,10 @@ SLE11SP5     = '3.1' #Update to actual version when applicable
 SLE12GA      = '3.12.28-4'
 SLE12SP0     = '3.12.28-4'
 SLE12SP1     = '3.12.49-11.1'
-SLE12SP2     = '3.999' #Update to actual version when applicable
-SLE12SP3     = '3.999' #Update to actual version when applicable
-SLE12SP4     = '3.999' #Update to actual version when applicable
-SLE12SP5     = '3.999' #Update to actual version when applicable
+SLE12SP2     = '4.4.21-69'
+SLE12SP3     = '4.4.68-2' #Beta3: Update to actual version when applicable
+SLE12SP4     = '5.999' #Update to actual version when applicable
+SLE12SP5     = '6.999' #Update to actual version when applicable
 
 def packageInstalled(PackageName):
 	"""
