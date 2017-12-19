@@ -40,6 +40,8 @@ by all patterns
 %prep
 %setup -q
 
+%build
+
 %install
 pwd;ls -la
 install -d %{buildroot}/%{patdirbase}/patterns/local
