@@ -455,7 +455,7 @@ def getExactSection(FILE_OPEN, SECTION, CONTENT):
 	fileOpen = "boot.txt"
 	section = "menu.lst"
 	content = []
-	if Core.getSection(fileOpen, section, content):
+	if Core.getExactSection(fileOpen, section, content):
 		for line in content:
 			if "xen.gz" in line:
 				Core.updateStatus(Core.IGNORE, "Found Xen kernel boot option"
