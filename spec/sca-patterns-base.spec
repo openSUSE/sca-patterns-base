@@ -1,44 +1,41 @@
+# 
 # spec file for package sca-patterns-base
 #
-# Copyright (C) 2014 SUSE LLC
+# Copyright (c) 2017 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2014 SUSE LLC
 #
-# This file and all modifications and additions to the pristine
-# package are under the same license as the package itself.
-#
-# Source developed at:
-#  https://github.com/g23guy/sca-patterns-base
-#
-# norootforbuild
-# neededforbuild
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
 
 %define sca_common sca
-%define patdirbase /usr/lib/%{sca_common}
+%define patdirbase %{_prefix}/lib/%{sca_common}
 %define patdir %{patdirbase}/patterns
 %define prodgrp sdp
 %define patuser root
 %define patgrp root
 
 Name:         sca-patterns-base
+Version:      1.3
+Release:      0
 Summary:      Supportconfig Analysis Pattern Base Libraries
+License:      GPL-2.0
 URL:          https://github.com/g23guy/sca-patterns-base
 Group:        System/Monitoring
-License:      GPL-2.0
-Autoreqprov:  on
-Version:      1.3
-Release:      57
 Source:       %{name}-%{version}.tar.gz
-BuildRoot:    %{_tmppath}/%{name}-%{version}
-Buildarch:    noarch
 Requires:     python
 Requires:     bash
 Requires:     perl
+BuildArch:    noarch
+
 %description
 Supportconfig Analysis (SCA) appliance pattern base libraries used 
 by all patterns
-
-Authors:
---------
-    Jason Record <jrecord@suse.com>
 
 %prep
 %setup -q
@@ -47,16 +44,15 @@ Authors:
 
 %install
 pwd;ls -la
-rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/%{patdirbase}/patterns/local
-install -d $RPM_BUILD_ROOT/%{patdirbase}/bash
-install -d $RPM_BUILD_ROOT/%{patdirbase}/python
-install -d $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
-install -d $RPM_BUILD_ROOT/usr/share/doc/packages/%{sca_common}
-install -m 444 libraries/COPYING.GPLv2 $RPM_BUILD_ROOT/usr/share/doc/packages/%{sca_common}
-install -m 644 libraries/bash/* $RPM_BUILD_ROOT/%{patdirbase}/bash
-install -m 644 libraries/python/* $RPM_BUILD_ROOT/%{patdirbase}/python
-install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
+install -d %{buildroot}/%{patdirbase}/patterns/local
+install -d %{buildroot}/%{patdirbase}/bash
+install -d %{buildroot}/%{patdirbase}/python
+install -d %{buildroot}/%{patdirbase}/perl/SDP
+install -d %{buildroot}%{_docdir}/%{name}
+install -m 444 libraries/COPYING.GPLv2 %{buildroot}%{_docdir}/%{name}
+install -m 644 libraries/bash/* %{buildroot}/%{patdirbase}/bash
+install -m 644 libraries/python/* %{buildroot}/%{patdirbase}/python
+install -m 644 libraries/perl/SDP/* %{buildroot}/%{patdirbase}/perl/SDP
 
 %files
 %defattr(-,%{patuser},%{patgrp})
@@ -67,14 +63,14 @@ install -m 644 libraries/perl/SDP/* $RPM_BUILD_ROOT/%{patdirbase}/perl/SDP
 %dir %{patdirbase}/python
 %dir %{patdirbase}/perl
 %dir %{patdirbase}/perl/SDP
-%dir %attr(-,root,root) /usr/share/doc/packages/%{sca_common}
+%dir %attr(-,root,root) %{_docdir}/%{name}
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/bash/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/python/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/perl/SDP/*
-%doc %attr(-,root,root) /usr/share/doc/packages/%{sca_common}/*
+%doc %attr(-,root,root) %{_docdir}/%{name}/*
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %changelog
 

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Dec 18 17:45:42 UTC 2017 - jason.record@suse.com
+
+- Updated spec file with spec-cleaner suggestions
+
+-------------------------------------------------------------------
 Fri Jun  2 22:59:46 UTC 2017 - jason.record@suse.com
 
 - Updated SLES12SP2 global library value (bsc#1042515)
