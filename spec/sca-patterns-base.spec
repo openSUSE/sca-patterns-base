@@ -2,7 +2,6 @@
 # spec file for package sca-patterns-base
 #
 # Copyright (c) 2017 SUSE LINUX GmbH, Nuernberg, Germany.
-# Copyright (c) 2014 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -68,9 +67,6 @@ install -m 644 libraries/perl/SDP/* %{buildroot}/%{patdirbase}/perl/SDP
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/python/*
 %attr(-,%{patuser},%{patgrp}) %{patdirbase}/perl/SDP/*
 %doc %attr(-,root,root) %{_docdir}/%{name}/*
-
-%clean
-rm -rf %{buildroot}
 
 %changelog
 
