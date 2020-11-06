@@ -667,8 +667,10 @@ def getHostInfo():
 	IDX_VERSION = 2
 	IDX_PATCHLEVEL = 1
 	IDX_DISTRO = 0
-	IDX_ARCH = 1
+	IDX_OSDISTRO = 1
+	IDX_ARCH = -2
 	IDX_VALUE = 1
+	IDX_MAJOR = 0
 	UNAME_FOUND = False
 	OSRELEASE_FOUND = False
 	RELEASE_FOUND = False
@@ -689,14 +691,28 @@ def getHostInfo():
 		if UNAME_FOUND:
 			SERVER_DICTIONARY['Hostname'] = LINE.split()[IDX_HOSTNAME]
 			SERVER_DICTIONARY['KernelVersion'] = LINE.split()[IDX_VERSION]
+			SERVER_DICTIONARY['Architecture'] = LINE.split()[IDX_ARCH]
 			UNAME_FOUND = False
+		elif OSRELEASE_FOUND:
+			RELEASE_LINE += 1
+			if "#==[" in LINE:
+				RELEASE_FOUND = False
+			elif LINE.startswith('VERSION_ID'):
+				VERSION_ID_INFO = LINE.replace('"', "").strip().split('=')[IDX_VALUE].split('.')
+				if( len(VERSION_ID_INFO) > 1 ):
+					SERVER_DICTIONARY['DistroVersion'] = int(VERSION_ID_INFO[IDX_MAJOR].strip('"'))
+					SERVER_DICTIONARY['DistroPatchLevel'] = int(VERSION_ID_INFO[IDX_PATCHLEVEL].strip('"'))
+				else:			
+					SERVER_DICTIONARY['DistroVersion'] = int(VERSION_ID_INFO[IDX_MAJOR].strip('"'))
+					SERVER_DICTIONARY['DistroPatchLevel'] = 0
+			elif LINE.startswith('PRETTY_NAME'):
+				SERVER_DICTIONARY['Distro'] = re.split(r'=', LINE)[IDX_OSDISTRO].strip()
 		elif RELEASE_FOUND:
 			RELEASE_LINE += 1
 			if "#==[" in LINE:
 				RELEASE_FOUND = False
 			elif ( RELEASE_LINE == 1 ):
 				SERVER_DICTIONARY['Distro'] = re.split(r'\(|\)', LINE)[IDX_DISTRO].strip()
-				SERVER_DICTIONARY['Architecture'] = re.split(r'\(|\)', LINE)[IDX_ARCH].strip()
 			else:
 				if LINE.startswith('VERSION'):
 					SERVER_DICTIONARY['DistroVersion'] = int(LINE.split('=')[IDX_VALUE].strip())
@@ -719,6 +735,8 @@ def getHostInfo():
 						SERVER_DICTIONARY['OESPatchLevel'] = int(ValueString)
 		elif "uname -a" in LINE:
 			UNAME_FOUND = True
+		elif OSRELEASE.search(LINE):
+			OSRELEASE_FOUND = True
 		elif RELEASE.search(LINE):
 			RELEASE_FOUND = True
 		elif NOVELL.search(LINE):
