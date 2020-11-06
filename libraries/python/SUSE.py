@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2017 SUSE LLC
+#  Copyright (C) 2013-2020 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2017 Jun 02
+#  Modified: 2020 Nov 06
 #
 ##############################################################################
 
@@ -39,28 +39,36 @@ SLE9SP1      = '2.6.5-7.139'
 SLE9SP2      = '2.6.5-7.191'
 SLE9SP3      = '2.6.5-7.244'
 SLE9SP4      = '2.6.5-7.308'
-SLE9SP5      = '2.6.5-8' #Update to actual version when applicable
+SLE9SP5      = '2.6.5-8'
 SLE10GA      = '2.6.16.21-0.8'
 SLE10SP0     = '2.6.16.21-0.8'
 SLE10SP1     = '2.6.16.46-0.12'
 SLE10SP2     = '2.6.16.60-0.21'
 SLE10SP3     = '2.6.16.60-0.54.5'
 SLE10SP4     = '2.6.16.60-0.85.1'
-SLE10SP5     = '2.6.17' #Update to actual version when applicable
+SLE10SP5     = '2.6.17'
 SLE11GA      = '2.6.27.19-5'
 SLE11SP0     = '2.6.27.19-5'
 SLE11SP1     = '2.6.32.12-0.7'
 SLE11SP2     = '3.0.13-0.27'
 SLE11SP3     = '3.0.76-0.11.1'
 SLE11SP4     = '3.0.101-0.63.1'
-SLE11SP5     = '3.1' #Update to actual version when applicable
+SLE11SP5     = '3.1' #Update to actual version when/if applicable
 SLE12GA      = '3.12.28-4'
 SLE12SP0     = '3.12.28-4'
 SLE12SP1     = '3.12.49-11.1'
 SLE12SP2     = '4.4.21-69'
-SLE12SP3     = '4.4.68-2' #Beta3: Update to actual version when applicable
-SLE12SP4     = '5.999' #Update to actual version when applicable
-SLE12SP5     = '6.999' #Update to actual version when applicable
+SLE12SP3     = '4.4.73-5.1'
+SLE12SP4     = '4.12.14-94.41'
+SLE12SP5     = '4.12.14-120.1'
+SLE15GA      = '4.12.14-23.1'
+SLE15SP0     = '4.12.14-23.1'
+SLE15SP1     = '4.12.14-195.1'
+SLE15SP2     = '5.3.18-22.2'
+SLE15SP3     = '5.993' #Update to actual version when/if applicable
+SLE15SP4     = '5.994' #Update to actual version when/if applicable
+SLE15SP5     = '5.995' #Update to actual version when/if applicable
+
 
 def packageInstalled(PackageName):
 	"""
@@ -662,6 +670,7 @@ def getHostInfo():
 	IDX_ARCH = 1
 	IDX_VALUE = 1
 	UNAME_FOUND = False
+	OSRELEASE_FOUND = False
 	RELEASE_FOUND = False
 	NOVELL_FOUND = False
 	RELEASE_LINE = 0
@@ -672,6 +681,7 @@ def getHostInfo():
 #		print "getHostInfo: Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)
 
+	OSRELEASE = re.compile('/etc/os-release', re.IGNORECASE)
 	RELEASE = re.compile('/etc/SuSE-release', re.IGNORECASE)
 	NOVELL = re.compile('/etc/novell-release', re.IGNORECASE)
 	OES = re.compile('Open Enterprise Server', re.IGNORECASE)
