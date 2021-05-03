@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2020 SUSE LLC
+#  Copyright (C) 2013-2021 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2020 Nov 06
+#  Modified: 2021 May 03
 #
 ##############################################################################
 
@@ -1238,6 +1238,7 @@ def getFileSystems():
 		#now add any unmounted filesystems
 		UNMOUNTED = []
 		ENTRY = []
+		SWAP = []
 		for FSENTRY in FSTAB: #check each FSENTRY for unmounted devices
 			ENTRY = FSENTRY.split()
 			if( len(ENTRY) <> 6 ): #consider non-standard entries as not MATCHED
@@ -1250,7 +1251,6 @@ def getFileSystems():
 						break
 				if( MISSING ): #the fstab entry was not found in the list of mounted filesystems
 					if( ENTRY[1].lower() == "swap" ): # If there is more than one swap device, the same free -k swap information is used for each one.
-						SWAP = []
 						if( Core.getRegExSection('memory.txt', 'free -k', SWAP) ):
 							for LINE in SWAP: #swap sizes are in the memory.txt file, not df command
 								if LINE.startswith("Swap:"):
