@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2021 May 03
+#  Modified: 2021 May 04
 #
 ##############################################################################
 
@@ -1176,16 +1176,16 @@ def getFileSystems():
 				LENLINE = len(LINE)
 				if( LENLINE == 6 ):
 					DFDATA_NORMALIZED.append(LINE)
-				elif( LENLINE == 1 ):
+				elif( LENLINE == 1 ): # Line wraps because the first field is a very long device name
 					THIS_ENTRY = LINE
-				elif( LENLINE < 6 ):
+				elif( LENLINE < 6 ): # Adds the rest of the fields to the device from the first line
 					THIS_ENTRY.extend(LINE)
-					DFDATA_NORMALIZED.append(THIS_ENTRY)
+					if( len(THIS_ENTRY) == 6 ):
+						DFDATA_NORMALIZED.append(THIS_ENTRY)
 					THIS_ENTRY = []
 			for DFLIST in DFDATA_NORMALIZED:
 				TMP = DFLIST[4].replace('%', '')
 				DFLIST[4] = TMP
-#		print "NORMALIZED", DFDATA_NORMALIZED
 
 		#compile mounted filesystem data with merged fstab and df data
 		for MOUNT in MOUNTS: #load each mount line output into the ENTRY list
