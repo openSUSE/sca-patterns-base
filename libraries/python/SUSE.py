@@ -601,12 +601,12 @@ def compareKernel(kernelVersion):
 					1	if Installed kernel version newer than kernelVerion
 	Example:
 
-	KERNEL_VERSION = '3.0.93'
+	KERNEL_VERSION = '4.12.14'
 	INSTALLED_VERSION = SUSE.compareKernel(KERNEL_VERSION)
 	if( INSTALLED_VERSION < 0 ):
 		Core.updateStatus(Core.CRIT, "Bug detected in kernel version " + KERNEL_VERSION + " or before, update server for fixes")
 	else:
-		Core.updateStatus(Core.IGNORE, "Bug fixes applied for " + KERNEL_VERSION)
+		Core.updateStatus(Core.IGNORE, "Bug fixes applied in kernel version " + KERNEL_VERSION + " or higher")
 	"""
 	foundVersion = ""
 	fileOpen = "basic-environment.txt"
