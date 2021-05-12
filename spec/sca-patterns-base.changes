@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed May 12 15:20:17 UTC 2021 - Jason Record <jason.record@suse.com>
+
+- Addtions to version 1.3.2
+  + Added SUSE.getNetworkInterfaces needed for bsc#1144162
+
+-------------------------------------------------------------------
 Tue May  4 14:02:33 UTC 2021 - Jason Record <jason.record@suse.com>
 
 - SUSE.getFileSystems fixes invalid index error (bsc#1185594)

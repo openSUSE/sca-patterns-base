@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2021 May 04
+#  Modified: 2021 May 12
 #
 ##############################################################################
 
@@ -1500,4 +1500,126 @@ def getConfigFileLVM(PART):
 #			print 'ALL:', LVM_CONFIG
 #		print
 	return LVM_CONFIG
+
+def getNetworkInterfaces():
+	"""
+	Merges network interface data from ip addr, eththool -k and /etc/sysconfig/network/ifcfg-* output.
+
+	Args:			None
+	Returns:	Dictionary of Dictionaries and Lists as NIC_LIST
+	Keys:
+		Data example from 'ip addr'
+			8: br0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
+			  link/ether 24:6e:96:7e:48:f8 brd ff:ff:ff:ff:ff:ff
+			  inet 10.9.14.110/23 brd 10.9.15.255 scope global br0
+			    valid_lft forever preferred_lft forever
+			  inet6 fdc8:123f:e31f:14:5ccb:3994:853a:81e4/64 scope global temporary dynamic 
+			    valid_lft 532496sec preferred_lft 13580sec
+			  inet6 fdc8:123f:e31f:14:6572:bcd9:387:b215/64 scope global temporary deprecated dynamic 
+			    valid_lft 446615sec preferred_lft 0sec
+
+			Each interface is the key to the dictionary and lists associated with that interface (ie br0)
+			Active interface flags are set to true if defined with the name as the key per netdevice(7) [ie {'BROADCAST': True, 'MULTICAST': True, 'UP': True, 'LOWER_UP': True, ...}]
+			The mtu and state are extracted from the interface line as well, (ie {'mtu': 1500, 'state': 'UNKNOWN'}), If the mtu or state are missing the value is "?".
+			The mac address is extracted from the link line (ie {'mac': '24:6e:96:7e:48:f8'})
+			Since there can be more than one internet address per network interface, they are stored in a list with the keys addr4 and addr6
+				(ie {'addr4': ['10.9.14.110/23'], 'addr6': ['fdc8:123f:e31f:14:5ccb:3994:853a:81e4/64', 'fdc8:123f:e31f:14:6572:bcd9:387:b215/64', ...]})
+
+		Data example from 'ethtool -k br0'
+			Features for br0: # This line is skipped
+			rx-checksumming: off [fixed]
+			tx-checksumming: on
+				tx-checksum-ipv4: off [fixed]
+				tx-checksum-ip-generic: on
+			...
+			scatter-gather: on
+			...
+
+			Each key/value pair from 'ethtool -k <interface>' is assigned as well.
+				(ie {'rx-checksumming': False, 'tx-checksumming': True, 'tx-checksum-ipv4': False, 'tx-checksum-ip-generic': True, 'scatter-gather': True, ...}
+
+		Data example from /etc/sysconfig/network/ifcfg-br0
+			STARTMODE='auto'
+			BOOTPROTO='dhcp'
+			OVS_BRIDGE='yes'
+			OVS_BRIDGE_PORT_DEVICE_1='bond0'
+			POST_UP_SCRIPT='wicked:/etc/sysconfig/network/scripts/ifup-br0'
+
+		Each key/value pair in the network configuration file is added to the device dictionary.
+			(ie {'STARTMODE': 'auto', 'BOOTPROTO': 'dhcp', 'OVS_BRIDGE': 'yes', "OVS_BRIDGE_PORT_DEVICE_1': 'bond0', 'POST_UP_SCRIPT": 'wicked:/etc/sysconfig/network/scripts/ifup-br0'})
+
+	Example:
+
+	NETWORKS = SUSE.getNetworkInterfaces()
+	MISSING_SG = []
+	FEATURE = 'scatter-gather'
+
+	for DEVICE in NETWORKS.keys():
+		if( FEATURE in NETWORKS[DEVICE] ):
+			if( not NETWORKS[DEVICE][FEATURE] ):
+				MISSING_SG.append(DEVICE)
+	if( len(MISSING_SG) > 0 ):
+		Core.updateStatus(Core.WARN, "Network devices with " + str(FEATURE) + " disabled: " + ' '.join(MISSING_SG))
+	else:
+		Core.updateStatus(Core.IGNORE, "All network devices have " + str(FEATURE) + " enabled")
+
+	"""
+	NETWORK_FILE = 'network.txt'
+	IPADDR = []
+	IPROUTE = []
+	NIC_LIST = {}
+	DEV = ''
+
+	if( Core.isFileActive(NETWORK_FILE) ):
+		STARTNIC = re.compile("\d:.*: <.*>.* mtu ")
+		if( Core.getRegExSection(NETWORK_FILE, '/ip addr', IPADDR) ):
+			for LINE in IPADDR:
+				if STARTNIC.search(LINE):
+#					print("Processing: " + str(LINE))
+					# 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master br0 state UP group default qlen 1000
+					LINE_PARTS = LINE.split()
+					DEV = LINE_PARTS[1][:-1]
+					NIC_LIST[DEV] = {}
+					NIC_LIST[DEV]['addr4'] = [] # holds all IPv4 internet addresses
+					NIC_LIST[DEV]['addr6'] = [] # holds all IPv6 internet addresses
+					NIC_LIST[DEV]['mtu'] = '?'
+					NIC_LIST[DEV]['state'] = '?'
+					for i in range(len(LINE_PARTS)):
+						if( LINE_PARTS[i] == "mtu" ):
+							NIC_LIST[DEV]['mtu'] = LINE_PARTS[i+1]
+						elif( LINE_PARTS[i] == "state" ):
+							NIC_LIST[DEV]['state'] = LINE_PARTS[i+1]
+					FLAGS = LINE_PARTS[2][1:][:-1].upper().split(',')
+					for FLAG in FLAGS:
+						NIC_LIST[DEV][FLAG] = True
+				elif( LINE.strip().startswith("link") ):
+					# link/ether 00:25:b5:05:03:7e brd ff:ff:ff:ff:ff:ff
+					NIC_LIST[DEV]['mac'] = LINE.split()[1]
+				elif( LINE.strip().startswith("inet ") ):
+					# inet 192.168.0.236/24 brd 192.168.0.255 scope global eth0
+					NIC_LIST[DEV]['addr4'].append(LINE.split()[1])
+				elif( LINE.strip().startswith("inet6 ") ):
+					# inet6 fe80::5054:ff:fea4:12da/64 scope link
+					NIC_LIST[DEV]['addr6'].append(LINE.split()[1])
+		for DEV in NIC_LIST.keys():
+			ETHTOOL = []
+			NETCONFIG = []
+			if( Core.getRegExSection(NETWORK_FILE, "ethtool -k " + str(DEV), ETHTOOL) ):
+				for LINE in ETHTOOL[1:]:
+					ETHTOOL_PARTS = LINE.split()
+					OPTION = ETHTOOL_PARTS[0][:-1]
+					if( ETHTOOL_PARTS[1].lower() == "on" ):
+						NIC_LIST[DEV][OPTION] = True
+					else:
+						NIC_LIST[DEV][OPTION] = False
+			if( Core.getRegExSection(NETWORK_FILE, "/etc/sysconfig/network/ifcfg-" + str(DEV), NETCONFIG) ):
+				for LINE in NETCONFIG:
+					(KEY, VALUE) = LINE.split('=', 1)
+					NIC_LIST[DEV][KEY] = VALUE[1:][:-1]
+
+#	for NIC in NIC_LIST.keys():
+#		print("\n" + str(NIC) + " : " + str(NIC_LIST[NIC]))
+#	print
+
+	return NIC_LIST
 
