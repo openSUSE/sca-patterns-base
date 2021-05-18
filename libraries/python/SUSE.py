@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2021 May 12
+#  Modified: 2021 May 17
 #
 ##############################################################################
 
@@ -362,22 +362,12 @@ def getServiceInfo(SERVICE_NAME):
 		'ldap': 'ldap.txt',
 		'libvirtd': 'kvm.txt',
 		'multipathd': 'mpio.txt',
-		'namcd': 'novell-lum.txt',
 		'named': 'dns.txt',
 		'network': 'network.txt',
 		'nfslock': 'nfs.txt',
 		'nfs': 'nfs.txt',
 		'nfsserver': 'nfs.txt',
 		'nmb': 'samba.txt',
-		'novell-afptcpd': 'novell-afp.txt',
-		'novell-cifs': 'novell-cifs.txt',
-		'novell-httpstkd': 'web.txt',
-		'novell-ipsmd': 'plugin-iPrint.txt',
-		'novell-named': 'dns.txt',
-		'novell-ncs': 'novell-ncs.txt',
-		'novell-nss': 'novell-nss.txt',
-		'novell-smdrd': 'novell-sms.txt',
-		'novell-zmd': 'updates-daemon.txt',
 		'nscd': 'network.txt',
 		'ntp': 'ntp.txt',
 		'o2cb': 'ocfs2.txt',
@@ -632,10 +622,6 @@ def getHostInfo():
 		Distro (String) - The name of the distribution
 		DistroVersion (Int) - The major distribution version number
 		DistroPatchLevel (Int) - The distribution service patch level
-		OES (Boolean) - True if OES installed, False if no OES found
-		OESDistro (String) The name of the OES distribution
-		OESVersion (Int) - The major OES version number
-		OESPatchLevel (Int) - The OES service patch level
 	Example:
 
 	import re
@@ -656,10 +642,6 @@ def getHostInfo():
 		'Distro': '',
 		'DistroVersion': -1,
 		'DistroPatchLevel': 0,
-		'OES': False,
-		'OESDistro': '',
-		'OESVersion': -1,
-		'OESPatchLevel': 0,
 	}
 	FILE_OPEN = "basic-environment.txt"
 	CONTENT = {}
@@ -674,7 +656,6 @@ def getHostInfo():
 	UNAME_FOUND = False
 	OSRELEASE_FOUND = False
 	RELEASE_FOUND = False
-	NOVELL_FOUND = False
 	RELEASE_LINE = 0
 
 	try:
@@ -685,8 +666,6 @@ def getHostInfo():
 
 	OSRELEASE = re.compile('/etc/os-release', re.IGNORECASE)
 	RELEASE = re.compile('/etc/SuSE-release', re.IGNORECASE)
-	NOVELL = re.compile('/etc/novell-release', re.IGNORECASE)
-	OES = re.compile('Open Enterprise Server', re.IGNORECASE)
 	for LINE in FILE:
 		if UNAME_FOUND:
 			SERVER_DICTIONARY['Hostname'] = LINE.split()[IDX_HOSTNAME]
@@ -718,29 +697,12 @@ def getHostInfo():
 					SERVER_DICTIONARY['DistroVersion'] = int(LINE.split('=')[IDX_VALUE].strip())
 				elif LINE.startswith('PATCHLEVEL'):
 					SERVER_DICTIONARY['DistroPatchLevel'] = int(LINE.split('=')[IDX_VALUE].strip())
-		elif NOVELL_FOUND:
-			if "#==[" in LINE:
-				NOVELL_FOUND = False
-			elif OES.search(LINE):
-				SERVER_DICTIONARY['OESDistro'] = re.split(r'\(|\)', LINE)[IDX_DISTRO].strip()
-				SERVER_DICTIONARY['OES'] = True
-			else:
-				if LINE.startswith('VERSION'):
-					SERVER_DICTIONARY['OESVersion'] = int(LINE.split('=')[IDX_VALUE].strip().split('.')[0])
-				elif LINE.startswith('PATCHLEVEL'):
-					ValueString = LINE.split('=')[IDX_VALUE].strip()
-					if "SP" in ValueString:
-						SERVER_DICTIONARY['OESPatchLevel'] = int(list(ValueString)[-1])
-					else:
-						SERVER_DICTIONARY['OESPatchLevel'] = int(ValueString)
 		elif "uname -a" in LINE:
 			UNAME_FOUND = True
 		elif OSRELEASE.search(LINE):
 			OSRELEASE_FOUND = True
 		elif RELEASE.search(LINE):
 			RELEASE_FOUND = True
-		elif NOVELL.search(LINE):
-			NOVELL_FOUND = True
 
 	FILE.close()
 #	print "getHostInfo: SERVER_DICTIONARY = " + str(SERVER_DICTIONARY)
@@ -827,6 +789,10 @@ def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
 	FAILED = []
 	INSTALLED = False
 	CHECK_IT = False
+	if( 'critical' in SEVERITY.lower() ):
+		STATE = Core.CRIT
+	else:
+		STATE = Core.WARN
 	if( LTSS ):
 		TITLE = SEVERITY + " LTSS " + NAME
 	else:
@@ -858,7 +824,7 @@ def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
 #				print "securityAnnouncementPackageCheck: -Missing:  " + str(RPM_NAME)
 		if( INSTALLED ):
 			if( len(FAILED) > 0 ):
-				Core.updateStatus(Core.CRIT, TITLE + " Security Announcement " + str(TAG) + ", update system to apply: " + " ".join(FAILED))
+				Core.updateStatus(STATE, TITLE + " Security Announcement " + str(TAG) + ", update system to apply: " + " ".join(FAILED))
 			else:
 				Core.updateStatus(Core.IGNORE, TITLE + " Security Announcement " + str(TAG) + " AVOIDED")
 		else:

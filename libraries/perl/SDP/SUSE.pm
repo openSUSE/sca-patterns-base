@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014-2017 SUSE LINUX Products GmbH
+#  Copyright (C) 2014-2021 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 #
 #  Authors/Contributors:
 #     Jason Record (jason.record@suse.com)
-#     Modified: 2017 Jun 02
+#     Modified: 2021 May 13
 #
 #
 ##############################################################################
@@ -92,7 +92,7 @@ require      Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE11SP5 SLE12GA SLE12SP1 SLE12SP2 SLE12SP3 SLE12SP4 SLE12SP5 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.4.2;
+our $VERSION   = 0.4.3;
 
 use      SDP::Core;
 
@@ -112,15 +112,15 @@ use      SDP::Core;
 
 =item Description
 
-Returns a hash containing host and OES information.
+Returns a hash containing host information.
 
 =item Usage
 
 	my %HOST_INFO = SDP::SUSE::getHostInfo();
-	if ( $HOST_INFO{'oes'} ) {
-		SDP::Core::updateStatus(STATUS_SUCCESS, "OES Installed on $HOST_INFO{'hostname'}");
+	if ( $HOST_INFO{'architecture'} == 'x86_64' ) {
+		SDP::Core::updateStatus(STATUS_SUCCESS, "Architecure x86_64 found on $HOST_INFO{'hostname'}");
 	} else {
-		SDP::Core::updateStatus(STATUS_WARNING, "OES NOT Installed on $HOST_INFO{'hostname'}");
+		SDP::Core::updateStatus(STATUS_WARNING, "Architecture x86_64 not found on $HOST_INFO{'hostname'}");
 	}
 
 =item Input
@@ -137,7 +137,7 @@ None
 
 =item Hash Keys
 
-architecture, hostname, kernel, distribution, patchlevel, oes, oesversion, oesmajor, oesdistribution, oespatchlevel, oesbuild, nows, nowsversion
+architecture, hostname, kernel, distribution, patchlevel
 
 =back
 
@@ -241,63 +241,6 @@ sub getHostInfo {
 		exit;
 	} else {
 		printDebug("  getHostInfo CLOSE", $RKFILE);
-	}
-	my @CONTENT = ();
-	if ( getSection('basic-environment.txt', 'novell-release', \@CONTENT) ) {
-		$HOST_INFO{'oes'} = 0;
-		foreach $_ (@CONTENT) {
-			if ( /Open Enterprise/i ) {
-				@KEY_FIELDS = split(/\(/, $_);
-				$HOST_INFO{'oesdistribution'} = $KEY_FIELDS[0];
-				$HOST_INFO{'oes'} = 1;
-				last;
-			}
-		}
-		if ( $HOST_INFO{'oes'} ) {
-			$HOST_INFO{'oespatchlevel'} = 0;
-			foreach $_ (@CONTENT) {
-				if ( /Open Enterprise/i ) {
-					@KEY_FIELDS = split(/\(/, $_);
-					$HOST_INFO{'oesdistribution'} = $KEY_FIELDS[0];
-				} elsif ( /VERSION/ ) {
-					@KEY_FIELDS = split(/=/, $_);
-					$HOST_INFO{'oesversion'} = $KEY_FIELDS[1];
-					if ( $KEY_FIELDS[1] =~ /(\d+)/ ) {
-						$HOST_INFO{'oesmajor'} = $1;
-					} else {
-						$HOST_INFO{'oesmajor'} = -1;
-					}
-				} elsif ( /PATCHLEVEL/ ) {
-					if ( /=/ ) {
-						@KEY_FIELDS = split(/=/, $_);
-						$HOST_INFO{'oespatchlevel'} = $KEY_FIELDS[1];
-					} else {
-						$HOST_INFO{'oespatchlevel'} = "N/A";
-					}
-				} elsif ( /BUILD/ ) {
-					if ( /=/ ) {
-						@KEY_FIELDS = split(/=/, $_);
-						$HOST_INFO{'oesbuild'} = $KEY_FIELDS[1];
-					} else {
-						$HOST_INFO{'oesbuild'} = "N/A";
-					}
-				}
-			}
-		}
-	} else {
-		$HOST_INFO{'oes'} = 0;
-	}
-
-	# Determine NOWS server data
-	my $RPM_NAME = 'NOWS-copyMedia';
-	my @RPM_INFO = SDP::SUSE::getRpmInfo($RPM_NAME);
-	if ( $#RPM_INFO < 0 ) {
-		$HOST_INFO{'nows'} = 0;
-	} elsif ( $#RPM_INFO > 0 ) {
-		$HOST_INFO{'nows'} = 0;
-	} else {
-		$HOST_INFO{'nows'} = 1;
-		($HOST_INFO{'nowsversion'}, undef) = split(/-/, $RPM_INFO[0]{'version'});
 	}
 
 	# Remove leading and trailing white space from each field
@@ -438,7 +381,7 @@ Returns a hash containing loaded kernel module information.
 
 =item Usage
 
-	my $SERVICE_NAME = 'novell-nss';
+	my $SERVICE_NAME = 'smt';
 	my %SERVICE_INFO = SDP::SUSE::getServiceInfo($SERVICE_NAME);
 	if ( $SERVICE_INFO{'running'} > 0 ) {
 		SDP::Core::updateStatus(STATUS_SUCCESS, "Service $SERVICE_INFO{'name'} is running");
@@ -478,18 +421,9 @@ sub getServiceInfo {
 	my $SERVICE_NAME = $_[0];
 	SDP::Core::printDebug("> getServiceInfo", "'$SERVICE_NAME'");
 	my %SERVICE_TABLE = (
-		'novell-afptcpd' => 'novell-afp.txt',
-		'novell-ncs' => 'novell-ncs.txt',
 		'auditd' => 'security-audit.txt',
 		'smt' => 'smt.txt',
 		'rcd' => 'updates-daemon.txt',
-		'novell-zmd' => 'updates-daemon.txt',
-		'novell-nss' => 'novell-nss.txt',
-		'novell-smdrd' => 'novell-sms.txt',
-		'novell-afptcpd' => 'novell-afp.txt',
-		'novell-cifs' => 'novell-cifs.txt',
-		'novell-ipsmd' => 'plugin-iPrint.txt',
-		'namcd' => 'novell-lum.txt',
 		'cron' => 'cron.txt',
 		'atd' => 'cron.txt',
 		'multipathd' => 'mpio.txt',
@@ -523,13 +457,11 @@ sub getServiceInfo {
 		'cset.init.d' => 'slert.txt',
 		'cups' => 'print.txt',
 		'named' => 'dns.txt',
-		'novell-named' => 'dns.txt',
 		'dhcpd' => 'dhcp.txt',
 		'owcimomd' => 'cimom.txt',
 		'sfcb' => 'cimom.txt',
 		'openibd' => 'ib.txt',
 		'apache2' => 'web.txt',
-		'novell-httpstkd' => 'web.txt',
 	);
 	my $FILE_OPEN               = '';
 	my %SERVICE_INFO            = (

@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014-2017 SUSE LINUX Products GmbH
+#  Copyright (C) 2014-2021 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -15,13 +15,13 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#     Jason Record (jason.record@suse.com)
+#     Jason Record <jason.record@suse.com>
 #
-#  Last Modified Date: 2017 Jun 02
+#  Last Modified Date: 2021 May 18
 #
 ##############################################################################
 # Library:       SUSE.rc
-# Version:       0.1.2
+# Version:       0.1.5
 # Requires:      Core.rc
 # Description:   Provides global variables for SLE kernel versions and base 
 #                information functions.
@@ -88,13 +88,6 @@ HOST_INFO_ARCH=''
 HOST_INFO_KERN=''
 HOST_INFO_DISTRO=''
 HOST_INFO_SP=0
-HOST_INFO_OES=0
-HOST_INFO_OES_DISTRO=''
-HOST_INFO_OES_VER=''
-HOST_INFO_OES_MAJOR=''
-HOST_INFO_OES_SP=0
-HOST_INFO_NOWS=0
-HOST_INFO_NOWS_VER=''
 
 ##############################################################################
 # GLOBAL FUNCTIONS
@@ -114,13 +107,6 @@ getHostInfo() {
 	HOST_INFO_KERN=''
 	HOST_INFO_DISTRO=''
 	HOST_INFO_SP=0
-	HOST_INFO_OES=0
-	HOST_INFO_OES_DISTRO=''
-	HOST_INFO_OES_VER=''
-	HOST_INFO_OES_MAJOR=''
-	HOST_INFO_OES_SP=0
-	HOST_INFO_NOWS=0
-	HOST_INFO_NOWS_VER=''
 
 	getSection 'basic-environment.txt' 'uname -a'
 	HOST_INFO_NAME=$(echo $CONTENT | awk '{print $2}')
@@ -129,35 +115,12 @@ getHostInfo() {
 	HOST_INFO_SP=$(echo "$CONTENT" | grep PATCHLEVEL | awk '{print $NF}')
 	HOST_INFO_ARCH=$(echo "$CONTENT" | head -1 | cut -d\( -f2 | cut -d\) -f1)
 	HOST_INFO_DISTRO=$(echo "$CONTENT" | head -1 | cut -d\( -f1)
-	getSection 'basic-environment.txt' '/etc/novell-release'
-	local RC=$?
-	if (( $RC > 0 ))
-	then
-		HOST_INFO_OES=1
-		HOST_INFO_OES_DISTRO=$(echo "$CONTENT" | grep 'Open Enterprise' | cut -d\( -f1)
-		HOST_INFO_OES_VER=$(echo "$CONTENT" | grep VERSION | awk '{print $3}')
-		HOST_INFO_OES_MAJOR=${HOST_INFO_OES_VER/\.*/}
-		HOST_INFO_OES_SP=$(echo "$CONTENT" | grep PATCHLEVEL | awk '{print $3}')
-	fi
-	getRpmInfo 'NOWS-copyMedia'
-	if (( $RPM_INFO_INSTALLED ))
-	then
-		HOST_INFO_NOWS=1
-		HOST_INFO_NOWS_VER="${RPM_INFO_VERSION/-*/}"
-	fi
 
 	printDebug '  getHostInfo NAME' "${HOST_INFO_NAME}"
 	printDebug '  getHostInfo ARCH' "${HOST_INFO_ARCH}"
 	printDebug '  getHostInfo KERN' "${HOST_INFO_KERN}"
 	printDebug '  getHostInfo DISTRO' "${HOST_INFO_DISTRO}"
 	printDebug '  getHostInfo SP' "${HOST_INFO_SP}"
-	printDebug '  getHostInfo OES' "${HOST_INFO_OES}"
-	printDebug '  getHostInfo OES_DISTRO' "${HOST_INFO_OES_DISTRO}"
-	printDebug '  getHostInfo OES_VER' "${HOST_INFO_OES_VER}"
-	printDebug '  getHostInfo OES_MAJOR' "${HOST_INFO_OES_MAJOR}"
-	printDebug '  getHostInfo OES_SP' "${HOST_INFO_OES_SP}"
-	printDebug '  getHostInfo NOWS' "${HOST_INFO_NOWS}"
-	printDebug '  getHostInfo NOWS_VER' "${HOST_INFO_NOWS_VER}"
 	printDebug '< getHostInfo'
 }
 
