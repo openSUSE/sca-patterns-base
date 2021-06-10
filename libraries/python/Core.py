@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 """
 ##############################################################################
-#  Copyright (C) 2014 SUSE LLC
+#  Copyright (C) 2021 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (ke7oxh@gmail.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2014 Sep 17
+#  Modified: 2021 June 10
 #
 ##############################################################################
 
@@ -211,6 +211,42 @@ def processOptions():
 			foundPath = True
 	return path
 
+
+def loadFullFile(FILE_OPEN, CONTENT):
+	"""
+	Loads the entire supportconfig file, FILE_OPEN, into CONTENT.
+
+	Args:		FILE_OPEN (String) - The supportconfig filename to open
+			CONTENT (List) - Each line in the file
+	Returns:	True or False
+					True - FILE_OPEN was found and loaded into CONTENT
+					False - FILE_OPEN was empty
+	Example:
+
+	FILE_OPEN = "ha.txt"
+	CONTENT = []
+	if Core.loadFullFile(FILE_OPEN, CONTENT):
+		for LINE in CONTENT:
+			if "some error" in LINE:
+				return True
+	else:
+		Core.updateStatus(Core.ERROR, "ERROR: Empty file - " + FILE_OPEN)
+	"""
+	global path
+	RESULT = False
+
+	try:
+		FILE = open(path + "/" + FILE_OPEN)
+	except Exception, error:
+		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
+
+	for LINE in FILE:
+		LINE = LINE.strip("\n")
+		CONTENT.append(LINE)
+		RESULT = True
+
+	FILE.close()
+	return RESULT
 
 def listSections(FILE_OPEN, CONTENT):
 	"""
