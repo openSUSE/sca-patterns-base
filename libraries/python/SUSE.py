@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2021 May 17
+#  Modified: 2021 Aug 16
 #
 ##############################################################################
 
@@ -33,6 +33,7 @@ from Core import path
 import datetime
 import ast
 
+# Kernel version constants
 SLE9GA       = '2.6.5-7.97'
 SLE9SP0      = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
@@ -65,7 +66,7 @@ SLE15GA      = '4.12.14-23.1'
 SLE15SP0     = '4.12.14-23.1'
 SLE15SP1     = '4.12.14-195.1'
 SLE15SP2     = '5.3.18-22.2'
-SLE15SP3     = '5.993' #Update to actual version when/if applicable
+SLE15SP3     = '5.3.18-57.3'
 SLE15SP4     = '5.994' #Update to actual version when/if applicable
 SLE15SP5     = '5.995' #Update to actual version when/if applicable
 

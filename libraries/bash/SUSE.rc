@@ -17,11 +17,11 @@
 #  Authors/Contributors:
 #     Jason Record <jason.record@suse.com>
 #
-#  Last Modified Date: 2021 May 18
+#  Last Modified Date: 2021 Aug 16
 #
 ##############################################################################
 # Library:       SUSE.rc
-# Version:       0.1.5
+# Version:       0.1.6
 # Requires:      Core.rc
 # Description:   Provides global variables for SLE kernel versions and base 
 #                information functions.
@@ -43,30 +43,43 @@
 # GLOBAL VARIABLES
 ##############################################################################
 
+# Kernel version constants
 declare -r SLE9GA='2.6.5-7.97'
+declare -r SLE9SP0='2.6.5-7.97'
 declare -r SLE9SP1='2.6.5-7.139'
 declare -r SLE9SP2='2.6.5-7.191'
 declare -r SLE9SP3='2.6.5-7.244'
 declare -r SLE9SP4='2.6.5-7.308'
-declare -r SLE9SP5='2.6.5-8' #Update to actual version when applicable
+declare -r SLE9SP5='2.6.5-8'
 declare -r SLE10GA='2.6.16.21-0.8'
+declare -r SLE10SP0='2.6.16.21-0.8'
 declare -r SLE10SP1='2.6.16.46-0.12'
 declare -r SLE10SP2='2.6.16.60-0.21'
 declare -r SLE10SP3='2.6.16.60-0.54.5'
 declare -r SLE10SP4='2.6.16.60-0.85.1'
-declare -r SLE10SP5='2.6.17' #Update to actual version when applicable
+declare -r SLE10SP5='2.6.17'
 declare -r SLE11GA='2.6.27.19-5'
+declare -r SLE11SP0='2.6.27.19-5'
 declare -r SLE11SP1='2.6.32.12-0.7'
 declare -r SLE11SP2='3.0.13-0.27'
 declare -r SLE11SP3='3.0.76-0.11.1'
 declare -r SLE11SP4='3.0.101-0.63.1'
-declare -r SLE11SP5='3.1' #Update to actual version when applicable
-declare -r SLE12GA='3.12.28-4' #Update to actual version when applicable
+declare -r SLE11SP5='3.1' #Update to actual version when/if applicable
+declare -r SLE12GA='3.12.28-4'
+declare -r SLE12SP0='3.12.28-4'
 declare -r SLE12SP1='3.12.49-11.1'
-declare -r SLE12SP2='4.4.21-69' #Update to actual version when applicable
-declare -r SLE12SP3='4.4.68-2' #Beta3: Update to actual version when applicable
-declare -r SLE12SP4='5.999' #Update to actual version when applicable
-declare -r SLE12SP5='6.999' #Update to actual version when applicable
+declare -r SLE12SP2='4.4.21-69'
+declare -r SLE12SP3='4.4.73-5.1'
+declare -r SLE12SP4='4.12.14-94.41'
+declare -r SLE12SP5='4.12.14-120.1'
+declare -r SLE15GA='4.12.14-23.1'
+declare -r SLE15SP0='4.12.14-23.1'
+declare -r SLE15SP1='4.12.14-195.1'
+declare -r SLE15SP2='5.3.18-22.2'
+declare -r SLE15SP3='5.3.18-57.3'
+declare -r SLE15SP4='5.994' #Update to actual version when/if applicable
+declare -r SLE15SP5='5.995' #Update to actual version when/if applicable
+
 
 SC_INFO_VERSION=''
 SC_INFO_SCRIPTDATE=''

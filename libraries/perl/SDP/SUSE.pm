@@ -15,8 +15,8 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#     Jason Record (jason.record@suse.com)
-#     Modified: 2021 May 13
+#     Jason Record <jason.record@suse.com>
+#     Modified: 2021 Aug 16
 #
 #
 ##############################################################################
@@ -50,7 +50,7 @@ running on SUSE servers.
 
 =over 5
 
-=item SLE9GA, SLE9SP1, SLE9SP2, SLE9SP3, SLE9SP4, SLE9SP5, SLE10GA, SLE10SP1, SLE10SP2, SLE10SP3, SLE10SP4, SLE10SP5, SLE11GA, SLE11SP1, SLE11SP2, SLE11SP3, SLE11SP4, SLE12GA, SLE12SP1, SLE12SP2, SLE12SP3, SLE12SP4, SLE12SP5
+=item SLE9GA, SLE9SP1, SLE9SP2, SLE9SP3, SLE9SP4, SLE9SP5, SLE10GA, SLE10SP0, SLE10SP1, SLE10SP2, SLE10SP3, SLE10SP4, SLE10SP5, SLE11GA, SLE11SP0, SLE11SP1, SLE11SP2, SLE11SP3, SLE11SP4, SLE11SP5, SLE12GA, SLE12SP0, SLE12SP1, SLE12SP2, SLE12SP3, SLE12SP4, SLE12SP5, SLE15GA, SLE15SP0, SLE15SP1, SLE15SP2, SLE15SP3, SLE15SP4, SLE15SP5 
 
 SUSE Linux Enterprise Server/Desktop kernel versions
 
@@ -58,31 +58,43 @@ SUSE Linux Enterprise Server/Desktop kernel versions
 
 =cut
 
-# Kernel Versions
+# Kernel version constants
 use constant SLE9GA       => '2.6.5-7.97';
+use constant SLE9SP0      => '2.6.5-7.97';
 use constant SLE9SP1      => '2.6.5-7.139';
 use constant SLE9SP2      => '2.6.5-7.191';
 use constant SLE9SP3      => '2.6.5-7.244';
 use constant SLE9SP4      => '2.6.5-7.308';
-use constant SLE9SP5      => '2.6.5-8'; #Update to actual version when applicable
+use constant SLE9SP5      => '2.6.5-8';
 use constant SLE10GA      => '2.6.16.21-0.8';
+use constant SLE10SP0     => '2.6.16.21-0.8';
 use constant SLE10SP1     => '2.6.16.46-0.12';
 use constant SLE10SP2     => '2.6.16.60-0.21';
 use constant SLE10SP3     => '2.6.16.60-0.54.5';
 use constant SLE10SP4     => '2.6.16.60-0.85.1';
-use constant SLE10SP5     => '2.6.17'; #Update to actual version when applicable
+use constant SLE10SP5     => '2.6.17';
 use constant SLE11GA      => '2.6.27.19-5';
+use constant SLE11SP0     => '2.6.27.19-5';
 use constant SLE11SP1     => '2.6.32.12-0.7';
 use constant SLE11SP2     => '3.0.13-0.27';
 use constant SLE11SP3     => '3.0.76-0.11.1';
 use constant SLE11SP4     => '3.0.101-0.63.1';
-use constant SLE11SP5     => '3.1'; #Update to actual version when applicable
-use constant SLE12GA      => '3.12.28-4'; 
+use constant SLE11SP5     => '3.1'; #Update to actual version when/if applicable
+use constant SLE12GA      => '3.12.28-4';
+use constant SLE12SP0     => '3.12.28-4';
 use constant SLE12SP1     => '3.12.49-11.1';
-use constant SLE12SP2     => '4.4.21-69'; #Update to actual version when applicable
-use constant SLE12SP3     => '4.4.68-2'; #Beta3: Update to actual version when applicable
-use constant SLE12SP4     => '5.999'; #Update to actual version when applicable
-use constant SLE12SP5     => '6.999'; #Update to actual version when applicable
+use constant SLE12SP2     => '4.4.21-69';
+use constant SLE12SP3     => '4.4.73-5.1';
+use constant SLE12SP4     => '4.12.14-94.41';
+use constant SLE12SP5     => '4.12.14-120.1';
+use constant SLE15GA      => '4.12.14-23.1';
+use constant SLE15SP0     => '4.12.14-23.1';
+use constant SLE15SP1     => '4.12.14-195.1';
+use constant SLE15SP2     => '5.3.18-22.2';
+use constant SLE15SP3     => '5.3.18-57.3';
+use constant SLE15SP4     => '5.994'; #Update to actual version when/if applicable
+use constant SLE15SP5     => '5.995'; #Update to actual version when/if applicable
+
 
 ##############################################################################
 # Exports
@@ -91,8 +103,8 @@ use constant SLE12SP5     => '6.999'; #Update to actual version when applicable
 require      Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE11SP5 SLE12GA SLE12SP1 SLE12SP2 SLE12SP3 SLE12SP4 SLE12SP5 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
-our $VERSION   = 0.4.3;
+our @EXPORT    = qw(SLE9GA SLE9SP1 SLE9SP2 SLE9SP3 SLE9SP4 SLE9SP5 SLE10GA SLE10SP0 SLE10SP1 SLE10SP2 SLE10SP3 SLE10SP4 SLE10SP5 SLE11GA SLE11SP0 SLE11SP1 SLE11SP2 SLE11SP3 SLE11SP4 SLE11SP5 SLE12GA SLE12SP0 SLE12SP1 SLE12SP2 SLE12SP3 SLE12SP4 SLE12SP5 SLE15GA SLE15SP0 SLE15SP1 SLE15SP2 SLE15SP3 SLE15SP4 SLE15SP5 getHostInfo getDriverInfo getServiceInfo getSCInfo getRpmInfo compareKernel compareDriver compareSupportconfig compareRpm packageInstalled packageVerify securityPackageCheck securityPackageCheckNoError securityKernelCheck securitySeverityPackageCheck securitySeverityPackageCheckNoError securitySeverityKernelCheck securitySeverityKernelAnnouncement securityAnnouncementPackageCheck serviceBootstate serviceStatus serviceHealth portInfo xenDomU xenDom0installed xenDom0running netRouteTable getSupportconfigRunDate appCores getBoundIPs getFileSystems haeEnabled);
+our $VERSION   = 0.4.5;
 
 use      SDP::Core;
 
