@@ -27,7 +27,7 @@ License:      GPL-2.0
 URL:          https://github.com/g23guy/sca-patterns-base
 Group:        System/Monitoring
 Source:       %{name}-%{version}.tar.gz
-Requires:     python
+Requires:     python-base
 Requires:     bash
 Requires:     perl
 BuildArch:    noarch
