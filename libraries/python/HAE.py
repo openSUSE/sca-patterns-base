@@ -128,7 +128,7 @@ def getSBDInfo():
 
 	try:
 		FILE = open(Core.path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 #		print "Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)
 
