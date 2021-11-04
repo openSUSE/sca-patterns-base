@@ -265,17 +265,17 @@ class PatchInfo:
 		"""
 		Prints the entire list of dictionaries and the class variables. Used for debug purposes only.
 		"""
-		print "Patch List:"
+		print("Patch List:")
 		for patch in self.patchlist:
-			print "  " + str(patch)
-		print "PatchInfo.valid         " + str(self.valid)
-		print "PatchInfo.patch_count   " + str(self.patch_count)
-		print "PatchInfo.patchCount    " + str(PatchInfo.patchCount)
-		print "PatchInfo.search_name   '" + str(self.search_name) + "'"
-		print "PatchInfo.patch_name    '" + str(self.patch_name) + "'"
-		print "PatchInfo.installed     " + str(self.installed)
-		print "PatchInfo.all_installed " + str(self.all_installed)
-		print "PatchInfo.needed        " + str(self.needed)
+			print("  " + str(patch))
+		print("PatchInfo.valid         " + str(self.valid))
+		print("PatchInfo.patch_count   " + str(self.patch_count))
+		print("PatchInfo.patchCount    " + str(PatchInfo.patchCount))
+		print("PatchInfo.search_name   '" + str(self.search_name) + "'")
+		print("PatchInfo.patch_name    '" + str(self.patch_name) + "'")
+		print("PatchInfo.installed     " + str(self.installed))
+		print("PatchInfo.all_installed " + str(self.all_installed))
+		print("PatchInfo.needed        " + str(self.needed))
 
 def getDriverInfo( DRIVER_NAME ):
 	"""
@@ -578,7 +578,7 @@ def compareRPM(package, versionString):
 #		print "compareRPM: Version in Supportconfig = " + str(foundVersion)
 
 		return Core.compareVersions(packageVersion, versionString)
-	except Exception, error:
+	except Exception as error:
 		#error out...
 		Core.updateStatus(Core.ERROR, "ERROR: Package info not found -- " + str(error))
 
@@ -661,7 +661,7 @@ def getHostInfo():
 
 	try:
 		FILE = open(Core.path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 #		print "getHostInfo: Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)
 
@@ -951,7 +951,7 @@ def getZypperRepoList():
 					for I in range(len(ONE_REPO)):
 						ONE_REPO[I] = ONE_REPO[I].strip()
 					#Converts ONE_REPO into a dictionary with the named keys
-					ONE_DICT = dict(zip(['Num', 'Alias', 'Name', 'Enabled', 'Refresh'], ONE_REPO))
+					ONE_DICT = dict(list(zip(['Num', 'Alias', 'Name', 'Enabled', 'Refresh'], ONE_REPO)))
 					REPOS.append(ONE_DICT)
 			elif startRepos.search(content[line]):
 				IN_REPOS = True
@@ -1012,7 +1012,7 @@ def getZypperProductList():
 					for I in range(len(ONE_PRODUCT)):
 						ONE_PRODUCT[I] = ONE_PRODUCT[I].strip()
 					#Converts ONE_PRODUCT into a dictionary with the named keys
-					ONE_DICT = dict(zip(['Status', 'Respository', 'InternalName', 'Name', 'Version', 'Architecture', 'IsBase'], ONE_PRODUCT))
+					ONE_DICT = dict(list(zip(['Status', 'Respository', 'InternalName', 'Name', 'Version', 'Architecture', 'IsBase'], ONE_PRODUCT)))
 					PRODUCTS.append(ONE_DICT)
 			elif startProducts.search(content[line]):
 				IN_PRODUCTS = True
@@ -1158,7 +1158,7 @@ def getFileSystems():
 		for MOUNT in MOUNTS: #load each mount line output into the ENTRY list
 			MOUNT = MOUNT.replace("(", '').replace(")", '')
 			ENTRY = MOUNT.split()
-			if( len(ENTRY) <> 6 ): #ignore non-standard mount entries. They should only have six fields.
+			if( len(ENTRY) != 6 ): #ignore non-standard mount entries. They should only have six fields.
 				ENTRY = []
 				continue
 #			print "ENTRY mount", ENTRY
@@ -1167,7 +1167,7 @@ def getFileSystems():
 			MATCHED = False
 			for FSENTRY in FSTAB: #check each FSENTRY to the current MOUNT
 				THIS_ENTRY = FSENTRY.split()
-				if( len(THIS_ENTRY) <> 6 ): #consider non-standard entries as not MATCHED
+				if( len(THIS_ENTRY) != 6 ): #consider non-standard entries as not MATCHED
 					break
 				if( THIS_ENTRY[1] == ENTRY[2] ): #mount points match
 					MATCHED = True
@@ -1208,7 +1208,7 @@ def getFileSystems():
 		SWAP = []
 		for FSENTRY in FSTAB: #check each FSENTRY for unmounted devices
 			ENTRY = FSENTRY.split()
-			if( len(ENTRY) <> 6 ): #consider non-standard entries as not MATCHED
+			if( len(ENTRY) != 6 ): #consider non-standard entries as not MATCHED
 				continue
 			else:
 				MISSING = True
@@ -1312,13 +1312,13 @@ def getBasicFIPSData():
 					FIPS['Enabled'] = True
 
 	GRUB2 = getGrub2Config()
-	if( 'GRUB_CMDLINE_LINUX_DEFAULT' in GRUB2.keys() ):
+	if( 'GRUB_CMDLINE_LINUX_DEFAULT' in list(GRUB2.keys()) ):
 		if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
 			FIPS['GrubFips'] = True
 		if( "boot=" in GRUB2['GRUB_CMDLINE_LINUX_DEFAULT'].lower() ):
 			FIPS['GrubBoot'] = True
 
-	if( 'GRUB_CMDLINE_LINUX' in GRUB2.keys() ):
+	if( 'GRUB_CMDLINE_LINUX' in list(GRUB2.keys()) ):
 		if( "fips=1" in GRUB2['GRUB_CMDLINE_LINUX'].lower() ):
 			FIPS['GrubFips'] = True
 		if( "boot=" in GRUB2['GRUB_CMDLINE_LINUX'].lower() ):
@@ -1419,7 +1419,7 @@ def getConfigFileLVM(PART):
 							TMP2 = VALUE.strip("[ ] ").split(",")
 							for VALUE in TMP2:
 								ARRAY_VALUES.append(VALUE.strip('" \' '))
-							ARRAY_VALUES = filter(None, ARRAY_VALUES)
+							ARRAY_VALUES = [_f for _f in ARRAY_VALUES if _f]
 							LVM_CONFIG[ARRAY_KEY.strip()] = sorted(ARRAY_VALUES)
 						else:
 #							print "  Add to array:", TMP[0], "Length", len(THIS)
@@ -1456,7 +1456,7 @@ def getConfigFileLVM(PART):
 			if( PART.lower() == "all" ):
 				LVM_CONFIG = LVM_CONFIG_ALL
 #				print 'ALL:', LVM_CONFIG
-			elif PART in LVM_CONFIG_ALL.keys():
+			elif PART in list(LVM_CONFIG_ALL.keys()):
 				LVM_CONFIG = LVM_CONFIG_ALL[PART]
 #				print PART + ":", LVM_CONFIG
 			else:
@@ -1568,7 +1568,7 @@ def getNetworkInterfaces():
 				elif( LINE.strip().startswith("inet6 ") ):
 					# inet6 fe80::5054:ff:fea4:12da/64 scope link
 					NIC_LIST[DEV]['addr6'].append(LINE.split()[1])
-		for DEV in NIC_LIST.keys():
+		for DEV in list(NIC_LIST.keys()):
 			ETHTOOL = []
 			NETCONFIG = []
 			if( Core.getRegExSection(NETWORK_FILE, "ethtool -k " + str(DEV), ETHTOOL) ):

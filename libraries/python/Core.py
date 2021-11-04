@@ -121,7 +121,7 @@ def printPatternResults():
 	global OVERALL
 	global OVERALL_INFO
 	global OTHER_LINKS
-	print "META_CLASS" + "=" + META_CLASS + "|" + "META_CATEGORY" + "=" + META_CATEGORY + "|" + "META_COMPONENT" + "=" + META_COMPONENT + "|" + "PATTERN_ID" + "=" + PATTERN_ID + "|"  + "PRIMARY_LINK" + "=" + PRIMARY_LINK + "|" + "OVERALL" + "=" + str(OVERALL) + "|"  + "OVERALL_INFO" + "=" + OVERALL_INFO + "|" + OTHER_LINKS
+	print("META_CLASS" + "=" + META_CLASS + "|" + "META_CATEGORY" + "=" + META_CATEGORY + "|" + "META_COMPONENT" + "=" + META_COMPONENT + "|" + "PATTERN_ID" + "=" + PATTERN_ID + "|"  + "PRIMARY_LINK" + "=" + PRIMARY_LINK + "|" + "OVERALL" + "=" + str(OVERALL) + "|"  + "OVERALL_INFO" + "=" + OVERALL_INFO + "|" + OTHER_LINKS)
 
 def updateStatus(overAll, overAllInfo):
 	"""
@@ -237,7 +237,7 @@ def loadFullFile(FILE_OPEN, CONTENT):
 
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 
 	for LINE in FILE:
@@ -274,7 +274,7 @@ def listSections(FILE_OPEN, CONTENT):
 
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 
 	SECTION = re.compile('^#==\[')
@@ -297,7 +297,7 @@ def isFileActive(FILE_OPEN):
 
 	try:
 		FILE = os.stat(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 #		print "Error os.stat(" + str(FILE_OPEN) + "): " + str(error)
 		return False
 
@@ -338,7 +338,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	global path
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
 	CommentedLine = re.compile('^#|^\s+#')
@@ -395,7 +395,7 @@ def getRegExSection(FILE_OPEN, SECTION, CONTENT):
 	global path
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
 	CommentedLine = re.compile('^#|^\s+#')
@@ -451,7 +451,7 @@ def getRegExSectionRaw(FILE_OPEN, SECTION, CONTENT):
 	global path
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
 	for line in FILE:
@@ -502,7 +502,7 @@ def getExactSection(FILE_OPEN, SECTION, CONTENT):
 	global path
 	try:
 		FILE = open(path + "/" + FILE_OPEN)
-	except Exception, error:
+	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	CommentedLine = re.compile('^#|^\s+#')
 	for line in FILE:

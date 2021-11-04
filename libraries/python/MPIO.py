@@ -170,7 +170,7 @@ def getManagedDevices():
 				#print "==Insert path_group_", D
 				PATH_GROUP_VALUES = {}
 				# prepend "path_group_" before each PATH_GROUP_VALUES key
-				for KEY in D.keys():
+				for KEY in list(D.keys()):
 					NEW_KEY = "path_group_" + str(KEY)
 					PATH_GROUP_VALUES[NEW_KEY] = D[KEY]
 					#print "KEY", KEY
