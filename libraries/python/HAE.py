@@ -5,7 +5,7 @@ Library of functions for creating python patterns specific to
 High Availability Extension (HAE) clustering
 """
 ##############################################################################
-#  Copyright (C) 2014 SUSE LLC
+#  Copyright (C) 2014, 2022 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,9 @@ High Availability Extension (HAE) clustering
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#    Jason Record (jrecord@suse.com)
+#    Jason Record <jason.record@suse.com>
 #
-#  Modified: 2014 Jun 17
+#  Modified: 2022 Oct 26
 #
 ##############################################################################
 
@@ -127,7 +127,7 @@ def getSBDInfo():
 	DUMP_FOUND = False
 
 	try:
-		FILE = open(Core.path + "/" + FILE_OPEN)
+		FILE = open(Core.path + "/" + FILE_OPEN, "rt", errors="ignore")
 	except Exception as error:
 #		print "Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)

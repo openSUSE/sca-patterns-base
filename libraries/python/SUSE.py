@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2021 SUSE LLC
+#  Copyright (C) 2013-2022 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2021 Aug 16
+#  Modified: 2022 Oct 26
 #
 ##############################################################################
 
@@ -660,7 +660,7 @@ def getHostInfo():
 	RELEASE_LINE = 0
 
 	try:
-		FILE = open(Core.path + "/" + FILE_OPEN)
+		FILE = open(Core.path + "/" + FILE_OPEN, "rt", errors="ignore")
 	except Exception as error:
 #		print "getHostInfo: Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)

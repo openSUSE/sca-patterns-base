@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 """
 ##############################################################################
-#  Copyright (C) 2021 SUSE LLC
+#  Copyright (C) 2021,2022 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (ke7oxh@gmail.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2021 June 10
+#  Modified: 2022 Oct 26
 #
 ##############################################################################
 
@@ -236,7 +236,7 @@ def loadFullFile(FILE_OPEN, CONTENT):
 	RESULT = False
 
 	try:
-		FILE = open(path + "/" + FILE_OPEN)
+		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 
@@ -273,7 +273,7 @@ def listSections(FILE_OPEN, CONTENT):
 	I = 0
 
 	try:
-		FILE = open(path + "/" + FILE_OPEN)
+		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 
@@ -337,7 +337,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	i = 0
 	global path
 	try:
-		FILE = open(path + "/" + FILE_OPEN)
+		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
@@ -394,7 +394,7 @@ def getRegExSection(FILE_OPEN, SECTION, CONTENT):
 	SectionName = ''
 	global path
 	try:
-		FILE = open(path + "/" + FILE_OPEN)
+		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
@@ -450,7 +450,7 @@ def getRegExSectionRaw(FILE_OPEN, SECTION, CONTENT):
 	SectionName = ''
 	global path
 	try:
-		FILE = open(path + "/" + FILE_OPEN)
+		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
@@ -501,7 +501,7 @@ def getExactSection(FILE_OPEN, SECTION, CONTENT):
 	SectionName = ''
 	global path
 	try:
-		FILE = open(path + "/" + FILE_OPEN)
+		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	CommentedLine = re.compile('^#|^\s+#')
