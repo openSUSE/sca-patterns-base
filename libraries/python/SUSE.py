@@ -23,7 +23,8 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2022 Oct 26
+#  Modified: 2022 Nov 28
+#  Version:  1.0.1
 #
 ##############################################################################
 
@@ -710,7 +711,7 @@ def getHostInfo():
 	return SERVER_DICTIONARY
 	
 
-def getScInfo():
+def getSCInfo():
 	"""
 	Gets information about the supportconfig archive itself
 
@@ -746,12 +747,11 @@ def getScInfo():
 				scInfo['cmdline'] = content[line].split(':')[-1].strip()
 			elif "Using Options" in content[line]:
 				scInfo['config'] = content[line].split(':')[-1].strip()
-			supportFile = open(Core.path	+ "basic-environment.txt", 'r')
+			supportFile = open(Core.path	+ "/basic-environment.txt", 'r')
 			supportFile.readline()
 			supportFile.readline()
 			scInfo['version'] = supportFile.readline().split(':')[-1].strip()
 			scInfo['scriptDate'] =	supportFile.readline().split(':')[-1].strip()
-#	print "getScInfo: scInfo = " + str(scInfo)
 	return scInfo
 
 def securityAnnouncementPackageCheck(NAME, MAIN, LTSS, SEVERITY, TAG, PACKAGES):
