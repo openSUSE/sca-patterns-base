@@ -55,7 +55,6 @@ SLE11SP1     = '2.6.32.12-0.7'
 SLE11SP2     = '3.0.13-0.27'
 SLE11SP3     = '3.0.76-0.11.1'
 SLE11SP4     = '3.0.101-0.63.1'
-SLE11SP5     = '3.1' #Update to actual version when/if applicable
 SLE12GA      = '3.12.28-4'
 SLE12SP0     = '3.12.28-4'
 SLE12SP1     = '3.12.49-11.1'
@@ -68,9 +67,8 @@ SLE15SP0     = '4.12.14-23.1'
 SLE15SP1     = '4.12.14-195.1'
 SLE15SP2     = '5.3.18-22.2'
 SLE15SP3     = '5.3.18-57.3'
-SLE15SP4     = '5.994' #Update to actual version when/if applicable
+SLE15SP4     = '5.14.21-150400.22.1'
 SLE15SP5     = '5.995' #Update to actual version when/if applicable
-
 
 def packageInstalled(PackageName):
 	"""
