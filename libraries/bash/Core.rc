@@ -202,7 +202,7 @@ getSection() {
 	local SECTION_FOUND=0
 	if [[ -s $ARCH_FILE ]]
 	then
-		local SECTION_BEGIN=$(grep -nA1 '#==\[' $ARCH_FILE | grep "$SECTION_STRING" | cut -d\- -f1)
+		local SECTION_BEGIN=$(grep -nA1 '#==\[' $ARCH_FILE | grep "$SECTION_STRING" | cut -d\- -f1 | tail -1)
 		local SECTION_END=0
 		if [[ -n "$SECTION_BEGIN" ]]
 		then
