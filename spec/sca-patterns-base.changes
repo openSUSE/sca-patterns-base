@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jun  6 17:17:07 UTC 2023 - jason.record@suse.com
+
+- Fixed SUSE.getRpmInfo to find the correct rpm.txt section (bsc#1210908)
+
+-------------------------------------------------------------------
 Tue Nov 29 14:21:36 UTC 2022 - jason.record@suse.com
 
 - Changes to python/SUSE.py version 1.0.1

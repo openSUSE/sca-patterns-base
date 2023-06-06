@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014-2021 SUSE LINUX Products GmbH
+#  Copyright (C) 2014-2023 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 #
 #  Authors/Contributors:
 #     Jason Record <jason.record@suse.com>
-#     Modified: 2021 Aug 16
+#     Modified: 2023 Jun 06
 #
 #
 ##############################################################################
@@ -92,7 +92,7 @@ use constant SLE15SP0     => '4.12.14-23.1';
 use constant SLE15SP1     => '4.12.14-195.1';
 use constant SLE15SP2     => '5.3.18-22.2';
 use constant SLE15SP3     => '5.3.18-57.3';
-use constant SLE15SP4     => '5.994'; #Update to actual version when/if applicable
+use constant SLE15SP4     => '5.14.21-150400.22.1';
 use constant SLE15SP5     => '5.995'; #Update to actual version when/if applicable
 
 
@@ -1640,7 +1640,7 @@ sub getRpmInfo {
 	# get vendor and version
 	my $HEADER_LINES  = 2;
 	my @CONTENT       = ();
-	my $SECTION       = '{NAME}';
+	my $SECTION       = '[0-9]{DISTRIBUTION}';
 	my $LINE          = 0;
 	if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
 		foreach $_ (@CONTENT) {
