@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2021 SUSE LLC
+#  Copyright (C) 2013-2023 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -20,10 +20,10 @@ Library of functions for creating python patterns specific to SUSE
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 #  Authors/Contributors:
-#    Jason Record (jason.record@suse.com)
-#    David Hamner (ke7oxh@gmail.com)
+#    Jason Record <jason.record@suse.com>
+#    David Hamner <ke7oxh@gmail.com>
 #
-#  Modified: 2021 Aug 16
+#  Modified: 2023 Jun 06
 #
 ##############################################################################
 
@@ -67,7 +67,7 @@ SLE15SP0     = '4.12.14-23.1'
 SLE15SP1     = '4.12.14-195.1'
 SLE15SP2     = '5.3.18-22.2'
 SLE15SP3     = '5.3.18-57.3'
-SLE15SP4     = '5.994' #Update to actual version when/if applicable
+SLE15SP4     = '5.14.21-150400.22.1'
 SLE15SP5     = '5.995' #Update to actual version when/if applicable
 
 
@@ -113,7 +113,7 @@ def getRpmInfo(PackageName):
 	"""
 	rpmInfo = {}
 	fileOpen = "rpm.txt"
-	section = "{NAME}"
+	section = "[0-9]{DISTRIBUTION}"
 	content = {}
 	tmpContent = {}
 	#get name version and vendor

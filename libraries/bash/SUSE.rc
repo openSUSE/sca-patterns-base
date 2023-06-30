@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright (C) 2014-2021 SUSE LINUX Products GmbH
+#  Copyright (C) 2014-2023 SUSE LINUX Products GmbH
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -17,11 +17,11 @@
 #  Authors/Contributors:
 #     Jason Record <jason.record@suse.com>
 #
-#  Last Modified Date: 2021 Aug 16
+#  Last Modified Date: 2023 Jun 06
 #
 ##############################################################################
 # Library:       SUSE.rc
-# Version:       0.1.6
+# Version:       0.1.7
 # Requires:      Core.rc
 # Description:   Provides global variables for SLE kernel versions and base 
 #                information functions.
@@ -77,7 +77,7 @@ declare -r SLE15SP0='4.12.14-23.1'
 declare -r SLE15SP1='4.12.14-195.1'
 declare -r SLE15SP2='5.3.18-22.2'
 declare -r SLE15SP3='5.3.18-57.3'
-declare -r SLE15SP4='5.994' #Update to actual version when/if applicable
+declare -r SLE15SP4='5.14.21-150400.22.1'
 declare -r SLE15SP5='5.995' #Update to actual version when/if applicable
 
 
@@ -179,7 +179,7 @@ getRpmInfo() {
 
 	printDebug '> getRpmInfo' "$RPM_INFO_NAME"
 	local TMP=''
-	getSection 'rpm.txt' '{NAME}' 1
+	getSection 'rpm.txt' '[0-9]{DISTRIBUTION}' 1
 	LINE=$(echo "$CONTENT" | egrep "^${RPM_INFO_NAME}[[:space:]]")
 	RPM_INFO_COUNT=$(echo "$LINE" | wc -l)
 	if (( RPM_INFO_COUNT > 1 ))

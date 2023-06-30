@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun 30 11:21:56 UTC 2023 - jason.record@suse.com
+
+- getRpmInfo correctly selects rpm.txt section (bsc#1210908)
+
+-------------------------------------------------------------------
 Mon Oct  4 14:56:52 UTC 2021 - Jason Record <jason.record@suse.com>
 
 - Changed Requires python to python-base (bsc#1191199)
