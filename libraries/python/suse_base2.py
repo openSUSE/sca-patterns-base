@@ -608,4 +608,18 @@ def get_basic_virt_info(_pat):
 
     return dictionary
 
+def get_proc_cmdline(_pat):
+    '''
+    Gathers the /proc/cmdline and assigns each value to a list element.
+
+    Args:            None
+    Returns:    List
+    '''
+    cmdline_section = core.get_file_section(_pat.get_supportconfig_path('boot.txt'), '/proc/cmdline')
+    list = []
+    for line in cmdline_section:
+        list = line.split()
+
+    return list
+
 
