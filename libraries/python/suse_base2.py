@@ -530,26 +530,24 @@ def get_server_info(_pat):
         hostname (String) - The hostname of the server analyzed
         kernel_ver (String) - The running kernel version
         arch (String)
-        distro (String) - The name of the distribution
+        distro_name (String) - The name of the distribution
         ver_major (Int) - The major distribution version number
         ver_minor (Int) - The distribution service patch level
     '''
  
+    REQUIRED_ELEMENTS = 6
     IDX_HOSTNAME = 1
     IDX_VERSION = 2
-    IDX_PATCHLEVEL = 1
-    IDX_DISTRO = 0
-    IDX_OSDISTRO = 1
     IDX_ARCH = -2
-    IDX_VALUE = 1
-    IDX_MAJOR = 0
+    IDX_KEY = 0
+    IDX_VALUE = -1
 
     server_dictionary = {} 
 
     basic_env_file = core.get_entire_file(_pat.get_supportconfig_path('basic-environment.txt'))
-    uname_section = core.get_content_section(baisc_env_file, 'uname -a')
-    os_release_section = core.get_content_section(baisc_env_file, '/etc/os-release')
-    del basic_evn_file
+    uname_section = core.get_content_section(basic_env_file, 'uname -a')
+    os_release_section = core.get_content_section(basic_env_file, '/etc/os-release')
+    del basic_env_file
 
     for line in uname_section:
         if "linux" in line.lower():
@@ -558,28 +556,56 @@ def get_server_info(_pat):
             server_dictionary['arch'] = line.split()[IDX_ARCH]
 
     for line in os_release_section:
+        line = line.replace('"', '').strip()
+        if line.startswith('VERSION_ID'):
+            version_id_list = line.strip().split('=')[IDX_VALUE].split('.')
+            if( len(version_id_list) > 1 ):
+                server_dictionary['ver_major'] = int(version_id_list[IDX_KEY])
+                server_dictionary['ver_minor'] = int(version_id_list[IDX_VALUE])
+            else:            
+                server_dictionary['ver_major'] = int(version_id_list[IDX_KEY])
+                server_dictionary['ver_minor'] = 0
+        elif line.startswith('PRETTY_NAME'):
+            server_dictionary['distro_name'] = line.split('=')[IDX_VALUE]
 
-        elif OSRELEASE_FOUND:
-            RELEASE_line += 1
-            if "#==[" in line:
-                RELEASE_FOUND = False
-            elif line.startswith('VERSION_ID'):
-                VERSION_ID_INFO = line.replace('"', "").strip().split('=')[IDX_VALUE].split('.')
-                if( len(VERSION_ID_INFO) > 1 ):
-                    server_dictionary['ver_major'] = int(VERSION_ID_INFO[IDX_MAJOR].strip('"'))
-                    server_dictionary['ver_minor'] = int(VERSION_ID_INFO[IDX_PATCHLEVEL].strip('"'))
-                else:            
-                    server_dictionary['ver_major'] = int(VERSION_ID_INFO[IDX_MAJOR].strip('"'))
-                    server_dictionary['ver_minor'] = 0
-            elif line.startswith('PRETTY_NAME'):
-                server_dictionary['distro'] = re.split(r'=', line)[IDX_OSDISTRO].strip()
-        elif "uname -a" in line:
-            UNAME_FOUND = True
-        elif OSRELEASE.search(line):
-            OSRELEASE_FOUND = True
+    if len(server_dictionary) < REQUIRED_ELEMENTS:
+        _pat.set_status(core.ERROR, "Error: <get_server_info> Cannot find complete server information")
 
-    FILE.close()
-#    print "get_server_info: server_dictionary = " + str(server_dictionary)
     return server_dictionary
     
+def get_basic_virt_info(_pat):
+    '''
+    Gathers Virtualization section of the basic-environment.txt file.
+
+    Args:            None
+    Returns:    Dictionary
+
+    Converts the basic-environment.txt section from this:
+
+    #==[ System ]=======================================#
+    # Virtualization
+    Manufacturer:  HP
+    Hardware:      ProLiant DL380 Gen9
+    Hypervisor:    None
+    Identity:      Not Detected
+
+    to this dictionary:
+
+  {'Hardware': 'ProLiant DL380 Gen9', 'Hypervisor': 'None', 'Identity': 'Not Detected', 'Manufacturer': 'HP'} 
+  if Hypervisor == None, is_virtual is set to False, otherwise is_virtual is True.
+    '''
+
+    virt_section = core.get_file_section(_pat.get_supportconfig_path('basic-environment.txt'), 'Virtualization')
+    dictionary = {}
+    for line in virt_section:
+        if ":" in line:
+            key, value = line.split(":", 1)
+            dictionary[key] = value.strip()
+    if dictionary['Hypervisor'] == "None":
+        dictionary['is_virtual'] = False
+    else:
+        dictionary['is_virtual'] = True
+
+    return dictionary
+
 
