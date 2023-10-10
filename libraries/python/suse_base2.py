@@ -21,8 +21,8 @@ Library of functions for creating python patterns specific to SUSE
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Oct 06'
-__version__       = '2.0.0_dev4'
+__date_modified__ = '2023 Oct 10'
+__version__       = '2.0.0_dev5'
 
 import re
 import os
@@ -101,9 +101,8 @@ def get_rpm_info(package_name, _pat):
     content = {}
     tmp_content = {}
 
-    file_open = _pat.get_supportconfig_path('rpm.txt')
-    section = '[0-9]{DISTRIBUTION}'
-    content = core.get_section_re(file_open, section)
+    rpm_file = core.get_entire_file(_pat.get_supportconfig_path('rpm.txt'))
+    content = core.get_content_section(rpm_file, '[0-9]{DISTRIBUTION}')
 
     #get name version and vendor
     if len(content) > 0:
@@ -119,13 +118,13 @@ def get_rpm_info(package_name, _pat):
                 #rpm_info[1] = tmp_content[1,-2]
 
     #get install time
-    section = 'rpm -qa --last'
-    content = core.get_section_re(file_open, section)
+    content = core.get_content_section(rpm_file, 'rpm -qa --last')
     if len(content) > 0:
         for line in content:
             if line.startswith(package_name):
                 rpm_info['install_time'] = line.split(' ',1)[1].strip()
 
+    del rpm_file
     return rpm_info
 
 class SCAPattern():
@@ -233,9 +232,7 @@ def get_systemd_service_data(service_name, _pat):
     '''
 
     serviced_dictionary = {}
-    file_open = _pat.get_supportconfig_path('systemd.txt')
-    section = "systemctl show '{0}'".format(service_name)
-    content = core.get_section_re(file_open, section)
+    content = core.get_file_section(_pat.get_supportconfig_path('systemd.txt'), "systemctl show '{0}'".format(service_name))
     if( len(content) > 0 ):
         for line in content:
             element = line.split('=')
@@ -621,5 +618,106 @@ def get_proc_cmdline(_pat):
         list = line.split()
 
     return list
+
+def get_zypper_repo_list(_pat):
+    '''
+    Gathers zypper repos output into a list of dictionaries
+
+    Args:            None
+    Returns:    List of Dictionaries
+    Keys:            The dictionary key names correspond to the field names from zypper repos command.
+                        Num - repository number
+                        Alias
+                        Name
+                        Enabled - True (Yes) if the repository is enabled, otherwise False (No).
+                        Refresh - True (Yes) is the repository is set to refresh, otherwise False (No).
+    '''
+    repos_section = core.get_file_section(_pat.get_supportconfig_path('updates.txt'), '/zypper\s--.*\srepos')
+    startrepos = re.compile("^-*\+-*\+")
+    endrepos = re.compile("^#==|^$")
+    repos = []
+    in_repos = False
+
+    for line in repos_section:
+        if in_repos:
+            if endrepos.search(line):
+                in_repos = False
+            else:
+                one_repo = line.split('|')
+                for this_repo in range(len(one_repo)):
+                    one_repo[this_repo] = one_repo[this_repo].strip()
+                #Converts one_repo into a dictionary with the named keys
+                one_dict = dict(list(zip(['Num', 'Alias', 'Name', 'Enabled', 'Refresh'], one_repo)))
+                repos.append(one_dict)
+        elif startrepos.search(line):
+            in_repos = True
+
+    for this_repo in range(len(repos)):
+        if 'yes' in repos[this_repo]['Enabled'].lower():
+            repos[this_repo]['Enabled'] = True
+        else:
+            repos[this_repo]['Enabled'] = False
+        if 'yes' in repos[this_repo]['Refresh'].lower():
+            repos[this_repo]['Refresh'] = True
+        else:
+            repos[this_repo]['Refresh'] = False
+
+    for repo in repos:
+        print('repo = {}'.format(repo['Name']))
+        for key, value in repo.items():
+            print("+ {0:15} = {1}".format(key, value))
+        print()
+    print('------------------\n')
+
+    return repos
+
+def get_zypper_product_list(_pat):
+    '''
+    Gathers zypper products output into a list of dictionaries
+
+    Args:            None
+    Returns:    List of Dictionaries
+    Keys:            The dictionary key names correspond to the field names from zypper products command.
+                        Status (S) - Product status
+                        repository
+                        InternalName
+                        Name
+                        Version
+                        Architecture (Arch)
+                        is_base - True (Yes) is the product is a base product, otherwise False (No).
+    '''
+    prod_section = core.get_file_section(_pat.get_supportconfig_path('updates.txt'), '/zypper\s--.*\sproducts')
+    startProducts = re.compile("^-*\+-*\+")
+    endProducts = re.compile("^#==|^$")
+    products = []
+    in_products = False
+    for line in prod_section:
+        if( in_products ):
+            if endProducts.search(line):
+                in_products = False
+            else:
+                one_product = line.split('|')
+                for this_product in range(len(one_product)):
+                    one_product[this_product] = one_product[this_product].strip()
+                #Converts one_product into a dictionary with the named keys
+                one_dict = dict(list(zip(['Status', 'Respository', 'Internal Name', 'Name', 'Version', 'Architecture', 'Is Base'], one_product)))
+                products.append(one_dict)
+        elif startProducts.search(line):
+            in_products = True
+
+    for this_product in range(len(products)):
+        if 'yes' in products[this_product]['Is Base'].lower():
+            products[this_product]['Is Base'] = True
+        else:
+            products[this_product]['Is Base'] = False
+
+    for prod in products:
+        print('prod = {}'.format(prod['Name']))
+        for key, value in prod.items():
+            print("+ {0:15} = {1}".format(key, value))
+        print()
+    print('------------------\n')
+
+    return products
 
 
