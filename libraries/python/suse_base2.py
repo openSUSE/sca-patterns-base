@@ -21,8 +21,8 @@ Library of functions for creating python patterns specific to SUSE
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Oct 10'
-__version__       = '2.0.0_dev5'
+__date_modified__ = '2023 Nov 02'
+__version__       = '2.0.0_dev6'
 
 import re
 import os
@@ -88,6 +88,27 @@ def package_is_installed(package_name, _pat):
     if 'version' in rpm_info:
         return True
     return False
+
+def compare_rpm(package, version_to_compare, _pat):
+	try:
+		version_from_package = get_rpm_info(package, _pat)['version']
+		return core.compare_versions(version_from_package, version_to_compare)
+	except Exception as error:
+		#error out...
+		_pat.update_status(core.ERROR, "ERROR: Package info not found -- " + str(error))
+
+def compare_kernel(version_to_compare, _pat):
+    IDX_KERNEL_VERSION = 2
+    version_running_kernel = ""
+    uname_section = core.get_file_section(_pat.get_supportconfig_path('basic-environment.txt'), 'uname -a')
+    if len(uname_section) > 0:
+        for line in uname_section:
+            if line != "":
+                version_running_kernel = line.split()[IDX_KERNEL_VERSION]
+    else:
+		_pat.update_status(core.ERROR, "ERROR: Missing uname section, no kernel version found")
+
+    return core.compare_versions(version_running_kernel, version_to_compare)
 
 
 def get_rpm_info(package_name, _pat):
