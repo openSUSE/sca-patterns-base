@@ -90,12 +90,12 @@ def package_is_installed(package_name, _pat):
     return False
 
 def compare_rpm(package, version_to_compare, _pat):
-	try:
-		version_from_package = get_rpm_info(package, _pat)['version']
-		return core.compare_versions(version_from_package, version_to_compare)
-	except Exception as error:
-		#error out...
-		_pat.update_status(core.ERROR, "ERROR: Package info not found -- " + str(error))
+    try:
+        version_from_package = get_rpm_info(package, _pat)['version']
+        return core.compare_versions(version_from_package, version_to_compare)
+    except Exception as error:
+        #error out...
+        _pat.update_status(core.ERROR, "ERROR: Package info not found -- " + str(error))
 
 def compare_kernel(version_to_compare, _pat):
     IDX_KERNEL_VERSION = 2
@@ -106,7 +106,7 @@ def compare_kernel(version_to_compare, _pat):
             if line != "":
                 version_running_kernel = line.split()[IDX_KERNEL_VERSION]
     else:
-		_pat.update_status(core.ERROR, "ERROR: Missing uname section, no kernel version found")
+        _pat.update_status(core.ERROR, "ERROR: Missing uname section, no kernel version found")
 
     return core.compare_versions(version_running_kernel, version_to_compare)
 
