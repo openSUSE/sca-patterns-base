@@ -21,8 +21,8 @@ Library of functions for creating python patterns specific to SUSE
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Nov 02'
-__version__       = '2.0.0_dev6'
+__date_modified__ = '2023 Nov 06'
+__version__       = '2.0.0_dev8'
 
 import re
 import os
@@ -148,7 +148,7 @@ def get_rpm_info(package_name, _pat):
     del rpm_file
     return rpm_info
 
-class SCAPattern():
+class SCAPatternGen2():
     TID_BASE = 'https://www.suse.com/support/kb/doc.php?id='
     BUG_BASE = 'https://bugzilla.suse.com/show_bug.cgi?id='
     CVE_BASE = 'https://www.suse.com/security/cve/'
