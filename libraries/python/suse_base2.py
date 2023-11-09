@@ -21,8 +21,8 @@ Library of functions for creating python patterns specific to SUSE
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Nov 06'
-__version__       = '2.0.0_dev8'
+__date_modified__ = '2023 Nov 07'
+__version__       = '2.0.0_dev9'
 
 import re
 import os
@@ -30,6 +30,7 @@ import sys
 import suse_core2 as core
 import datetime
 import ast
+import json
 
 # Kernel version constants
 SLE9GA       = '2.6.5-7.97'
@@ -152,7 +153,7 @@ class SCAPatternGen2():
     TID_BASE = 'https://www.suse.com/support/kb/doc.php?id='
     BUG_BASE = 'https://bugzilla.suse.com/show_bug.cgi?id='
     CVE_BASE = 'https://www.suse.com/security/cve/'
-    meta = {'id': '', 'primary_link': '', 'overall': core.TEMP, 'overall_info': '', 'other_links': {}, 'scpath': ''}
+    meta = {'generation': 2, 'id': '', 'primary_solution': '', 'severity': core.TEMP, 'description': '', 'solution_links': {}, 'scpath': '', 'scname': ''}
     
     def __init__(self, meta_class, meta_category, meta_component):
         self.meta['class'] = meta_class
@@ -166,24 +167,24 @@ Class instance of {}
   category = {}
   component = {}
   id = {}
-  primary_link = {}
-  overall = {}
-  overall_info = {}
-  other_links = {}
+  primary_solution = {}
+  severity = {}
+  description = {}
+  solution_links = {}
   scpath = {}
 
 '''
-        return pattern.format(self.__class__.__name__, self.meta['class'], self.meta['category'], self.meta['component'], self.meta['id'], self.meta['primary_link'], self.meta['overall'], self.meta['overall_info'], self.meta['other_links'], self.meta['scpath'])
+        return pattern.format(self.__class__.__name__, self.meta['class'], self.meta['category'], self.meta['component'], self.meta['id'], self.meta['primary_solution'], self.meta['severity'], self.meta['description'], self.meta['solution_links'], self.meta['scpath'])
 
     def set_id(self, pattern_id):
         self.meta['id'] = pattern_id
 
     def set_primary_link(self, tag):
-        self.meta['primary_link'] = tag
+        self.meta['primary_solution'] = tag
 
     def add_solution_link(self, tag, url, set_primary=False):
-        link_tag = 'META_LINK_' + str(tag)
-        self.meta['other_links'][link_tag] = url
+        link_tag = str(tag)
+        self.meta['solution_links'][link_tag] = url
         if set_primary:
             self.set_primary_link(link_tag)
 
@@ -199,17 +200,19 @@ Class instance of {}
     def set_supportconfig_path(self, path):
         if path.endswith('/'):
             self.meta['scpath'] = path
+            self.meta['scname'] = os.path.basename(os.path.split(path)[0])
         else:
             self.meta['scpath'] = path + '/'
+            self.meta['scname'] = os.path.basename(path)
 
     def set_status(self, severity, description):
-        self.meta['overall'] = severity
-        self.meta['overall_info'] = description
+        self.meta['severity'] = severity
+        self.meta['description'] = description
 
     def update_status(self, severity, description):
-        if severity > self.meta['overall']:
-            self.meta['overall'] = severity
-            self.meta['overall_info'] = description
+        if severity > self.meta['severity']:
+            self.meta['severity'] = severity
+            self.meta['description'] = description
 
     def get_supportconfig_path(self, scfile):
         file_path = self.meta['scpath'] + scfile
@@ -220,13 +223,12 @@ Class instance of {}
             sys.exit(2)
 
     def print_results(self):
-        result_list = []
         all_links = []
         empty_keys = []
         for key, value in self.meta.items():
             if len(str(value)) < 1:
                 empty_keys.append(str(key))
-        for key, value in self.meta['other_links'].items():
+        for key, value in self.meta['solution_links'].items():
             all_links.append(str(key) + '=' + value)
 
         if len(empty_keys) > 0:
@@ -236,16 +238,8 @@ Class instance of {}
             print('Error: Missing solution links')
             sys.exit(2)
         else:
-            result_list.append('META_CLASS=' + self.meta['class'])
-            result_list.append('META_CATEGORY=' + self.meta['category'])
-            result_list.append('META_COMPONENT=' + self.meta['component'])
-            result_list.append('PATTERN_ID=' + self.meta['id'])
-            result_list.append('PRIMARY_LINK=' + self.meta['primary_link'])
-            result_list.append('OVERALL=' + str(self.meta['overall']))
-            result_list.append('OVERALL_INFO=' + self.meta['overall_info'])
-            result_list.append('OTHER_LINKS=' + '|'.join(all_links))
-
-            print('|'.join(result_list))
+            output = json.dumps(self.meta, indent=4)
+            print(output)
 
 def get_systemd_service_data(service_name, _pat):
     '''
