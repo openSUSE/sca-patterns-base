@@ -21,8 +21,8 @@ Library of functions for creating python patterns specific to SUSE
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Nov 07'
-__version__       = '2.0.0_dev9'
+__date_modified__ = '2023 Nov 13'
+__version__       = '2.0.0_dev10'
 
 import re
 import os
@@ -238,7 +238,7 @@ Class instance of {}
             print('Error: Missing solution links')
             sys.exit(2)
         else:
-            output = json.dumps(self.meta, indent=4)
+            output = json.dumps(self.meta)
             print(output)
 
 def get_systemd_service_data(service_name, _pat):
