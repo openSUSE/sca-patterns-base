@@ -15,7 +15,6 @@
 %define sca_common sca
 %define patdirbase %{_prefix}/lib/%{sca_common}
 %define patdir %{patdirbase}/patterns
-%define prodgrp sdp
 %define patuser root
 %define patgrp root
 
