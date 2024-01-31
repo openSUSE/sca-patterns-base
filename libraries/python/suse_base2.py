@@ -197,13 +197,17 @@ Class instance of {}
     def set_cve(self, cve_id, is_primary=False):
         self.add_solution_link('CVE', self.CVE_BASE + str(cve_id), set_primary=is_primary)
 
-    def set_supportconfig_path(self, path):
-        if path.endswith('/'):
-            self.meta['scpath'] = path
-            self.meta['scname'] = os.path.basename(os.path.split(path)[0])
+    def set_supportconfig_path(self, path=None):
+        if( path ):
+            if path.endswith('/'):
+                self.meta['scpath'] = path
+                self.meta['scname'] = os.path.basename(os.path.split(path)[0])
+            else:
+                self.meta['scpath'] = path + '/'
+                self.meta['scname'] = os.path.basename(path)
         else:
-            self.meta['scpath'] = path + '/'
-            self.meta['scname'] = os.path.basename(path)
+            print('Error: Supportconfig archive path not found, try passing it as the first pattern argument')
+            sys.exit(3)
 
     def set_status(self, severity, description):
         self.meta['severity'] = severity
