@@ -1640,7 +1640,7 @@ sub getRpmInfo {
 	# get vendor and version
 	my $HEADER_LINES  = 2;
 	my @CONTENT       = ();
-	my $SECTION       = '[0-9]{DISTRIBUTION}';
+	my $SECTION       = '[0-9]\{DISTRIBUTION\}';
 	my $LINE          = 0;
 	if ( SDP::Core::getSection($FILE_OPEN, $SECTION, \@CONTENT) ) {
 		foreach $_ (@CONTENT) {
