@@ -1,7 +1,7 @@
-# 
+#
 # spec file for package sca-patterns-base
 #
-# Copyright (c) 2023-2024 SUSE LLC
+# Copyright (c) 2024 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -12,28 +12,32 @@
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
 
+# Please submit bugfixes or comments via https://bugs.opensuse.org/
+#
+
+
 %define sca_common sca
 %define patdirbase %{_prefix}/lib/%{sca_common}
 %define patdir %{patdirbase}/patterns
 %define patuser root
 %define patgrp root
 
-Name:         sca-patterns-base
-Version:      1.6.1
-Release:      0
-Summary:      Supportconfig Analysis Pattern Base Libraries
-License:      GPL-2.0
-URL:          https://github.com/g23guy/sca-patterns-base
-Group:        System/Monitoring
-Source:       %{name}-%{version}.tar.gz
-Requires:     python3-base
-Requires:     bash
-Requires:     perl
-Provides:     sca-patterns-template-gen2
-BuildArch:    noarch
+Name:           sca-patterns-base
+Version:        1.6.1
+Release:        0
+Summary:        Supportconfig Analysis Pattern Base Libraries
+License:        GPL-2.0-only
+URL:            https://github.com/g23guy/sca-patterns-base
+Group:          System/Monitoring
+Source:         %{name}-%{version}.tar.gz
+Requires:       bash
+Requires:       perl
+Requires:       python3-base
+Provides:       sca-patterns-template-gen2
+BuildArch:      noarch
 
 %description
-Supportconfig Analysis (SCA) appliance pattern base libraries used 
+Supportconfig Analysis (SCA) appliance pattern base libraries used
 by all patterns
 
 %prep
@@ -69,4 +73,3 @@ install -m 644 libraries/perl/SDP/* %{buildroot}/%{patdirbase}/perl/SDP
 %doc %attr(-,root,root) %{_docdir}/%{name}/*
 
 %changelog
-
