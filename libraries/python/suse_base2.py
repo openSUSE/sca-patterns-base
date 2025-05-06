@@ -652,8 +652,8 @@ def get_zypper_repo_list(_pat):
                         Refresh - True (Yes) is the repository is set to refresh, otherwise False (No).
     '''
     repos_section = core.get_file_section(_pat.get_supportconfig_path('updates.txt'), '/zypper\s--.*\srepos')
-    startrepos = re.compile("^-*\+-*\+")
-    endrepos = re.compile("^#==|^$")
+    startrepos = re.compile(r"^-*\+-*\+")
+    endrepos = re.compile(r"^#==|^$")
     repos = []
     in_repos = False
 
@@ -706,8 +706,8 @@ def get_zypper_product_list(_pat):
                         is_base - True (Yes) is the product is a base product, otherwise False (No).
     '''
     prod_section = core.get_file_section(_pat.get_supportconfig_path('updates.txt'), '/zypper\s--.*\sproducts')
-    startProducts = re.compile("^-*\+-*\+")
-    endProducts = re.compile("^#==|^$")
+    startProducts = re.compile(r"^-*\+-*\+")
+    endProducts = re.compile(r"^#==|^$")
     products = []
     in_products = False
     for line in prod_section:

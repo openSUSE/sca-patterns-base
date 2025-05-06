@@ -119,7 +119,7 @@ def getRpmInfo(PackageName):
 	if (Core.getSection(fileOpen, section, content)):
 		for line in content:
 			if content[line].startswith(PackageName + " "):
-				tmpContent = re.sub(' +', ' ', content[line])
+				tmpContent = re.sub(r' +', ' ', content[line])
 				tmpContent = tmpContent.split(' ')
 #				print "getRpmInfo: tmpContent = " + str(tmpContent)
 				rpmInfo['name'] = tmpContent[0] #name
@@ -223,7 +223,7 @@ class PatchInfo:
 						self.patchlist.append(dict(PATCH_DICTIONARY))
 						if( len(self.patch_name) == 0 ):
 							self.patch_name = PATCH_DICTIONARY['Name']
-							PATCH = re.compile(r'\|\s+' + self.patch_name + '\s+\|')
+							PATCH = re.compile(fr"\|\s+{self.patch_name}\s+\|")
 				self.valid = True
 				self.patch_count = len(self.patchlist)
 #				print "Total Patches: " + str(self.patch_count) + "\n"
@@ -411,7 +411,7 @@ def getServiceInfo(SERVICE_NAME):
 		SERVICE_INFO['Running'] = 0
 		SECTION = "/etc/init.d/" + SERVICE_NAME + " status"
 		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-			STATE = re.compile('running', re.IGNORECASE)
+			STATE = re.compile(r'running', re.IGNORECASE)
 			for LINE in CONTENT:
 				if STATE.search(CONTENT[LINE]):
 					SERVICE_INFO['Running'] = 1
@@ -419,7 +419,7 @@ def getServiceInfo(SERVICE_NAME):
 	else:
 		SECTION = '/bin/ps'
 		if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-			STATE = re.compile('/' + SERVICE_NAME + '\s|/' + SERVICE_NAME + '$', re.IGNORECASE)
+			STATE = re.compile(fr"/{SERVICE_NAME}\s|/{SERVICE_NAME}$", re.IGNORECASE)
 			for LINE in CONTENT:
 				if STATE.search(CONTENT[LINE]):
 #					print "State Found: " + str(CONTENT[LINE])
@@ -431,7 +431,7 @@ def getServiceInfo(SERVICE_NAME):
 	CONTENT = {}
 	IDX_RUN_LEVEL = 4
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-		STATE = re.compile("Master Resource Control: runlevel.*has been reached", re.IGNORECASE)
+		STATE = re.compile(r"Master Resource Control: runlevel.*has been reached", re.IGNORECASE)
 		for LINE in CONTENT:
 			if STATE.search(CONTENT[LINE]):
 				SERVICE_INFO['RunLevel'] = CONTENT[LINE].strip().split()[IDX_RUN_LEVEL]
@@ -442,7 +442,7 @@ def getServiceInfo(SERVICE_NAME):
 	CONTENT = {}
 	IDX_RUN_LEVEL = 0
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-		STATE = re.compile("^" + SERVICE_NAME + " ", re.IGNORECASE)
+		STATE = re.compile(r"^" + SERVICE_NAME + " ", re.IGNORECASE)
 		LINE_CONTENT = {}
 		for LINE in CONTENT:
 			if STATE.search(CONTENT[LINE]):
@@ -626,7 +626,7 @@ def getHostInfo():
 
 	import re
 	SERVER = SUSE.getHostInfo()
-	SLE = re.compile("SUSE Linux Enterprise Server", re.IGNORECASE)
+	SLE = re.compile(r"SUSE Linux Enterprise Server", re.IGNORECASE)
 	if SLE.search(SERVER['Distro']):
 		if( SERVER['DistroVersion'] >= 11 and SERVER['DistroVersion'] < 12 ):
 			Core.updateStatus(Core.WARN, "SLES" + str(SERVER['DistroVersion']) + "SP" + str(SERVER['DistroPatchLevel']) + ": Testing required")
@@ -664,8 +664,8 @@ def getHostInfo():
 #		print "getHostInfo: Error opening file: %s" % error
 		Core.updateStatus(Core.ERROR, "ERROR: Cannot open " + FILE_OPEN)
 
-	OSRELEASE = re.compile('/etc/os-release', re.IGNORECASE)
-	RELEASE = re.compile('/etc/SuSE-release', re.IGNORECASE)
+	OSRELEASE = re.compile(r'/etc/os-release', re.IGNORECASE)
+	RELEASE = re.compile(r'/etc/SuSE-release', re.IGNORECASE)
 	for LINE in FILE:
 		if UNAME_FOUND:
 			SERVER_DICTIONARY['Hostname'] = LINE.split()[IDX_HOSTNAME]
@@ -933,9 +933,9 @@ def getZypperRepoList():
 		Core.updateStatus(Core.IGNORE, "Not disabled repositories detected")	
 	"""
 	fileOpen = "updates.txt"
-	section = "/zypper\s--.*\srepos"
-	startRepos = re.compile("^-*\+-*\+")
-	endRepos = re.compile("^#==|^$")
+	section = r'/zypper\s--.*\srepos'
+	startRepos = re.compile(r"^-*\+-*\+")
+	endRepos = re.compile(r"^#==|^$")
 	REPOS = []
 	IN_REPOS = False
 	content = {}
@@ -994,9 +994,9 @@ def getZypperProductList():
 		Core.updateStatus(Core.CRIT, "No base products found")	
 	"""
 	fileOpen = "updates.txt"
-	section = "/zypper\s--.*\sproducts"
-	startProducts = re.compile("^-*\+-*\+")
-	endProducts = re.compile("^#==|^$")
+	section = r'/zypper\s--.*\sproducts'
+	startProducts = re.compile(r"^-*\+-*\+")
+	endProducts = re.compile(r"^#==|^$")
 	PRODUCTS = []
 	IN_PRODUCTS = False
 	content = {}
@@ -1387,8 +1387,8 @@ def getConfigFileLVM(PART):
 	ARRAY_VALUES = []
 	ARRAY_KEY = ''
 	LVM_SECTION_NAME = ''
-	LVM_SECTION = re.compile("^\S*\s*{", re.IGNORECASE)
-	SKIP_LINE = re.compile("^\s*#|^\s*$", re.IGNORECASE)
+	LVM_SECTION = re.compile(r"^\S*\s*{", re.IGNORECASE)
+	SKIP_LINE = re.compile(r"^\s*#|^\s*$", re.IGNORECASE)
 	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
 			if SKIP_LINE.search(LINE):
@@ -1536,7 +1536,7 @@ def getNetworkInterfaces():
 	DEV = ''
 
 	if( Core.isFileActive(NETWORK_FILE) ):
-		STARTNIC = re.compile("\d:.*: <.*>.* mtu ")
+		STARTNIC = re.compile(r"\d:.*: <.*>.* mtu ")
 		if( Core.getRegExSection(NETWORK_FILE, '/ip addr', IPADDR) ):
 			for LINE in IPADDR:
 				if STARTNIC.search(LINE):
