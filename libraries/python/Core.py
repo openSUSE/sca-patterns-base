@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 """
 ##############################################################################
-#  Copyright (C) 2021,2022 SUSE LLC
+#  Copyright (C) 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (ke7oxh@gmail.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2022 Oct 26
+#  Modified: 2025 May 08
 #
 ##############################################################################
 
@@ -277,11 +277,11 @@ def listSections(FILE_OPEN, CONTENT):
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 
-	SECTION = re.compile('^#==\[')
+	SECTION = re.compile(r'^#==\[')
 	for LINE in FILE:
 		LINE = LINE.strip("\n")
 		if inSection:
-			CONTENT[I] = re.sub('^#\s+', '', LINE)
+			CONTENT[I] = re.sub(r"^#\s+", '', LINE)
 			I += 1
 			RESULT = True
 			inSection = False
@@ -341,7 +341,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
-	CommentedLine = re.compile('^#|^\s+#')
+	CommentedLine = re.compile(r"^#|^\s+#")
 	for line in FILE:
 		line = line.strip("\n")
 		if line.startswith('#==['):
@@ -351,7 +351,7 @@ def getSection(FILE_OPEN, SECTION, CONTENT):
 				break
 		elif ( SectionName == '' ):
 #			print " SectionName before = " + str(line)
-			SectionName = re.sub('^#', '', line).strip()
+			SectionName = re.sub(r'^#', '', line).strip()
 #			print " SectionName after  = " + str(SectionName)
 		elif SectionTag.search(SectionName):
 			if( len(line) > 0 ):
@@ -398,7 +398,7 @@ def getRegExSection(FILE_OPEN, SECTION, CONTENT):
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
 	SectionTag = re.compile(SECTION)
-	CommentedLine = re.compile('^#|^\s+#')
+	CommentedLine = re.compile(r"^#|^\s+#")
 	for line in FILE:
 		line = line.strip("\n")
 		if line.startswith('#==['):
@@ -408,7 +408,7 @@ def getRegExSection(FILE_OPEN, SECTION, CONTENT):
 				break
 		elif ( SectionName == '' ):
 #			print " SectionName before = " + str(line)
-			SectionName = re.sub('^#', '', line).strip()
+			SectionName = re.sub(r'^#', '', line).strip()
 #			print " SectionName after  = " + str(SectionName)
 		elif SectionTag.search(SectionName):
 			if( len(line) > 0 ):
@@ -463,7 +463,7 @@ def getRegExSectionRaw(FILE_OPEN, SECTION, CONTENT):
 				break
 		elif ( SectionName == '' ):
 #			print " SectionName before = " + str(line)
-			SectionName = re.sub('^#', '', line).strip()
+			SectionName = re.sub(r'^#', '', line).strip()
 #			print " SectionName after  = " + str(SectionName)
 		elif SectionTag.search(SectionName):
 			if( len(line) > 0 ):
@@ -504,7 +504,7 @@ def getExactSection(FILE_OPEN, SECTION, CONTENT):
 		FILE = open(path + "/" + FILE_OPEN, "rt", errors='ignore')
 	except Exception as error:
 		updateStatus(ERROR, "ERROR: Cannot open " + FILE_OPEN + ": " + str(error))
-	CommentedLine = re.compile('^#|^\s+#')
+	CommentedLine = re.compile(r"^#|^\s+#")
 	for line in FILE:
 		line = line.strip("\n")
 		if line.startswith('#==['):
@@ -514,7 +514,7 @@ def getExactSection(FILE_OPEN, SECTION, CONTENT):
 				break
 		elif ( SectionName == '' ):
 #			print " SectionName before = " + str(line)
-			SectionName = re.sub('^#', '', line).strip()
+			SectionName = re.sub(r'^#', '', line).strip()
 #			print " SectionName after  = " + str(SectionName)
 		elif( SECTION == SectionName ):
 			if( len(line) > 0 ):
@@ -538,13 +538,13 @@ def normalizeVersionString(versionString):
 	Returns:     A list of version string elements
 	"""
 #	print "normalizeVersionString ORIGINAL       versionString = '" + versionString + "'"
-	versionString = re.sub("[\.,\-,_,+]", "|", versionString)
+	versionString = re.sub(r"[\.,\-,_,+]", "|", versionString)
 #	print "normalizeVersionString  SEPERATORS    versionString = '" + versionString + "'"
-	versionString = re.sub("([A-Z,a-z]+)", "|\\1|", versionString)
+	versionString = re.sub(r"([A-Z,a-z]+)", "|\\1|", versionString)
 #	print "normalizeVersionString  LETTER GROUPS versionString = '" + versionString + "'"
 	versionString = versionString.lstrip("0")
 #	print "normalizeVersionString  LEAD ZEROS    versionString = '" + versionString + "'"
-	versionString = re.sub("\|\|", "|", versionString)
+	versionString = re.sub(r"\|\|", "|", versionString)
 #	print "normalizeVersionString  DOUBLE BARS   versionString = '" + versionString + "'"
 	versionString = versionString.rstrip("|")
 #	print "normalizeVersionString  TRAILING BARS versionString = '" + versionString + "'"

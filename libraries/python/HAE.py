@@ -5,7 +5,7 @@ Library of functions for creating python patterns specific to
 High Availability Extension (HAE) clustering
 """
 ##############################################################################
-#  Copyright (C) 2014, 2022 SUSE LLC
+#  Copyright (C) 2014, 2022, 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ High Availability Extension (HAE) clustering
 #  Authors/Contributors:
 #    Jason Record <jason.record@suse.com>
 #
-#  Modified: 2022 Oct 26
+#  Modified: 2025 May 08
 #
 ##############################################################################
 
@@ -70,7 +70,7 @@ def haeConnected():
 	SECTION = 'cibadmin -Q'
 	CONTENT = {}
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-		CONNECTED = re.compile('<cib.*epoch=')
+		CONNECTED = re.compile(r'<cib.*epoch=')
 		for LINE in CONTENT:
 			if CONNECTED.search(CONTENT[LINE]):
 				return True
@@ -135,9 +135,9 @@ def getSBDInfo():
 	SBD_PATH = ''
 	SBD_DEVICE = ''
 	SBD_OPTS = ''
-	DUMPCMD = re.compile("/usr/sbin/sbd -d .* dump")
-	SYSCONFIG = re.compile("^# /etc/sysconfig/sbd")
-	INVALID = re.compile("Syntax", re.IGNORECASE)
+	DUMPCMD = re.compile(r"/usr/sbin/sbd -d .* dump")
+	SYSCONFIG = re.compile(r"^# /etc/sysconfig/sbd")
+	INVALID = re.compile(r"Syntax", re.IGNORECASE)
 	for LINE in FILE:
 		if DUMP_FOUND:
 #			print "Dump: " + str(LINE)
@@ -236,7 +236,7 @@ def getNodeInfo():
 	FILE_OPEN = 'ha.txt'
 	CONTENT = {}
 	inNode = False
-	endNode = re.compile('/>$')
+	endNode = re.compile(r'/>$')
 	if Core.getSection(FILE_OPEN, 'cibadmin -Q', CONTENT):
 		for LINE in CONTENT:
 			DATA = CONTENT[LINE].strip()
@@ -248,7 +248,7 @@ def getNodeInfo():
 					NODE = {}
 					inNode = False
 				elif "<nvpair" in CONTENT[LINE]:
-					PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
+					PARTS = re.sub(r'^<nvpair|/>$|>$|"', '', DATA).strip().split()
 #					print "cibadmin PARTS = " + str(PARTS)
 					KEY = ''
 					VALUE = ''
@@ -256,13 +256,13 @@ def getNodeInfo():
 						if "name" in PARTS[I].lower():
 							KEY = PARTS[I].split("=")[IDX_VALUE]
 						elif "value" in PARTS[I].lower():
-							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+							VALUE = re.sub(r'/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
 					NODE.update({KEY:VALUE})
 			elif "<node " in DATA:
 				inNode = True
 				if endNode.search(DATA):
 					inNode = False
-				PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
+				PARTS = re.sub(r'^<node|/>$|>$|"', '', DATA).strip().split()
 #				print "cibadmin PARTS = " + str(PARTS)
 				KEY = ''
 				VALUE = ''
@@ -277,7 +277,7 @@ def getNodeInfo():
 		for LINE in CONTENT:
 			if "<node_state " in CONTENT[LINE]:
 				NODE_STATE = {}
-				PARTS = re.sub('<node_state|/>$|>$|"', '', CONTENT[LINE]).strip().split()
+				PARTS = re.sub(r'<node_state|/>$|>$|"', '', CONTENT[LINE]).strip().split()
 #				print "cibadmin PARTS = " + str(PARTS)
 				KEY = ''
 				VALUE = ''
@@ -302,7 +302,7 @@ def getNodeInfo():
 						NODE = {}
 						inNode = False
 					elif "<nvpair" in CONTENT[LINE]:
-						PARTS = re.sub('^<nvpair|/>$|>$|"', '', DATA).strip().split()
+						PARTS = re.sub(r'^<nvpair|/>$|>$|"', '', DATA).strip().split()
 #						print "cib.xml PARTS = " + str(PARTS)
 						KEY = ''
 						VALUE = ''
@@ -310,13 +310,13 @@ def getNodeInfo():
 							if "name" in PARTS[I].lower():
 								KEY = PARTS[I].split("=")[IDX_VALUE]
 							elif "value" in PARTS[I].lower():
-								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+								VALUE = re.sub(r'/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
 						NODE.update({KEY:VALUE})
 				elif "<node " in DATA:
 					inNode = True
 					if endNode.search(DATA):
 						inNode = False
-					PARTS = re.sub('^<node|/>$|>$|"', '', DATA).strip().split()
+					PARTS = re.sub(r'^<node|/>$|>$|"', '', DATA).strip().split()
 #					print "cib.xml PARTS = " + str(PARTS)
 					KEY = ''
 					VALUE = ''
@@ -372,13 +372,13 @@ def getClusterConfig():
 						if "name" in PARTS[I].lower():
 							KEY = PARTS[I].split("=")[IDX_VALUE]
 						elif "value" in PARTS[I].lower():
-							VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+							VALUE = re.sub(r'/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
 					CLUSTER.update({KEY:VALUE})
 			elif "<cluster_property_set" in CONTENT[LINE]:
 				inBootStrap = True
 				CLUSTER.update({'connected-to-cluster':True})
 			elif "<cib " in CONTENT[LINE]:
-				PARTS = re.sub('<cib|>', '', CONTENT[LINE]).strip().split('"')
+				PARTS = re.sub(r'<cib|>', '', CONTENT[LINE]).strip().split('"')
 				if( len(PARTS[-1]) == 0 ):
 					del(PARTS[-1])
 #				print "cibadmin PARTS = " + str(PARTS)
@@ -406,17 +406,17 @@ def getClusterConfig():
 							if "name" in PARTS[I].lower():
 								KEY = PARTS[I].split("=")[IDX_VALUE]
 							elif "value" in PARTS[I].lower():
-								VALUE = re.sub('/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
+								VALUE = re.sub(r'/>.*$', '', PARTS[I].split("=")[IDX_VALUE])
 						CLUSTER.update({KEY:VALUE})
 				elif "<cluster_property_set" in CONTENT[LINE]:
 					inBootStrap = True
 					CLUSTER.update({'connected-to-cluster':False})
 				elif "<cib " in CONTENT[LINE]:
-					PARTS = re.sub('<cib|>', '', CONTENT[LINE]).strip().split('"')
+					PARTS = re.sub(r'<cib|>', '', CONTENT[LINE]).strip().split('"')
 					if( len(PARTS[-1]) == 0 ):
 						del(PARTS[-1])
 #					print "cib.xml PARTS = " + str(PARTS)
-					key = re.compile("=$")
+					key = re.compile(r"=$")
 					for I in range(0, len(PARTS)):
 						if key.search(PARTS[I]):
 							KEY_STR = PARTS[I].strip().strip('=')
@@ -455,7 +455,7 @@ def getConfigCTDB():
 		for LINE in CONTENT:
 			if( len(CONTENT[LINE]) > 0 ):
 				KEY = CONTENT[LINE].split('=')[IDX_KEY].strip().upper()
-				VALUE = re.sub('"|\'', '', CONTENT[LINE].split('=')[IDX_VALUE]).strip()
+				VALUE = re.sub(r'"|\'', '', CONTENT[LINE].split('=')[IDX_VALUE]).strip()
 				CONFIG.update({KEY:VALUE})
 
 #	print "CONFIG Size = " + str(len(CONFIG))
@@ -499,12 +499,12 @@ def getConfigCorosync():
 	inMember = False
 	
 	if Core.getSection(FILE_OPEN, SECTION, CONTENT):
-		TAG = re.compile('^\S+\s+{')
+		TAG = re.compile(r"^\S+\s+{")
 		IFACE_ID = 'interface'
 		IFACE = re.compile(IFACE_ID + '\s+{', re.IGNORECASE)
 		MEMBER_ID = 'member'
 		MEMBER = re.compile(MEMBER_ID + '\s+{', re.IGNORECASE)
-		SKIP_LINE = re.compile('^#|^\s+$')
+		SKIP_LINE = re.compile(r"^#|^\s+$")
 		for LINE in CONTENT:
 			DATA = CONTENT[LINE].strip()
 			if SKIP_LINE.search(DATA):

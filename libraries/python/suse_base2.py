@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 '''
 ##############################################################################
-#  Copyright (C) 2023 SUSE LLC
+#  Copyright (C) 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@ Library of functions for creating python patterns specific to SUSE
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Nov 13'
-__version__       = '2.0.0_dev10'
+__date_modified__ = '2025 May 08'
+__version__       = '2.0.1'
 
 import re
 import os
@@ -33,6 +33,7 @@ import ast
 import json
 
 # Kernel version constants
+# https://www.suse.com/support/kb/doc/?id=000019587
 SLE9GA       = '2.6.5-7.97'
 SLE9SP0      = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
@@ -66,8 +67,9 @@ SLE15SP1     = '4.12.14-195.1'
 SLE15SP2     = '5.3.18-22.2'
 SLE15SP3     = '5.3.18-57.3'
 SLE15SP4     = '5.14.21-150400.22.1'
-SLE15SP5     = '5.14.21-150500.46.4'
-SLE15SP6     = '5.999' #Update to actual version when/if applicable
+SLE15SP5     = '5.14.21-150500.53.2'
+SLE15SP6     = '6.4.0-150600.21.3'
+SLE15SP7     = '5.999' #Update to actual version when/if applicable
 ALP1SP0      = '6.0' #Update to actual version when/if applicable
 
 def package_is_installed(package_name, _pat):
@@ -652,8 +654,8 @@ def get_zypper_repo_list(_pat):
                         Refresh - True (Yes) is the repository is set to refresh, otherwise False (No).
     '''
     repos_section = core.get_file_section(_pat.get_supportconfig_path('updates.txt'), '/zypper\s--.*\srepos')
-    startrepos = re.compile("^-*\+-*\+")
-    endrepos = re.compile("^#==|^$")
+    startrepos = re.compile(r"^-*\+-*\+")
+    endrepos = re.compile(r"^#==|^$")
     repos = []
     in_repos = False
 
@@ -706,8 +708,8 @@ def get_zypper_product_list(_pat):
                         is_base - True (Yes) is the product is a base product, otherwise False (No).
     '''
     prod_section = core.get_file_section(_pat.get_supportconfig_path('updates.txt'), '/zypper\s--.*\sproducts')
-    startProducts = re.compile("^-*\+-*\+")
-    endProducts = re.compile("^#==|^$")
+    startProducts = re.compile(r"^-*\+-*\+")
+    endProducts = re.compile(r"^#==|^$")
     products = []
     in_products = False
     for line in prod_section:

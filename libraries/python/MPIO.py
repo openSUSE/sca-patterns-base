@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Device Mapper Multi-path I/O (MPIO) Related P
 Library of python functions used when dealing with issues incident to MPIO
 """
 ##############################################################################
-#  Copyright (C) 2015 SUSE LLC
+#  Copyright (C) 2015, 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@ Library of python functions used when dealing with issues incident to MPIO
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2015 Jun 23
+#  Modified: 2025 May 08
 #
 ##############################################################################
 
@@ -140,8 +140,8 @@ def getManagedDevices():
 	IN_DEVICE = False
 	MPATH = {}
 	ENTRIES = []
-	DeviceStart = re.compile(" dm-\d+ ")
-	DeviceEntry = re.compile("\d+:\d+:\d+:\d+\s+\D+\s+\d+:\d+", re.IGNORECASE)
+	DeviceStart = re.compile(r" dm-\d+ ")
+	DeviceEntry = re.compile(r"\d+:\d+:\d+:\d+\s+\D+\s+\d+:\d+", re.IGNORECASE)
 	if Core.getRegExSection(FILE_OPEN, SECTION, CONTENT):
 		for LINE in CONTENT:
 			if DeviceStart.search(LINE):
@@ -220,7 +220,7 @@ def getDiskID(DEVICE_PATH):
 	"""
 	ID = ''
 	DEV = DEVICE_PATH.split("/")[-1] + " "
-	Digits = re.compile("\d+")
+	Digits = re.compile(r"\d+")
 	#print "Evaluate", DEV
 	if DEV.startswith("sd"): #check for system device name in the form sd? because they are easy to find
 		ID = re.sub(Digits, "", DEV)
@@ -237,8 +237,8 @@ def getDiskID(DEVICE_PATH):
 						ID = re.sub(Digits, "", LINKED_DEV)
 					else:
 						Core.getRegExSection('mpio.txt', '/udevadm info -e', UDEV_CONTENT)
-						BlockDev = re.compile('^P:\s+/devices/virtual/block/' + str(LINKED_DEV))
-						EndBlockDev = re.compile('^$')
+						BlockDev = re.compile(fr"^P:\s+/devices/virtual/block/{LINKED_DEV})
+						EndBlockDev = re.compile(r'^$')
 						IN_DEV = False
 						for UDEV_LINE in UDEV_CONTENT:
 							if( IN_DEV ):

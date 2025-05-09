@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 '''
 ##############################################################################
-#  Copyright (C) 2023 SUSE LLC
+#  Copyright (C) 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@ Core library of functions for creating and processing python patterns
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Oct 05'
-__version__       = '2.0.0_dev3'
+__date_modified__ = '2025 May 07'
+__version__       = '2.0.1'
 
 import sys
 import os
@@ -98,7 +98,7 @@ def get_sections_in_file(file_open):
     '''
     section_list = []
     in_section = False
-    section = re.compile('^#==\[')
+    section = re.compile(r'^#==[')
 
     entire_file = get_entire_file(_file)
 
@@ -120,7 +120,7 @@ def get_content_section(_content, _section, include_commented_lines=False):
     section_name = ''
     section_content = []
     section_tag = re.compile(_section)
-    commented_line = re.compile('^#|^\s+#')
+    commented_line = re.compile(r"^#|^\s+#")
 
     for line in _content:
         line = line.strip("\n")
@@ -162,10 +162,10 @@ def normalize_version_string(version_to_normalize):
     Args:        version_to_normalize
     Returns:     A list of version string elements
     '''
-    version_to_normalize = re.sub("[\.,\-,_,+]", "|", version_to_normalize)
-    version_to_normalize = re.sub("([A-Z,a-z]+)", "|\\1|", version_to_normalize)
+    version_to_normalize = re.sub(r"[\.,\-,_,+]", "|", version_to_normalize)
+    version_to_normalize = re.sub(r"([A-Z,a-z]+)", "|\\1|", version_to_normalize)
     version_to_normalize = version_to_normalize.lstrip("0")
-    version_to_normalize = re.sub("\|\|", "|", version_to_normalize)
+    version_to_normalize = re.sub(r"\|\|", "|", version_to_normalize)
     version_to_normalize = version_to_normalize.rstrip("|")
 
     return version_to_normalize.split("|")
