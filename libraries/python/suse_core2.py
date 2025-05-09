@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 '''
 ##############################################################################
-#  Copyright (C) 2023 SUSE LLC
+#  Copyright (C) 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@ Core library of functions for creating and processing python patterns
 #
 ##############################################################################
 __author__        = 'Jason Record <jason.record@suse.com>'
-__date_modified__ = '2023 Oct 05'
-__version__       = '2.0.0_dev3'
+__date_modified__ = '2025 May 07'
+__version__       = '2.0.1'
 
 import sys
 import os

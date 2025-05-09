@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Device Mapper Multi-path I/O (MPIO) Related P
 Library of python functions used when dealing with issues incident to MPIO
 """
 ##############################################################################
-#  Copyright (C) 2015 SUSE LLC
+#  Copyright (C) 2015, 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@ Library of python functions used when dealing with issues incident to MPIO
 #  Authors/Contributors:
 #     Jason Record (jrecord@suse.com)
 #
-#  Modified: 2015 Jun 23
+#  Modified: 2025 May 08
 #
 ##############################################################################
 

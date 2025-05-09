@@ -4,7 +4,7 @@ Supportconfig Analysis Library for SUSE python patterns
 Library of functions for creating python patterns specific to SUSE
 """
 ##############################################################################
-#  Copyright (C) 2013-2023 SUSE LLC
+#  Copyright (C) 2013-2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,8 @@ Library of functions for creating python patterns specific to SUSE
 #    Jason Record (jason.record@suse.com)
 #    David Hamner (ke7oxh@gmail.com)
 #
-#  Modified: 2023 Jun 06
-#  Version:  1.0.2
+#  Modified: 2025 May 08
+#  Version:  1.0.3
 #
 ##############################################################################
 
@@ -35,6 +35,7 @@ import datetime
 import ast
 
 # Kernel version constants
+# https://www.suse.com/support/kb/doc/?id=000019587
 SLE9GA       = '2.6.5-7.97'
 SLE9SP0      = '2.6.5-7.97'
 SLE9SP1      = '2.6.5-7.139'
@@ -68,7 +69,10 @@ SLE15SP1     = '4.12.14-195.1'
 SLE15SP2     = '5.3.18-22.2'
 SLE15SP3     = '5.3.18-57.3'
 SLE15SP4     = '5.14.21-150400.22.1'
-SLE15SP5     = '5.995' #Update to actual version when/if applicable
+SLE15SP5     = '5.14.21-150500.53.2'
+SLE15SP6     = '6.4.0-150600.21.3'
+SLE15SP7     = '5.999' #Update to actual version when/if applicable
+ALP1SP0      = '6.0' #Update to actual version when/if applicable
 
 def packageInstalled(PackageName):
 	"""

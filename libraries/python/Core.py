@@ -4,7 +4,7 @@ Supportconfig Analysis Library for Core python patterns
 Core library of functions for creating and processing python patterns
 """
 ##############################################################################
-#  Copyright (C) 2021,2022 SUSE LLC
+#  Copyright (C) 2025 SUSE LLC
 ##############################################################################
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ Core library of functions for creating and processing python patterns
 #    David Hamner (ke7oxh@gmail.com)
 #    Jason Record (jrecord@suse.com)
 #
-#  Modified: 2022 Oct 26
+#  Modified: 2025 May 08
 #
 ##############################################################################
 
